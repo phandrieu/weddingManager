@@ -8,7 +8,8 @@ BRANCH=main                           # Branche Git à déployer
 PHP_BIN=php                           # Binaire PHP (php ou php8.2)
 COMPOSER_BIN=composer                 # Chemin vers composer
 ENV=prod
-
+APP_ENV=prod
+APP_DEBUG=0
 # -------------------------------
 # ARRÊT EN CAS D'ERREUR
 # -------------------------------
