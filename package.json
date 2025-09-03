@@ -2,9 +2,9 @@
   "name": "wedding-manager",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite", 
-    "build": "vite build"
-  },
+  "dev": "encore dev",
+  "build": "encore production"
+},
   "devDependencies": {
     "vite": "^5.0.0"
   }
