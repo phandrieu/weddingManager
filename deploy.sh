@@ -41,7 +41,8 @@ $COMPOSER_BIN install --no-dev --optimize-autoloader
 if [ -f package.json ]; then
     echo "Installation des assets frontend..."
     npm install
-    $APP_DIR/node_modules/.bin/encore production
+    npm install --save-dev @symfony/webpack-encore webpack webpack-cli
+    /var/www/weddingManager/node_modules/.bin/encore production
 fi
 
 # -------------------------------
