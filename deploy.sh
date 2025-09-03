@@ -40,8 +40,6 @@ $COMPOSER_BIN install --no-dev --optimize-autoloader
 # -------------------------------
 if [ -f package.json ]; then
     echo "Installation des assets frontend..."
-    npm install
-    npm install --save-dev @symfony/webpack-encore webpack webpack-cli
     /var/www/weddingManager/node_modules/.bin/encore production
 fi
 
@@ -67,6 +65,6 @@ sudo chown -R $HTTP_USER:$HTTP_USER public/
 # 7. Redémarrage PHP-FPM
 # -------------------------------
 echo "Redémarrage de PHP-FPM..."
-sudo systemctl reload php8.2-fpm || sudo systemctl restart php8.2-fpm
+sudo systemctl reload php8.3-fpm || sudo systemctl restart php8.3-fpm
 
 echo "=== Déploiement terminé ==="
