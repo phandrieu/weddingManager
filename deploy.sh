@@ -41,7 +41,7 @@ $COMPOSER_BIN install --no-dev --optimize-autoloader
 if [ -f package.json ]; then
     echo "Installation des assets frontend..."
     npm install
-    ./node_modules/.bin/encore production
+    $APP_DIR/node_modules/.bin/encore production
 fi
 
 # -------------------------------
