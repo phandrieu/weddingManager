@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du chant{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Détails du chant {{ song.name }}</h1>
+
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Titre :</strong> {{ song.name }}</li>
+        <li class="list-group-item"><strong>Type :</strong> {{ song.type.name }}</li>
+        <li class="list-group-item">
+            <strong>Preview :</strong>
+            {% if song.previewUrl %}
+                <a href="{{ song.previewUrl }}" target="_blank">{{ song.previewUrl }}</a>
+            {% else %}
+                Aucune
+            {% endif %}
+        </li>
+        <li class="list-group-item"><strong>Paroles :</strong><br>{{ song.lyrics|nl2br }}</li>
+    </ul>
+
+    <a href="{{ path('app_song_index') }}" class="btn btn-secondary mt-3">Retour</a>
+</div>
+{% endblock %}

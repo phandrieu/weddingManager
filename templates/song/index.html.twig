@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des chants{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Liste des chants</h1>
+
+    <a href="{{ path('app_song_edit') }}" class="btn btn-primary mb-3">Ajouter un chant</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Preview</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for song in songs %}
+                <tr>
+                    <td>{{ song.name }}</td>
+                    <td>{{ song.type.name }}</td>
+                    <td>
+                        {% if song.previewUrl %}
+                            <a href="{{ song.previewUrl }}" target="_blank">Écouter</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" 
+          onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
+        <button class="btn btn-sm btn-danger">Supprimer</button>
+    </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">Aucun chant trouvée.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

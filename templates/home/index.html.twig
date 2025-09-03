@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    {% if is_granted('ROLE_ADMIN') %}
+        <h1 class="mb-4">Dashboard Mariages</h1>
+        <div class="row">
+            {% if weddings is not empty %}
+                {% for wedding in weddings|sort((a, b) => a.date.timestamp <=> b.date.timestamp) %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}
+                                </h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    {{ wedding.date|date('d/m/Y') }}
+                                </h6>
+                                <p class="card-text">
+                                    <strong>Chants prévus :</strong>
+                                    <ul>
+                                        {% if wedding.songs is not empty %}
+                                            {% for song in wedding.songs %}
+                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>Aucun chant</li>
+                                        {% endif %}
+                                    </ul>
+                                </p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Aucun mariage trouvé.</p>
+            {% endif %}
+        </div>
+
+    {% else %}
+        {# Dashboard utilisateur normal #}
+        <h1 class="mb-4">Mes Mariages</h1>
+        {% if app.user.allWeddings|length > 0 %}
+            {% for wedding in app.user.allWeddings %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}</h5>
+                                <p class="card-text">
+                                    <strong>Date du mariage :</strong> {{ wedding.date|date('d/m/Y') }}
+                                    <br>
+                                    
+                                </p>
+                                <p class="card-text">
+                                    <strong>Chants prévus :</strong>
+                                    <ul>
+                                        {% if wedding.songs is not empty %}
+                                            {% for song in wedding.songs %}
+                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>Aucun chant</li>
+                                        {% endif %}
+                                    </ul>
+                                </p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier mon mariage</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Contact</h5>
+                                <p class="card-text">
+                                    Pour toute question, contactez-nous :
+                                    <br><a href="mailto:admin@andrieu.ch">admin@andrieu.ch</a>
+                                    <br><a href="tel:+33643822294">+33 6 43 82 22 94</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Vous n’avez pas encore renseigné votre mariage.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

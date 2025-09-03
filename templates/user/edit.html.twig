@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}</h1>
+
+    {{ form_start(form) }}
+    <div class="mb-3">
+        {{ form_label(form.firstName) }}
+        {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.firstName) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.name) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.telephone) }}
+        {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.telephone) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.roles) }}
+        {{ form_widget(form.roles, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.roles) }}
+    </div>
+    <div class="mb-3">
+    {{ form_label(form.password) }}
+    {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
+    {{ form_help(form.password) }}
+    {{ form_errors(form.password) }}
+</div>
+
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

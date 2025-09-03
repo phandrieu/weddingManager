@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du mariage{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Détails du mariage</h1>
+
+    <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>ID :</strong> {{ wedding.id }}</li>
+        <li class="list-group-item"><strong>Marié :</strong> {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</li>
+        <li class="list-group-item"><strong>Mariée :</strong> {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</li>
+        <li class="list-group-item"><strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}</li>
+    </ul>
+
+    <h2>Chants associés</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Type de chant</th>
+                <th>Chant affecté</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in songTypes %}
+                <tr>
+                    <td>{{ type.name }}</td>
+                    <td>
+                        {% set song = wedding.songs|filter(s => s.type.id == type.id)|first %}
+                        {% if song %}
+                            {{ song.previewUrl ? '<a href="' ~ song.previewUrl ~ '" target="_blank">Écouter</a>'|raw : 'Sans preview' }}
+                            <br>
+                            <small>{{ song.lyrics|slice(0,50) ~ '...' }}</small>
+                        {% else %}
+                            Aucun chant affecté
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary mt-3">Retour</a>
+</div>
+{% endblock %}

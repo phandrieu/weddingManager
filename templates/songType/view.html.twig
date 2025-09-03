@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Type de chant: {{ songType.name }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>{{ songType.name }}</h1>
+
+    <h2 class="mt-4">Chants de ce type</h2>
+    {% if songType.songs|length > 0 %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Preview</th>
+                    <th>Paroles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in songType.songs %}
+                    <tr>
+                        <td>{{ song.title }}</td>
+                        <td>
+                            {% if song.urlPreview %}
+                                <a href="{{ song.urlPreview }}" target="_blank">Écouter</a>
+                            {% endif %}
+                        </td>
+                        <td>{{ song.lyrics|nl2br }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun chant pour ce type.</p>
+    {% endif %}
+</div>
+{% endblock %}

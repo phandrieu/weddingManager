@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ songType.id ? 'Modifier' : 'Ajouter' }} un type de chant{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>{{ songType.id ? 'Modifier' : 'Ajouter' }} un type de chant</h1>
+
+    {{ form_start(form) }}
+        <div class="mb-3">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name) }}
+            {{ form_errors(form.name) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ path('app_songtype_index') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

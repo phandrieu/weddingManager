@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateur {{ user.firstName }}{% endblock %}
+
+{% block body %}
+<h1>Détails de {{ user.firstName }} {{ user.name }}</h1>
+
+<ul class="list-group">
+    <li class="list-group-item"><strong>Nom :</strong> {{ user.name }}</li>
+    <li class="list-group-item"><strong>Prénom :</strong> {{ user.firstName }}</li>
+    <li class="list-group-item"><strong>Email :</strong> {{ user.email }}</li>
+    <li class="list-group-item"><strong>Téléphone :</strong> {{ user.telephone }}</li>
+    <li class="list-group-item"><strong>Rôle :</strong> {{ user.roles|join(', ') }}</li>
+</ul>
+
+<a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+<a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-warning mt-3">Modifier</a>
+{% endblock %}

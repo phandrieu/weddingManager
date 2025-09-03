@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
+
+    {{ form_start(form) }}
+    <div class="mb-3">
+        {{ form_label(form.marie) }}
+        {{ form_widget(form.marie, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.marie) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.mariee) }}
+        {{ form_widget(form.mariee, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.mariee) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.date) }}
+        {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.date) }}
+    </div>
+
+    <h2>Chants associés</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Type de chant</th>
+                <th>Choisir le chant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in songTypes %}
+                <tr>
+                    <td>{{ type.name }}</td>
+                    <td>
+                        <select name="songs[{{ type.id }}]" class="form-select">
+                            <option value="">-- Aucun --</option>
+                            {% for song in type.songs %}
+                                <option value="{{ song.id }}"
+                                    {% if wedding.songs.contains(song) %}selected{% endif %}>
+                                    {{ song.previewUrl ?: 'Sans nom' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

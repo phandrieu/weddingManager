@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des types de chants{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Types de chants</h1>
+    <a href="{{ path('app_songtype_edit') }}" class="btn btn-success mb-3">Ajouter un type</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in songTypes %}
+                <tr>
+                    <td>{{ type.name }}</td>
+                    <td>
+                        <a href="{{ path('app_songtype_view', {'id': type.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        <a href="{{ path('app_songtype_edit', {'id': type.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                         <form method="post" action="{{ path('app_songtype_delete', {'id': type.id}) }}" style="display:inline;"
+          onsubmit="return confirm('Voulez-vous vraiment supprimer ce type de chant ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ type.id) }}">
+        <button class="btn btn-sm btn-danger">Supprimer</button>
+    </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

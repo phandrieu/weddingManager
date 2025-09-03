@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}</h1>
+
+    {{ form_start(form) }}
+    <div class="mb-3">
+        {{ form_label(form.name) }}
+        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.name) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.type) }}
+        {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.type) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.previewUrl) }}
+        {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.previewUrl) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.lyrics) }}
+        {{ form_widget(form.lyrics, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.lyrics) }}
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{{ path('app_song_index') }}" class="btn btn-secondary">Annuler</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

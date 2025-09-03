@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil Public{% endblock %}
+
+{% block body %}
+<div class="container text-center mt-5">
+    <h1>Bienvenue sur mon application</h1>
+    <p>Cette page est accessible sans connexion.</p>
+    <a href="{{ path('app_login') }}" class="btn btn-primary mt-3">Se connecter</a>
+</div>
+{% endblock %}
