@@ -21,7 +21,6 @@ echo "=== Déploiement de la branche $BRANCH sur $APP_DIR ==="
 # 1. Aller dans le dossier de l'app
 # -------------------------------
 cd $APP_DIR
-cp .env.prod .env
 # -------------------------------
 # 2. Pull depuis Git
 # -------------------------------
@@ -29,6 +28,7 @@ echo "Pull de la dernière version..."
 git fetch origin $BRANCH
 git reset --hard origin/$BRANCH
 
+cp .env.prod .env
 # -------------------------------
 # 3. Installer les dépendances Composer
 # -------------------------------
