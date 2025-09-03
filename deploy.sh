@@ -20,7 +20,7 @@ echo "=== Déploiement de la branche $BRANCH sur $APP_DIR ==="
 # 1. Aller dans le dossier de l'app
 # -------------------------------
 cd $APP_DIR
-
+cp .env.prod .env
 # -------------------------------
 # 2. Pull depuis Git
 # -------------------------------
