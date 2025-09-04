@@ -31,6 +31,21 @@ private ?User $mariee = null;
     #[ORM\ManyToMany(targetEntity: Song::class, inversedBy: 'weddings')]
     private Collection $songs;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $church = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $parish = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $addressLine1 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $addressLine2 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $addressPostalCodeAndCity = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -104,6 +119,66 @@ private ?User $mariee = null;
     public function removeSong(Song $song): static
     {
         $this->songs->removeElement($song);
+
+        return $this;
+    }
+
+    public function getChurch(): ?string
+    {
+        return $this->church;
+    }
+
+    public function setChurch(?string $church): static
+    {
+        $this->church = $church;
+
+        return $this;
+    }
+
+    public function getParish(): ?string
+    {
+        return $this->parish;
+    }
+
+    public function setParish(?string $parish): static
+    {
+        $this->parish = $parish;
+
+        return $this;
+    }
+
+    public function getAddressLine1(): ?string
+    {
+        return $this->addressLine1;
+    }
+
+    public function setAddressLine1(?string $addressLine1): static
+    {
+        $this->addressLine1 = $addressLine1;
+
+        return $this;
+    }
+
+    public function getAddressLine2(): ?string
+    {
+        return $this->addressLine2;
+    }
+
+    public function setAddressLine2(?string $addressLine2): static
+    {
+        $this->addressLine2 = $addressLine2;
+
+        return $this;
+    }
+
+    public function getAddressPostalCodeAndCity(): ?string
+    {
+        return $this->addressPostalCodeAndCity;
+    }
+
+    public function setAddressPostalCodeAndCity(?string $addressPostalCodeAndCity): static
+    {
+        $this->addressPostalCodeAndCity = $addressPostalCodeAndCity;
 
         return $this;
     }

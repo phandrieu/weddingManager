@@ -10,8 +10,8 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Nom</th>
             <th>Prénom</th>
+            <th>Nom</th>
             <th>Email</th>
             <th>Téléphone</th>
             <th>Rôle</th>
@@ -21,8 +21,8 @@
     <tbody>
         {% for user in users %}
             <tr>
-                <td>{{ user.name }}</td>
                 <td>{{ user.firstName }}</td>
+                <td>{{ user.name }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.telephone }}</td>
                 <td>{{ user.roles|join(', ') }}</td>
