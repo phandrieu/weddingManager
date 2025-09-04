@@ -59,13 +59,13 @@ class WeddingController extends AbstractController
             }
             $songsData = $request->request->all('songs');
             foreach ($songsData as $songId) {
-                if ($songId) {
-                    $song = $songRepo->find($songId);
-                    if ($song) {
-                        $wedding->addSong($song);
-                    }
-                }
-            }
+    if ($songId) {
+        $song = $songRepo->find($songId); // ATTACHÉ à l'EM courant
+        if ($song) {
+            $wedding->addSong($song);
+        }
+    }
+}
 
             // Paiement Stripe pour non-admins et mariage non encore créé
             if (!$this->isGranted('ROLE_ADMIN') && !$wedding->getId()) {
