@@ -1,16 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
         <title>{% block title %}Wedding Manager{% endblock %}</title>
+        
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+        {# CSS global responsive supplémentaire #}
+        <style>
+            /* Pour que le contenu s'adapte toujours bien */
+            body {
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                background-color: #f8f9fa;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .container {
+                max-width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Navbar */
+            .navbar-brand {
+                font-weight: 600;
+                font-size: 1.2rem;
+            }
+
+            .navbar-nav .nav-link {
+                margin-right: .5rem;
+            }
+
+            /* Tables : scroll horizontal en mobile */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Boutons toujours adaptables */
+            .btn {
+                white-space: normal;
+            }
+
+            /* Marges sur mobile pour éviter que ça touche les bords */
+            @media (max-width: 576px) {
+                .container {
+                    padding-left: .75rem;
+                    padding-right: .75rem;
+                }
+
+                h1, h2, h3 {
+                    font-size: 1.25rem;
+                }
+            }
+
+            /* Pied de page collé en bas si tu en ajoutes un */
+            footer {
+                margin-top: auto;
+                padding: 1rem;
+                text-align: center;
+                background: #fff;
+                border-top: 1px solid #ddd;
+            }
+        </style>
+
         {% block stylesheets %}{% endblock %}
-            {{ encore_entry_link_tags('app') }}
+        {{ encore_entry_link_tags('app') }}
     </head>
     <body>
         {# Navbar uniquement si l'utilisateur est connecté #}
         {% if app.user %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
                     <img src="{{ asset('logo_navbar.png') }}" alt="Logo" style="height:40px; width:40px; object-fit:cover;" class="me-2">
@@ -55,6 +118,6 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         {% block javascripts %}{% endblock %}
-            {{ encore_entry_script_tags('app') }}
+        {{ encore_entry_script_tags('app') }}
     </body>
 </html>
