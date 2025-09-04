@@ -17,7 +17,7 @@ class SongTypeController extends AbstractController
     public function index(SongTypeRepository $repo): Response
     {
         $songTypes = $repo->findAll();
-        return $this->render('songtype/index.html.twig', [
+        return $this->render('songType/index.html.twig', [
             'songTypes' => $songTypes
         ]);
     }
@@ -35,7 +35,7 @@ public function delete(Request $request, SongType $type, SongTypeRepository $rep
     #[Route('/view/{id}', name: 'app_songtype_view')]
     public function view(SongType $songType): Response
     {
-        return $this->render('songtype/view.html.twig', [
+        return $this->render('songType/view.html.twig', [
             'songType' => $songType
         ]);
     }
@@ -55,7 +55,7 @@ public function delete(Request $request, SongType $type, SongTypeRepository $rep
             return $this->redirectToRoute('app_songtype_index');
         }
 
-        return $this->render('songtype/edit.html.twig', [
+        return $this->render('songType/edit.html.twig', [
             'form' => $form->createView(),
             'songType' => $songType,
         ]);
