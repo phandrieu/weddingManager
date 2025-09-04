@@ -19,7 +19,7 @@
             <tbody>
                 {% for song in songType.songs %}
                     <tr>
-                        <td>{{ song.title }}</td>
+                        <td>{{ song.name }}</td>
                         <td>
                             {% if song.urlPreview %}
                                 <a href="{{ song.urlPreview }}" target="_blank">Écouter</a>
