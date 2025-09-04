@@ -3,10 +3,12 @@
 {% block title %}{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}{% endblock %}
 
 {% block body %}
+<script src="https://js.stripe.com/v3/"></script>
 <div class="container mt-4">
     <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
 
     {{ form_start(form) }}
+
     <div class="mb-3">
         {{ form_label(form.marie) }}
         {{ form_widget(form.marie, {'attr': {'class': 'form-select'}}) }}
@@ -23,6 +25,18 @@
         {{ form_label(form.date) }}
         {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.date) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.parish) }}
+        {{ form_widget(form.parish, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.parish) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.church) }}
+        {{ form_widget(form.church, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.church) }}
     </div>
 
     <div class="mb-3">
@@ -77,8 +91,15 @@
         </tbody>
     </table>
 
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    {% if is_granted('ROLE_ADMIN') or wedding.id %}
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    {% else %}
+        {# Non-admin et création : afficher bouton Stripe #}
+        <button id="stripe-button" class="btn btn-success">Payer 50€ pour créer le mariage</button>
+    {% endif %}
+
     <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
+
     {{ form_end(form) }}
 </div>
 {% endblock %}

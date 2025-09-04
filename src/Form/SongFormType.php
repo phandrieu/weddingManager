@@ -11,6 +11,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+
 
 class SongFormType extends AbstractType
 {
@@ -32,6 +34,12 @@ class SongFormType extends AbstractType
                 'label' => 'URL de prévisualisation',
                 'required' => false,
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('partitionPDFFile', FileType::class, [
+                'label' => 'Partition PDF',
+                'required' => false,
+                'mapped' => true, // lié à l'entité via Vich
+                'attr' => ['accept' => 'application/pdf'],
             ])
             ->add('lyrics', TextareaType::class, [
                 'label' => 'Paroles',

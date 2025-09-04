@@ -33,6 +33,17 @@ class WeddingFormType extends AbstractType
                 'label' => 'Date du mariage',
                 'attr' => ['class' => 'form-control']
             ])
+            ->add('parish', TextType::class, [
+                'label' => 'Paroisse',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('church', TextType::class, [
+                'label' => 'Église',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            
             ->add('addressLine1', TextType::class, [
                 'label' => 'Adresse ligne 1',
                 'required' => false,

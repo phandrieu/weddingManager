@@ -6,29 +6,49 @@
 <div class="container mt-4">
     <h1>{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}</h1>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
     <div class="mb-3">
         {{ form_label(form.name) }}
         {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.name) }}
     </div>
+
     <div class="mb-3">
         {{ form_label(form.type) }}
         {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
         {{ form_errors(form.type) }}
     </div>
+
     <div class="mb-3">
         {{ form_label(form.previewUrl) }}
         {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.previewUrl) }}
     </div>
+
     <div class="mb-3">
         {{ form_label(form.lyrics) }}
-        {{ form_widget(form.lyrics, {'attr': {'class': 'form-control'}}) }}
+        {{ form_widget(form.lyrics, {'attr': {'class': 'form-control', 'rows': 5}}) }}
         {{ form_errors(form.lyrics) }}
     </div>
+
+    <div class="mb-3">
+        {{ form_label(form.partitionPDFFile, 'Partition PDF (PDF)') }}
+        {{ form_widget(form.partitionPDFFile, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.partitionPDFFile) }}
+        {% if song.partitionPDFName %}
+            <p class="mt-2">
+                Fichier actuel : 
+                <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
+                    {{ song.partitionPDFName }}
+                </a>
+            </p>
+        {% endif %}
+    </div>
+
     <button type="submit" class="btn btn-primary">Enregistrer</button>
     <a href="{{ path('app_song_index') }}" class="btn btn-secondary">Annuler</a>
+
     {{ form_end(form) }}
 </div>
 {% endblock %}

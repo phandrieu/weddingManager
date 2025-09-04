@@ -12,21 +12,31 @@
         <li class="list-group-item">
             <strong>Preview :</strong>
             {% if song.previewUrl %}
-        {% set youtubeId = song.previewUrl 
-            |replace({'https://youtu.be/':'', 
-                      'https://www.youtube.com/watch?v=':'', 
-                      '&feature=youtu.be':'', 
-                      '&si=':''}) 
-        %}
-        <div class="ratio ratio-16x9">
-            <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
-                    title="{{ song.name }}" allowfullscreen></iframe>
-        </div>
-    {% else %}
+                {% set youtubeId = song.previewUrl 
+                    |replace({'https://youtu.be/':'', 
+                              'https://www.youtube.com/watch?v=':'', 
+                              '&feature=youtu.be':'', 
+                              '&si=':''}) 
+                %}
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
+                            title="{{ song.name }}" allowfullscreen></iframe>
+                </div>
+            {% else %}
                 Aucune
             {% endif %}
         </li>
         <li class="list-group-item"><strong>Paroles :</strong><br>{{ song.lyrics|nl2br }}</li>
+        <li class="list-group-item">
+            <strong>Partition PDF :</strong>
+            {% if song.partitionPDFName %}
+                <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
+                    Télécharger le PDF
+                </a>
+            {% else %}
+                Aucune
+            {% endif %}
+        </li>
     </ul>
 
     <a href="{{ path('app_song_index') }}" class="btn btn-secondary mt-3">Retour</a>

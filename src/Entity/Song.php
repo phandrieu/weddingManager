@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: SongRepository::class)]
+#[Vich\Uploadable]
 class Song
 {
     #[ORM\Id]
@@ -35,10 +38,21 @@ class Song
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $partitionPDFName = null;
+
+    #[Vich\UploadableField(mapping: "song_pdf", fileNameProperty: "partitionPDFName")]
+    private ?File $partitionPDFFile = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $updatedAt = null;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
     }
+
+    // --- Getters / Setters existants ---
 
     public function getId(): ?int
     {
@@ -48,7 +62,6 @@ class Song
     public function setId(int $id): static
     {
         $this->id = $id;
-
         return $this;
     }
 
@@ -60,7 +73,6 @@ class Song
     public function setType(?SongType $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
@@ -72,7 +84,6 @@ class Song
     public function setPreviewUrl(?string $previewUrl): static
     {
         $this->previewUrl = $previewUrl;
-
         return $this;
     }
 
@@ -84,7 +95,6 @@ class Song
     public function setLyrics(?string $lyrics): static
     {
         $this->lyrics = $lyrics;
-
         return $this;
     }
 
@@ -102,7 +112,6 @@ class Song
             $this->weddings->add($wedding);
             $wedding->addSong($this);
         }
-
         return $this;
     }
 
@@ -111,7 +120,6 @@ class Song
         if ($this->weddings->removeElement($wedding)) {
             $wedding->removeSong($this);
         }
-
         return $this;
     }
 
@@ -123,7 +131,44 @@ class Song
     public function setName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
 
+    // --- PDF management ---
+
+    public function setPartitionPDFFile(?File $file = null): void
+    {
+        $this->partitionPDFFile = $file;
+
+        if ($file) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getPartitionPDFFile(): ?File
+    {
+        return $this->partitionPDFFile;
+    }
+
+    public function getPartitionPDFName(): ?string
+    {
+        return $this->partitionPDFName;
+    }
+
+    public function setPartitionPDFName(?string $partitionPDFName): static
+    {
+        $this->partitionPDFName = $partitionPDFName;
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 }

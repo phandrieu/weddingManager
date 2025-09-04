@@ -6,7 +6,21 @@
 <div class="container mt-4">
     <h1>Liste des chants</h1>
 
-    <a href="{{ path('app_song_edit') }}" class="btn btn-primary mb-3">Ajouter un chant</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{{ path('app_song_edit') }}" class="btn btn-primary">Ajouter un chant</a>
+        <div class="form-group">
+            <select id="typeFilter" class="form-select">
+                <option value="">Tous les types</option>
+                {% set types = [] %}
+                {% for song in songs %}
+                    {% if song.type.name not in types %}
+                        {% set types = types|merge([song.type.name]) %}
+                        <option value="{{ song.type.name }}">{{ song.type.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
 
     <table class="table table-striped">
         <thead>
@@ -17,24 +31,24 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="songsTableBody">
             {% for song in songs %}
-                <tr>
+                <tr data-type="{{ song.type.name }}">
                     <td>{{ song.name }}</td>
                     <td>{{ song.type.name }}</td>
                     <td>
                         {% if song.previewUrl %}
-        {% set youtubeId = song.previewUrl 
-            |replace({'https://youtu.be/':'', 
-                      'https://www.youtube.com/watch?v=':'', 
-                      '&feature=youtu.be':'', 
-                      '&si=':''}) 
-        %}
-        <div style= "min-height: 150px; min-width: 250px;" class="ratio ratio-16x9" >
-            <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
-                    title="{{ song.name }}" allowfullscreen></iframe>
-        </div>
-    {% else %}
+                            {% set youtubeId = song.previewUrl 
+                                |replace({'https://youtu.be/':'', 
+                                        'https://www.youtube.com/watch?v=':'', 
+                                        '&feature=youtu.be':'', 
+                                        '&si=':''}) 
+                            %}
+                            <div style="min-height: 150px; min-width: 250px;" class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
+                                        title="{{ song.name }}" allowfullscreen></iframe>
+                            </div>
+                        {% else %}
                             -
                         {% endif %}
                     </td>
@@ -54,10 +68,46 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="4">Aucun chant trouvée.</td>
+                    <td colspan="4">Aucun chant trouvé.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeFilter = document.getElementById('typeFilter');
+    const rows = document.querySelectorAll('#songsTableBody tr');
+
+    typeFilter.addEventListener('change', function() {
+        const selectedType = this.value;
+        
+        rows.forEach(row => {
+            if (!selectedType || row.dataset.type === selectedType) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Afficher message si aucun résultat
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+        const existingNoResults = document.querySelector('.no-results');
+        
+        if (visibleRows === 0) {
+            if (!existingNoResults) {
+                const noResults = document.createElement('tr');
+                noResults.className = 'no-results';
+                noResults.innerHTML = '<td colspan="4">Aucun chant trouvé pour ce type.</td>';
+                document.querySelector('#songsTableBody').appendChild(noResults);
+            }
+        } else if (existingNoResults) {
+            existingNoResults.remove();
+        }
+    });
+});
+</script>
 {% endblock %}

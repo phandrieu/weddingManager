@@ -11,6 +11,8 @@
         <li class="list-group-item"><strong>Marié :</strong> {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</li>
         <li class="list-group-item"><strong>Mariée :</strong> {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</li>
         <li class="list-group-item"><strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}</li>
+        <li class="list-group-item"><strong>Paroisse :</strong> {{ wedding.parish ?: '-' }}</li>
+        <li class="list-group-item"><strong>Église :</strong> {{ wedding.church ?: '-' }}</li>
         <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ wedding.addressLine1 ?: '-' }}</li>
         <li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ wedding.addressLine2 ?: '-' }}</li>
         <li class="list-group-item"><strong>Code postal & Ville :</strong> {{ wedding.addressPostalCodeAndCity ?: '-' }}</li>
