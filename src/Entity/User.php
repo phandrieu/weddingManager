@@ -43,6 +43,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'mariee', targetEntity: Wedding::class)]
     private Collection $weddingsAsMariee;
 
+    // src/Entity/User.php
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $resetToken = null;
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): self
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -116,11 +131,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     // === Infos utilisateur ===
-    public function getId(): ?int { return $this->id; }
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+        return $this;
+    }
 
-    public function getUserIdentifier(): string { return (string) $this->email; }
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
 
     public function getRoles(): array
     {
@@ -129,29 +157,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+        return $this;
+    }
 
-    public function getPassword(): ?string { return $this->password; }
-    public function setPassword(string $password): static { $this->password = $password; return $this; }
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+        return $this;
+    }
 
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
         return $data;
     }
 
     #[\Deprecated]
-    public function eraseCredentials(): void {}
+    public function eraseCredentials(): void
+    {
+    }
 
-    public function getName(): ?string { return $this->name; }
-    public function setName(?string $name): static { $this->name = $name; return $this; }
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
 
-    public function getFirstName(): ?string { return $this->firstName; }
-    public function setFirstName(?string $firstName): static { $this->firstName = $firstName; return $this; }
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+    public function setFirstName(?string $firstName): static
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
 
-    public function getTelephone(): ?string { return $this->telephone; }
-    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
 
-    public function getFullName(): string { return $this->firstName . ' ' . $this->name; }
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->name;
+    }
 }
