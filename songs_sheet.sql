@@ -1,5 +1,5 @@
 -- insertion complète des chants dans la table song
-
+use app; 
 INSERT INTO song (type_id, name, preview_url, lyrics) VALUES
 -- ACCLAMATION ÉVANGILE (type_id = 5)
 (5, 'Alleluia - Messe de Saint Paul', 'https://youtu.be/-PqxDNXqHZg?si=x9-WQoVxfPGARRWL', NULL),
