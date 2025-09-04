@@ -41,7 +41,7 @@
                             {% for song in type.songs %}
                                 <option value="{{ song.id }}"
                                     {% if wedding.songs.contains(song) %}selected{% endif %}>
-                                    {{ song.previewUrl ?: 'Sans nom' }}
+                                    {{ song.name ?: 'Sans nom' }}
                                 </option>
                             {% endfor %}
                         </select>
