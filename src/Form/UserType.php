@@ -16,10 +16,13 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('firstName', TextType::class)
-            ->add('name', TextType::class)
-            ->add('email', EmailType::class)
-            ->add('telephone', TextType::class)
+            ->add('firstName', TextType::class, options: ['label' => 'Prénom', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('name', TextType::class, options: ['label' => 'Nom', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('email', EmailType::class, options: ['label' => 'Email', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('telephone', TextType::class, options: ['label' => 'Téléphone', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('addressLine1', TextType::class, options: ['label' => 'Adresse ligne 1', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('addressLine2', TextType::class, options: ['label' => 'Adresse ligne 2', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('addressPostalCodeAndCity', TextType::class, options: ['label' => 'Code postal & Ville', 'required' => false, 'attr' => ['class' => 'form-control']])
             ->add('roles', ChoiceType::class, [
                 'choices' => [
                     'Utilisateur' => 'ROLE_USER',

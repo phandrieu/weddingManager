@@ -11,6 +11,9 @@
         <li class="list-group-item"><strong>Marié :</strong> {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</li>
         <li class="list-group-item"><strong>Mariée :</strong> {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</li>
         <li class="list-group-item"><strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}</li>
+        <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ user.addressLine1 }}</li>
+<li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ user.addressLine2 }}</li>
+<li class="list-group-item"><strong>Code postal & Ville :</strong> {{ user.addressPostalCodeAndCity }}</li>
     </ul>
 
     <h2>Chants associés</h2>

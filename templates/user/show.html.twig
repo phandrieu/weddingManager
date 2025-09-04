@@ -10,7 +10,10 @@
     <li class="list-group-item"><strong>Prénom :</strong> {{ user.firstName }}</li>
     <li class="list-group-item"><strong>Email :</strong> {{ user.email }}</li>
     <li class="list-group-item"><strong>Téléphone :</strong> {{ user.telephone }}</li>
-    <li class="list-group-item"><strong>Rôle :</strong> {{ user.roles|join(', ') }}</li>
+    <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ user.addressLine1 }}</li>
+    <li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ user.addressLine2 }}</li>
+    <li class="list-group-item"><strong>Code postal & Ville :</strong> {{ user.addressPostalCodeAndCity }}</li>
+    <li class="list-group-item"><strong>Rôles :</strong> {{ user.roles|join(', ') }}</li>
 </ul>
 
 <a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>

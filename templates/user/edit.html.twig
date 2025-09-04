@@ -30,7 +30,23 @@
         {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.telephone) }}
     </div>
+<div class="mb-3">
+    {{ form_label(form.addressLine1) }}
+    {{ form_widget(form.addressLine1, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.addressLine1) }}
+</div>
 
+<div class="mb-3">
+    {{ form_label(form.addressLine2) }}
+    {{ form_widget(form.addressLine2, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.addressLine2) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.addressPostalCodeAndCity) }}
+    {{ form_widget(form.addressPostalCodeAndCity, {'attr': {'class': 'form-control'}}) }}
+    {{ form_errors(form.addressPostalCodeAndCity) }}
+</div>
     <div class="mb-3">
         {{ form_label(form.roles) }}
         {{ form_widget(form.roles, {'attr': {'class': 'form-select'}}) }}

@@ -7,7 +7,9 @@ use App\Entity\Wedding;
 use App\Entity\Song;
 use App\Entity\SongType;
 use Doctrine\ORM\EntityRepository;
+
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -34,7 +36,10 @@ class WeddingFormType extends AbstractType
                 'widget' => 'single_text',
                 'label' => 'Date du mariage',
                 'attr' => ['class' => 'form-control']
-            ]);
+            ])
+            ->add('addressLine1', TextType::class, options: ['label' => 'Adresse ligne 1', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('addressLine2', TextType::class, options: ['label' => 'Adresse ligne 2', 'required' => false, 'attr' => ['class' => 'form-control']])
+            ->add('addressPostalCodeAndCity', TextType::class, options: ['label' => 'Code postal & Ville', 'required' => false, 'attr' => ['class' => 'form-control']]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
