@@ -53,19 +53,20 @@ class WeddingController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion des chansons
+            // Supprimer les songs existantes pour repartir proprement
             foreach ($wedding->getSongs() as $song) {
                 $wedding->removeSong($song);
             }
-            $songsData = $request->request->all('songs');
+
+            $songsData = $request->request->all('songs'); // IDs des songs sélectionnées
             foreach ($songsData as $songId) {
-    if ($songId) {
-        $song = $songRepo->find($songId); // ATTACHÉ à l'EM courant
-        if ($song) {
-            $wedding->addSong($song);
-        }
-    }
-}
+                if ($songId) {
+                    $song = $songRepo->find($songId); // récupère l'entité attachée à l'EM
+                    if ($song) {
+                        $wedding->addSong($song);
+                    }
+                }
+            }
 
             // Paiement Stripe pour non-admins et mariage non encore créé
             if (!$this->isGranted('ROLE_ADMIN') && !$wedding->getId()) {
@@ -73,14 +74,16 @@ class WeddingController extends AbstractController
 
                 $session = $stripe->checkout->sessions->create([
                     'payment_method_types' => ['card'],
-                    'line_items' => [[
-                        'price_data' => [
-                            'currency' => 'eur',
-                            'product_data' => ['name' => 'Création de mariage'],
-                            'unit_amount' => 5000, // 50€ en centimes
-                        ],
-                        'quantity' => 1,
-                    ]],
+                    'line_items' => [
+                        [
+                            'price_data' => [
+                                'currency' => 'eur',
+                                'product_data' => ['name' => 'Création de mariage'],
+                                'unit_amount' => 5000, // 50€ en centimes
+                            ],
+                            'quantity' => 1,
+                        ]
+                    ],
                     'mode' => 'payment',
                     'success_url' => $this->generateUrl(
                         'app_wedding_payment_success',
@@ -117,7 +120,7 @@ class WeddingController extends AbstractController
     #[Route('/delete/{id}', name: 'app_wedding_delete', methods: ['POST'])]
     public function delete(Request $request, Wedding $wedding, WeddingRepository $repo): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$wedding->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $wedding->getId(), $request->request->get('_token'))) {
             $repo->remove($wedding, true);
             $this->addFlash('success', 'Mariage supprimé avec succès.');
         }
@@ -126,43 +129,43 @@ class WeddingController extends AbstractController
     }
 
     #[Route('/payment/success', name: 'app_wedding_payment_success')]
-public function paymentSuccess(Request $request, WeddingRepository $repo): Response
-{
-    $weddingSession = $request->getSession()->get('wedding_data');
+    public function paymentSuccess(Request $request, WeddingRepository $repo): Response
+    {
+        $weddingSession = $request->getSession()->get('wedding_data');
 
-    if ($weddingSession) {
-        $em = $repo->getEntityManager();
+        if ($weddingSession) {
+            $em = $repo->getEntityManager();
 
-        // Si le wedding existe déjà en base, on le recharge
-        if ($weddingSession->getId()) {
-            $wedding = $repo->find($weddingSession->getId());
-        } else {
-            $wedding = $weddingSession;
+            // Si le wedding existe déjà en base, on le recharge
+            if ($weddingSession->getId()) {
+                $wedding = $repo->find($weddingSession->getId());
+            } else {
+                $wedding = $weddingSession;
+            }
+
+            // Attacher les Users existants pour que Doctrine les gère correctement
+            if ($wedding->getMarie()) {
+                $wedding->setMarie($em->getReference(\App\Entity\User::class, $wedding->getMarie()->getId()));
+            }
+
+            if ($wedding->getMariee()) {
+                $wedding->setMariee($em->getReference(\App\Entity\User::class, $wedding->getMariee()->getId()));
+            }
+
+            foreach ($wedding->getMusicians() as $i => $musician) {
+                $wedding->getMusicians()->set(
+                    $i,
+                    $em->getReference(\App\Entity\User::class, $musician->getId())
+                );
+            }
+
+            $repo->save($wedding, true);
+            $request->getSession()->remove('wedding_data');
+            $this->addFlash('success', 'Paiement réussi et mariage créé !');
         }
 
-        // Attacher les Users existants pour que Doctrine les gère correctement
-        if ($wedding->getMarie()) {
-            $wedding->setMarie($em->getReference(\App\Entity\User::class, $wedding->getMarie()->getId()));
-        }
-
-        if ($wedding->getMariee()) {
-            $wedding->setMariee($em->getReference(\App\Entity\User::class, $wedding->getMariee()->getId()));
-        }
-
-        foreach ($wedding->getMusicians() as $i => $musician) {
-            $wedding->getMusicians()->set(
-                $i,
-                $em->getReference(\App\Entity\User::class, $musician->getId())
-            );
-        }
-
-        $repo->save($wedding, true);
-        $request->getSession()->remove('wedding_data');
-        $this->addFlash('success', 'Paiement réussi et mariage créé !');
+        return $this->redirectToRoute('app_wedding_index');
     }
-
-    return $this->redirectToRoute('app_wedding_index');
-}
 
     #[Route('/checkout', name: 'app_wedding_create_checkout', methods: ['POST'])]
     public function createCheckout(Request $request): JsonResponse
@@ -176,14 +179,16 @@ public function paymentSuccess(Request $request, WeddingRepository $repo): Respo
         $session = $stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],
             'mode' => 'payment',
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => 'eur',
-                    'product_data' => ['name' => 'Création mariage'],
-                    'unit_amount' => 5000,
-                ],
-                'quantity' => 1,
-            ]],
+            'line_items' => [
+                [
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => ['name' => 'Création mariage'],
+                        'unit_amount' => 5000,
+                    ],
+                    'quantity' => 1,
+                ]
+            ],
             'success_url' => $this->generateUrl(
                 'app_wedding_edit',
                 ['id' => 0],
