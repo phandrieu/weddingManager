@@ -24,8 +24,17 @@
                     <td>{{ song.type.name }}</td>
                     <td>
                         {% if song.previewUrl %}
-                            <a href="{{ song.previewUrl }}" target="_blank">Écouter</a>
-                        {% else %}
+        {% set youtubeId = song.previewUrl 
+            |replace({'https://youtu.be/':'', 
+                      'https://www.youtube.com/watch?v=':'', 
+                      '&feature=youtu.be':'', 
+                      '&si=':''}) 
+        %}
+        <div class="ratio ratio-16x9">
+            <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
+                    title="{{ song.name }}" allowfullscreen></iframe>
+        </div>
+    {% else %}
                             -
                         {% endif %}
                     </td>
