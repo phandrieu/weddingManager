@@ -27,12 +27,16 @@
                     <td>{{ wedding.date|date('d/m/Y') }}</td>
                     <td>
                         <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
                         <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                        {% endif %}
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
                         <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;"
           onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ?');">
         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
         <button class="btn btn-sm btn-danger">Supprimer</button>
     </form>
+    {% endif %}
                     </td>
                 </tr>
             {% else %}

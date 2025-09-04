@@ -12,33 +12,42 @@
         {{ form_widget(form.marie, {'attr': {'class': 'form-select'}}) }}
         {{ form_errors(form.marie) }}
     </div>
+
     <div class="mb-3">
         {{ form_label(form.mariee) }}
         {{ form_widget(form.mariee, {'attr': {'class': 'form-select'}}) }}
         {{ form_errors(form.mariee) }}
     </div>
+
     <div class="mb-3">
         {{ form_label(form.date) }}
         {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.date) }}
     </div>
+
     <div class="mb-3">
-    {{ form_label(form.addressLine1) }}
-    {{ form_widget(form.addressLine1, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressLine1) }}
-</div>
+        {{ form_label(form.addressLine1) }}
+        {{ form_widget(form.addressLine1, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.addressLine1) }}
+    </div>
 
-<div class="mb-3">
-    {{ form_label(form.addressLine2) }}
-    {{ form_widget(form.addressLine2, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressLine2) }}
-</div>
+    <div class="mb-3">
+        {{ form_label(form.addressLine2) }}
+        {{ form_widget(form.addressLine2, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.addressLine2) }}
+    </div>
 
-<div class="mb-3">
-    {{ form_label(form.addressPostalCodeAndCity) }}
-    {{ form_widget(form.addressPostalCodeAndCity, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressPostalCodeAndCity) }}
-</div>
+    <div class="mb-3">
+        {{ form_label(form.addressPostalCodeAndCity) }}
+        {{ form_widget(form.addressPostalCodeAndCity, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.addressPostalCodeAndCity) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.musicians) }}
+        {{ form_widget(form.musicians, {'attr': {'class': 'form-select', 'multiple': 'multiple'}}) }}
+        {{ form_errors(form.musicians) }}
+    </div>
 
     <h2>Chants associés</h2>
     <table class="table table-bordered">

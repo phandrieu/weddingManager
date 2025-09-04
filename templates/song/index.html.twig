@@ -40,12 +40,16 @@
                     </td>
                     <td>
                         <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
                         <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                        {% endif %}
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
                             <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" 
           onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
         <button class="btn btn-sm btn-danger">Supprimer</button>
     </form>
+    {% endif %}
                     </td>
                 </tr>
             {% else %}

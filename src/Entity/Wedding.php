@@ -46,9 +46,16 @@ private ?User $mariee = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $addressPostalCodeAndCity = null;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'weddingsAsMusicians')]
+    private Collection $musicians;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
+        $this->musicians = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -179,6 +186,30 @@ private ?User $mariee = null;
     public function setAddressPostalCodeAndCity(?string $addressPostalCodeAndCity): static
     {
         $this->addressPostalCodeAndCity = $addressPostalCodeAndCity;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getMusicians(): Collection
+    {
+        return $this->musicians;
+    }
+
+    public function addMusician(User $musician): static
+    {
+        if (!$this->musicians->contains($musician)) {
+            $this->musicians->add($musician);
+        }
+
+        return $this;
+    }
+
+    public function removeMusician(User $musician): static
+    {
+        $this->musicians->removeElement($musician);
 
         return $this;
     }

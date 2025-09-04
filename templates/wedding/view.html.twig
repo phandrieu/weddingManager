@@ -11,9 +11,21 @@
         <li class="list-group-item"><strong>Marié :</strong> {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</li>
         <li class="list-group-item"><strong>Mariée :</strong> {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</li>
         <li class="list-group-item"><strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}</li>
-        <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ user.addressLine1 }}</li>
-<li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ user.addressLine2 }}</li>
-<li class="list-group-item"><strong>Code postal & Ville :</strong> {{ user.addressPostalCodeAndCity }}</li>
+        <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ wedding.addressLine1 ?: '-' }}</li>
+        <li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ wedding.addressLine2 ?: '-' }}</li>
+        <li class="list-group-item"><strong>Code postal & Ville :</strong> {{ wedding.addressPostalCodeAndCity ?: '-' }}</li>
+        <li class="list-group-item">
+            <strong>Musiciens :</strong>
+            {% if wedding.musicians|length > 0 %}
+                <ul class="mb-0">
+                    {% for musician in wedding.musicians %}
+                        <li>{{ musician.firstName }} {{ musician.name }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                Aucun musicien affecté
+            {% endif %}
+        </li>
     </ul>
 
     <h2>Chants associés</h2>

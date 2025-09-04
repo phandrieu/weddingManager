@@ -42,6 +42,44 @@
             {% endif %}
         </div>
 
+    {% elseif is_granted('ROLE_MUSICIAN') %}
+        <h1 class="mb-4">Mes mariages en tant que musicien</h1>
+        {% if app.user.weddingsAsMusicians|length > 0 %}
+            <div class="row">
+                {% for wedding in app.user.weddingsAsMusicians %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}
+                                </h5>
+                                <p class="card-text">
+                                    <strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}
+                                    <br>
+                                    <strong>Chants prévus :</strong>
+                                    <ul>
+                                        {% if wedding.songs is not empty %}
+                                            {% for song in wedding.songs %}
+                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>Aucun chant</li>
+                                        {% endif %}
+                                    </ul>
+                                </p>
+                            </div>
+                            <div class="card-footer text-end">
+                                <a href="{{ path('app_wedding_view', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Voir</a>
+                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Vous n’êtes associé à aucun mariage en tant que musicien.</p>
+        {% endif %}
+
     {% else %}
         {# Dashboard utilisateur normal #}
         <h1 class="mb-4">Mes Mariages</h1>
@@ -54,8 +92,6 @@
                                 <h5 class="card-title">{{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}</h5>
                                 <p class="card-text">
                                     <strong>Date du mariage :</strong> {{ wedding.date|date('d/m/Y') }}
-                                    <br>
-                                    
                                 </p>
                                 <p class="card-text">
                                     <strong>Chants prévus :</strong>

@@ -4,10 +4,6 @@ namespace App\Form;
 
 use App\Entity\User;
 use App\Entity\Wedding;
-use App\Entity\Song;
-use App\Entity\SongType;
-use Doctrine\ORM\EntityRepository;
-
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\AbstractType;
@@ -37,9 +33,29 @@ class WeddingFormType extends AbstractType
                 'label' => 'Date du mariage',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('addressLine1', TextType::class, options: ['label' => 'Adresse ligne 1', 'required' => false, 'attr' => ['class' => 'form-control']])
-            ->add('addressLine2', TextType::class, options: ['label' => 'Adresse ligne 2', 'required' => false, 'attr' => ['class' => 'form-control']])
-            ->add('addressPostalCodeAndCity', TextType::class, options: ['label' => 'Code postal & Ville', 'required' => false, 'attr' => ['class' => 'form-control']]);
+            ->add('addressLine1', TextType::class, [
+                'label' => 'Adresse ligne 1',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('addressLine2', TextType::class, [
+                'label' => 'Adresse ligne 2',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('addressPostalCodeAndCity', TextType::class, [
+                'label' => 'Code postal & Ville',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('musicians', EntityType::class, [
+                'class' => User::class,
+                'choice_label' => 'fullName',
+                'label' => 'Musiciens',
+                'multiple' => true,
+                'expanded' => false, // true = cases à cocher, false = multi-select
+                'attr' => ['class' => 'form-select', 'multiple' => 'multiple'],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -48,7 +64,7 @@ class WeddingFormType extends AbstractType
             'data_class' => Wedding::class,
             'csrf_protection' => true,
             'csrf_field_name' => '_token',
-            'csrf_token_id'   => 'song_type_edit', // <-- identifiant CSRF unique
+            'csrf_token_id'   => 'wedding_edit', // identifiant CSRF unique pour Wedding
         ]);
     }
 }

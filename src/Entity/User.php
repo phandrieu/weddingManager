@@ -56,6 +56,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $addressPostalCodeAndCity = null;
 
+    /**
+     * @var Collection<int, Wedding>
+     */
+    #[ORM\ManyToMany(targetEntity: Wedding::class, mappedBy: 'musicians')]
+    private Collection $weddingsAsMusicians;
+
     public function getResetToken(): ?string
     {
         return $this->resetToken;
@@ -71,6 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->weddings = new ArrayCollection();
         $this->weddingsAsMariee = new ArrayCollection();
+        $this->weddingsAsMusicians = new ArrayCollection();
     }
 
     // === Mariés (hommes) ===
@@ -261,6 +268,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAddressPostalCodeAndCity(?string $addressPostalCodeAndCity): static
     {
         $this->addressPostalCodeAndCity = $addressPostalCodeAndCity;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Wedding>
+     */
+    public function getWeddingsAsMusicians(): Collection
+    {
+        return $this->weddingsAsMusicians;
+    }
+
+    public function addWeddingsAsMusician(Wedding $weddingsAsMusician): static
+    {
+        if (!$this->weddingsAsMusicians->contains($weddingsAsMusician)) {
+            $this->weddingsAsMusicians->add($weddingsAsMusician);
+            $weddingsAsMusician->addMusician($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWeddingsAsMusician(Wedding $weddingsAsMusician): static
+    {
+        if ($this->weddingsAsMusicians->removeElement($weddingsAsMusician)) {
+            $weddingsAsMusician->removeMusician($this);
+        }
 
         return $this;
     }
