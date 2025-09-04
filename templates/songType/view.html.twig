@@ -21,8 +21,8 @@
                     <tr>
                         <td>{{ song.name }}</td>
                         <td>
-                            {% if song.urlPreview %}
-                                <a href="{{ song.urlPreview }}" target="_blank">Écouter</a>
+                            {% if song.previewUrl %}
+                                <a href="{{ song.previewUrl }}" target="_blank">Écouter</a>
                             {% endif %}
                         </td>
                         <td>{{ song.lyrics|nl2br }}</td>
