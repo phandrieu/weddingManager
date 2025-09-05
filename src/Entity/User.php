@@ -62,6 +62,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Wedding::class, mappedBy: 'musicians')]
     private Collection $weddingsAsMusicians;
 
+    #[ORM\Column]
+    private ?bool $subscription = null;
+
     public function getResetToken(): ?string
     {
         return $this->resetToken;
@@ -295,6 +298,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->weddingsAsMusicians->removeElement($weddingsAsMusician)) {
             $weddingsAsMusician->removeMusician($this);
         }
+
+        return $this;
+    }
+
+    public function isSubscription(): ?bool
+    {
+        return $this->subscription;
+    }
+
+    public function setSubscription(bool $subscription): static
+    {
+        $this->subscription = $subscription;
 
         return $this;
     }

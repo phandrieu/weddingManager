@@ -39,9 +39,10 @@ security:
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
-        - { path: ^/logout, roles: ROLE_USER }
+        - { path: ^/register, roles : PUBLIC_ACCESS}
 
         # --- ROLE_USER ---
+        - { path: ^/logout, roles: ROLE_USER }
         - { path: ^/home, roles: ROLE_USER }
         - { path: ^/songs, roles: ROLE_USER }
         - { path: ^/songs/view, roles: ROLE_USER }

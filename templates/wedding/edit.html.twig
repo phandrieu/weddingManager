@@ -62,7 +62,7 @@
         {{ form_widget(form.musicians, {'attr': {'class': 'form-select', 'multiple': 'multiple'}}) }}
         {{ form_errors(form.musicians) }}
     </div>
-
+    {% if wedding.id %}
     <h2>Chants associés</h2>
     <table class="table table-bordered">
         <thead>
@@ -90,8 +90,9 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
-    {% if is_granted('ROLE_ADMIN') or wedding.id %}
+    {% if is_granted('ROLE_ADMIN') or wedding.id or app.user.subscription %}
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     {% else %}
         {# Non-admin et création : afficher bouton Stripe #}
@@ -99,7 +100,7 @@
     {% endif %}
 
     <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
-
     {{ form_end(form) }}
+    <br>
 </div>
 {% endblock %}
