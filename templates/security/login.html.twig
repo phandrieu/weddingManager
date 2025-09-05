@@ -37,10 +37,17 @@
                     Se connecter
                 </button>
             </form>
-
+            <div class="text-center mt-3">
+                <a href="{{ path('app_register') }}" class="btn btn-outline-success w-100">
+                    Pas encore inscrit ? S'enregistrer
+                </a>
+            </div>
+            
             <div class="text-center mt-3">
                 <a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
             </div>
+
+            {# Bouton d'inscription #}
 
             <div class="text-center mt-4">
                 <small class="text-muted">&copy; {{ "now"|date("Y") }} ProjectName</small>
