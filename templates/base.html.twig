@@ -95,7 +95,7 @@
                         </li>
                         {% if 'ROLE_MUSICIAN' in app.user.roles %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_song_personal') }}">Répertoire personnel</a>
+                            <a class="nav-link" href="{{ path('app_repertoire_index') }}">Répertoire personnel</a>
                         </li>
                         {% endif %}
                         {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
