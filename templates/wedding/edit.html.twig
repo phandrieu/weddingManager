@@ -21,7 +21,7 @@
         {{ form_errors(form.mariee) }}
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" {% if wedding.id %} disabled {% endif %}>
         {{ form_label(form.date) }}
         {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.date) }}
@@ -78,9 +78,9 @@
                     <td>
                         <select name="songs[{{ type.id }}]" class="form-select">
                             <option value="">-- Aucun --</option>
-                            {% for song in type.songs %}
+                            {% for song in type.songsAvailable %}
                                 <option value="{{ song.id }}"
-                                    {% if wedding.songs.contains(song) %}selected{% endif %}>
+                                    {% if wedding.songsAvailable.contains(song) %}selected{% endif %}>
                                     {{ song.name ?: 'Sans nom' }}
                                 </option>
                             {% endfor %}

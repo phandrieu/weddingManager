@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon répertoire{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Mon répertoire</h1>
+
+    <form method="POST" action="{{ path('app_repertoire_update') }}">
+        <div class="list-group">
+            {% for song in allSongs %}
+                <label class="list-group-item">
+                    <input type="checkbox" name="songs[]" value="{{ song.id }}"
+                        {% if song in mySongs %}checked{% endif %}>
+                    {{ song.name }} ({{ song.type.name }})
+                </label>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Sauvegarder</button>
+    </form>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
-        <title>{% block title %}Wedding Manager{% endblock %}</title>
+        <title>{% block title %}Mon mariage à l'Église{% endblock %}</title>
         
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -78,7 +78,7 @@
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
                     <img src="{{ asset('logo_navbar.png') }}" alt="Logo" style="height:40px; width:40px; object-fit:cover;" class="me-2">
-                    Wedding Manager
+                    Mon Mariage à l'Église
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,8 +91,13 @@
                             <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_song_index') }}">Répertoire</a>
+                            <a class="nav-link" href="{{ path('app_song_index') }}">Répertoire global</a>
                         </li>
+                        {% if 'ROLE_MUSICIAN' in app.user.roles %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_song_personal') }}">Répertoire personnel</a>
+                        </li>
+                        {% endif %}
                         {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_wedding_index') }}">Mariages</a>

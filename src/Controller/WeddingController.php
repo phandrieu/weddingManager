@@ -27,15 +27,24 @@ class WeddingController extends AbstractController
     }
 
     #[Route('/view/{id}', name: 'app_wedding_view')]
-    public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Response
-    {
-        $songTypes = $songTypeRepo->findAll();
+    #[Route('/view/{id}', name: 'app_wedding_view')]
+public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Response
+{
+    $songTypes = $songTypeRepo->findAll();
 
-        return $this->render('wedding/view.html.twig', [
-            'wedding' => $wedding,
-            'songTypes' => $songTypes,
-        ]);
+    $songs = [];
+    foreach ($wedding->getMusicians() as $musician) {
+        foreach ($musician->getRepertoire() as $song) {
+            $songs[$song->getId()] = $song;
+        }
     }
+
+    return $this->render('wedding/view.html.twig', [
+        'wedding' => $wedding,
+        'songTypes' => $songTypes,
+        'availableSongs' => $songs,
+    ]);
+}
 
     #[Route('/edit/{id?0}', name: 'app_wedding_edit')]
     public function edit(

@@ -64,6 +64,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?bool $subscription = null;
+        /**
+     * @var Collection<int, Song>
+     */
+    #[ORM\ManyToMany(targetEntity: Song::class)]
+    #[ORM\JoinTable(name: 'user_repertoire')]
+    private Collection $repertoire;
+
+    public function __construct()
+    {
+        $this->weddings = new ArrayCollection();
+        $this->weddingsAsMariee = new ArrayCollection();
+        $this->weddingsAsMusicians = new ArrayCollection();
+        $this->repertoire = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Song>
+     */
+    public function getRepertoire(): Collection
+    {
+        return $this->repertoire;
+    }
+
+    public function addSongToRepertoire(Song $song): static
+    {
+        if (!$this->repertoire->contains($song)) {
+            $this->repertoire->add($song);
+        }
+        return $this;
+    }
+
+    public function removeSongFromRepertoire(Song $song): static
+    {
+        $this->repertoire->removeElement($song);
+        return $this;
+    }
 
     public function getResetToken(): ?string
     {
@@ -76,12 +112,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function __construct()
-    {
-        $this->weddings = new ArrayCollection();
-        $this->weddingsAsMariee = new ArrayCollection();
-        $this->weddingsAsMusicians = new ArrayCollection();
-    }
+
 
     // === Mariés (hommes) ===
     public function getWeddings(): Collection

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Repository\SongRepository;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +20,8 @@ class RegistrationController extends AbstractController
     public function register(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        SongRepository $songRepository
     ): Response {
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
@@ -47,7 +50,12 @@ class RegistrationController extends AbstractController
 
             $em->persist($user);
             $em->flush();
-
+            if ($user->getRoles() === ['ROLE_MUSICIAN']) {
+                $allSongs = $songRepository->findAll();
+                foreach ($allSongs as $song) {
+                    $user->addSongToRepertoire($song);
+                }
+            }
             // Si abonnement choisi → redirection vers Stripe
             if ($user->getRoles() && in_array('ROLE_MUSICIAN', $user->getRoles()) && $user->isSubscription()) {
                 $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);

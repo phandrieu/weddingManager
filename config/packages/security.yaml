@@ -55,6 +55,7 @@ security:
         - { path: ^/mariages/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
         - { path: ^/mariages, roles: ROLE_MUSICIAN }
+        - { path: ^/repertoire, roles: ROLE_MUSICIAN }
 
         # --- ROLE_ADMIN (accès total) ---
         - { path: ^/, roles: ROLE_ADMIN }
