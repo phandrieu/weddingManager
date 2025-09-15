@@ -124,12 +124,23 @@ public function edit(
         }
     }
 
-    $availableSongsByType = [];
+    // 🔑 Construire la liste des chants disponibles
+$availableSongsByType = [];
+
+if (count($wedding->getMusicians()) > 0) {
+    // Si des musiciens sont rattachés → union de leurs répertoires
     foreach ($wedding->getMusicians() as $musician) {
         foreach ($musician->getRepertoire() as $song) {
             $availableSongsByType[$song->getType()->getId()][] = $song;
         }
-    }   
+    }
+} else {
+    // Aucun musicien → tout le répertoire global
+    $allSongs = $songRepo->findAll();
+    foreach ($allSongs as $song) {
+        $availableSongsByType[$song->getType()->getId()][] = $song;
+    }
+}
 
     return $this->render('wedding/edit.html.twig', [
         'form' => $form->createView(),
