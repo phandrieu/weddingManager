@@ -8,63 +8,137 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-        {# CSS global responsive supplémentaire #}
         <style>
-            /* Pour que le contenu s'adapte toujours bien */
+            /* === Intégration des polices locales === */
+            @font-face {
+                font-family: 'Alfarn';
+                src: url('{{ asset("fonts/Alfarn-Regular.ttf") }}') format("truetype");
+                font-weight: 400;
+                font-style: normal;
+            }
+
+            @font-face {
+                font-family: 'Avenir LT Pro';
+                src: url('{{ asset("fonts/AvenirLTPro.ttf") }}') format("truetype");
+                font-weight: 400;
+                font-style: normal;
+            }
+
+            /* 🎨 Palette de couleurs */
+            :root {
+                --color-bg: #FFFCF2;
+                --color-primary: #FA8211;
+                --color-secondary: #6A2FE0;
+                --color-tertiary: #98A882;
+                --color-last: #000000;
+            }
+
+            /* 📚 Typographie */
             body {
-                font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                background-color: #f8f9fa;
+                font-family: 'Avenir LT Pro', Avenir, Helvetica, Arial, sans-serif;
+                background-color: var(--color-bg);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
+                color: var(--color-last);
             }
 
+            h1, h2, h3 {
+                font-family: 'Alfarn', serif;
+                font-weight: 400;
+                text-transform: uppercase;
+                color: var(--color-primary);
+            }
+
+            h4, h5, h6 {
+                font-family: 'Alfarn', serif;
+                font-weight: 400;
+                color: var(--color-secondary);
+            }
+
+            p, li, span, label, input, select, textarea {
+                font-family: 'Avenir LT Pro', Avenir, Helvetica, Arial, sans-serif;
+                font-size: 1rem;
+            }
+
+            /* 🟠 Navbar */
+            .navbar {
+                background-color: #fff;
+                border-bottom: 2px solid var(--color-primary);
+            }
+
+            .navbar-brand {
+                font-weight: 600;
+                font-size: 1.2rem;
+                color: var(--color-primary) !important;
+                font-family: 'Alfarn', serif;
+                text-transform: uppercase;
+            }
+
+            .navbar-nav .nav-link {
+                margin-right: .75rem;
+                color: var(--color-last) !important;
+                transition: color .2s;
+            }
+            .navbar-nav .nav-link:hover {
+                color: var(--color-primary) !important;
+            }
+
+            /* 🔘 Boutons */
+            .btn-primary {
+                background-color: var(--color-primary);
+                border-color: var(--color-primary);
+            }
+            .btn-primary:hover {
+                background-color: #e56f05;
+                border-color: #e56f05;
+            }
+
+            .btn-secondary {
+                background-color: var(--color-secondary);
+                border-color: var(--color-secondary);
+            }
+            .btn-secondary:hover {
+                background-color: #5823c2;
+                border-color: #5823c2;
+            }
+
+            .btn-success {
+                background-color: var(--color-tertiary);
+                border-color: var(--color-tertiary);
+                color: #fff;
+            }
+            .btn-success:hover {
+                background-color: #81956c;
+                border-color: #81956c;
+            }
+
+            /* 📝 Conteneur */
             .container {
                 max-width: 100%;
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
 
-            /* Navbar */
-            .navbar-brand {
-                font-weight: 600;
-                font-size: 1.2rem;
-            }
-
-            .navbar-nav .nav-link {
-                margin-right: .5rem;
-            }
-
-            /* Tables : scroll horizontal en mobile */
-            .table-responsive {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            /* Boutons toujours adaptables */
-            .btn {
-                white-space: normal;
-            }
-
-            /* Marges sur mobile pour éviter que ça touche les bords */
+            /* 📱 Responsive */
             @media (max-width: 576px) {
                 .container {
                     padding-left: .75rem;
                     padding-right: .75rem;
                 }
-
                 h1, h2, h3 {
                     font-size: 1.25rem;
                 }
             }
 
-            /* Pied de page collé en bas si tu en ajoutes un */
+            /* 📌 Footer */
             footer {
                 margin-top: auto;
                 padding: 1rem;
                 text-align: center;
                 background: #fff;
                 border-top: 1px solid #ddd;
+                font-size: 0.9rem;
             }
         </style>
 
@@ -72,12 +146,11 @@
         {{ encore_entry_link_tags('app') }}
     </head>
     <body>
-        {# Navbar uniquement si l'utilisateur est connecté #}
         {% if app.user %}
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
+        <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
-                    <img src="{{ asset('logo_navbar.png') }}" alt="Logo" style="height:40px; width:40px; object-fit:cover;" class="me-2">
+                    <img src="{{ asset('logo.png') }}" alt="Logo" style="height:40px; width:40px; object-fit:cover;" class="me-2">
                     Notre Messe de Mariage
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
