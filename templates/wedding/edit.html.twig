@@ -72,23 +72,23 @@
             </tr>
         </thead>
         <tbody>
-            {% for type in songTypes %}
-                <tr>
-                    <td>{{ type.name }}</td>
-                    <td>
-                        <select name="songs[{{ type.id }}]" class="form-select">
-                            <option value="">-- Aucun --</option>
-                            {% for song in type.songsAvailable %}
-                                <option value="{{ song.id }}"
-                                    {% if wedding.songsAvailable.contains(song) %}selected{% endif %}>
-                                    {{ song.name ?: 'Sans nom' }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
+    {% for type in songTypes %}
+        <tr>
+            <td>{{ type.name }}</td>
+            <td>
+                <select name="songs[{{ type.id }}]" class="form-select">
+                    <option value="">-- Aucun --</option>
+                    {% for song in availableSongsByType[type.id]|default([]) %}
+                        <option value="{{ song.id }}"
+                            {% if wedding.songs.contains(song) %}selected{% endif %}>
+                            {{ song.name ?: 'Sans nom' }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>
     </table>
     {% endif %}
 

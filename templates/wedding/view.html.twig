@@ -43,7 +43,7 @@
                 <tr>
                     <td>{{ type.name }}</td>
                     <td>
-                        {% set song = wedding.availableSongs|filter(s => s.type.id == type.id)|first %}
+                        {% set song = wedding.songs|filter(s => s.type.id == type.id)|first %}
                         {% if song %}
                             {{ song.previewUrl ? '<a href="' ~ song.previewUrl ~ '" target="_blank">Écouter</a>'|raw : 'Sans preview' }}
                             <br>

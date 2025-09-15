@@ -46,85 +46,101 @@ public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Respon
     ]);
 }
 
-    #[Route('/edit/{id?0}', name: 'app_wedding_edit')]
-    public function edit(
-        Request $request,
-        WeddingRepository $repo,
-        SongTypeRepository $songTypeRepo,
-        SongRepository $songRepo,
-        Wedding $wedding = null
-    ): Response {
-        if (!$wedding) {
-            $wedding = new Wedding();
+#[Route('/edit/{id?0}', name: 'app_wedding_edit')]
+public function edit(
+    Request $request,
+    WeddingRepository $repo,
+    SongTypeRepository $songTypeRepo,
+    SongRepository $songRepo,
+    Wedding $wedding = null
+): Response {
+    if (!$wedding) {
+        $wedding = new Wedding();
+    }
+
+    $form = $this->createForm(WeddingFormType::class, $wedding);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Nettoyage des songs existantes
+        foreach ($wedding->getSongs() as $song) {
+            $wedding->removeSong($song);
         }
 
-        $form = $this->createForm(WeddingFormType::class, $wedding);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Supprimer les songs existantes pour repartir proprement
-            foreach ($wedding->getSongs() as $song) {
-                $wedding->removeSong($song);
-            }
-
-            $songsData = $request->request->all('songs'); // IDs des songs sélectionnées
-            foreach ($songsData as $songId) {
-                if ($songId) {
-                    $song = $songRepo->find($songId); // récupère l'entité attachée à l'EM
-                    if ($song) {
-                        $wedding->addSong($song);
-                    }
+        $songsData = $request->request->all('songs'); // IDs des songs sélectionnées
+        foreach ($songsData as $songId) {
+            if ($songId) {
+                $song = $songRepo->find($songId);
+                if ($song) {
+                    $wedding->addSong($song);
                 }
             }
-
-            // Paiement Stripe pour non-admins et mariage non encore créé
-            if (!$this->isGranted('ROLE_ADMIN') && !$wedding->getId()) {
-                $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
-
-                $session = $stripe->checkout->sessions->create([
-                    'payment_method_types' => ['card'],
-                    'line_items' => [
-                        [
-                            'price_data' => [
-                                'currency' => 'eur',
-                                'product_data' => ['name' => 'Création de mariage'],
-                                'unit_amount' => 5000, // 50€ en centimes
-                            ],
-                            'quantity' => 1,
-                        ]
-                    ],
-                    'mode' => 'payment',
-                    'success_url' => $this->generateUrl(
-                        'app_wedding_payment_success',
-                        [],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    ),
-                    'cancel_url' => $this->generateUrl(
-                        'app_wedding_edit',
-                        ['id' => $wedding->getId() ?: 0],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    ),
-                ]);
-
-                $request->getSession()->set('wedding_data', $wedding);
-
-                return $this->redirect($session->url);
-            }
-
-            $repo->save($wedding, true);
-            $this->addFlash('success', 'Mariage sauvegardé avec succès.');
-            return $this->redirectToRoute('app_wedding_index');
         }
 
-        $songTypes = $songTypeRepo->findAll();
+        // Paiement Stripe pour non-admins et mariage non encore créé
+        if (!$this->isGranted('ROLE_ADMIN') && !$wedding->getId()) {
+            $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
 
-        return $this->render('wedding/edit.html.twig', [
-            'form' => $form->createView(),
-            'wedding' => $wedding,
-            'songTypes' => $songTypes,
-            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
-        ]);
+            $session = $stripe->checkout->sessions->create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => ['name' => 'Création de mariage'],
+                        'unit_amount' => 5000,
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => $this->generateUrl(
+                    'app_wedding_payment_success',
+                    [],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
+                'cancel_url' => $this->generateUrl(
+                    'app_wedding_edit',
+                    ['id' => $wedding->getId() ?: 0],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
+            ]);
+
+            $request->getSession()->set('wedding_data', $wedding);
+
+            return $this->redirect($session->url);
+        }
+
+        $repo->save($wedding, true);
+        $this->addFlash('success', 'Mariage sauvegardé avec succès.');
+        return $this->redirectToRoute('app_wedding_index');
     }
+
+    $songTypes = $songTypeRepo->findAll();
+
+    // 🔑 Filtrer les chants disponibles = union des répertoires des musiciens rattachés
+    $availableSongs = [];
+    foreach ($wedding->getMusicians() as $musician) {
+        foreach ($musician->getRepertoire() as $song) {
+            $availableSongs[$song->getId()] = $song;
+        }
+    }
+
+    $availableSongsByType = [];
+    foreach ($wedding->getMusicians() as $musician) {
+        foreach ($musician->getRepertoire() as $song) {
+            $availableSongsByType[$song->getType()->getId()][] = $song;
+        }
+    }   
+
+    return $this->render('wedding/edit.html.twig', [
+        'form' => $form->createView(),
+        'wedding' => $wedding,
+        'songTypes' => $songTypes,
+        'availableSongs' => $availableSongs,
+        'availableSongsByType' => $availableSongsByType,
+
+        'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+    ]);
+}
 
     #[Route('/delete/{id}', name: 'app_wedding_delete', methods: ['POST'])]
     public function delete(Request $request, Wedding $wedding, WeddingRepository $repo): Response
