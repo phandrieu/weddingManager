@@ -51,7 +51,9 @@ security:
         
 
         # --- ROLE_MUSICIAN ---
+        - { path: ^/song, roles: ROLE_MUSICIAN }
         - { path: ^/songs, roles: ROLE_MUSICIAN }
+        - { path: ^/song/approve/, roles: ROLE_MUSICIAN }
         - { path: ^/songs/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
