@@ -54,7 +54,7 @@ public function edit(Request $request, UserPasswordHasherInterface $hasher, User
 
     $form = $this->createForm(UserType::class, $user, ['is_new' => $isNew]);
     $form->handleRequest($request);
-
+    $user->setSubscription(false);
     if ($form->isSubmitted() && $form->isValid()) {
         $plainPassword = $form->get('password')->getData();
         if ($plainPassword) {

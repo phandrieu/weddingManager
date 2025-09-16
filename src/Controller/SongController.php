@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/songs')]
 class SongController extends AbstractController
@@ -28,6 +29,22 @@ class SongController extends AbstractController
             'song' => $song,
         ]);
     }
+    #[Route('/song/approve/{id}', name: 'app_song_approve_suggestion', methods: ['POST'])]
+#[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
+#[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
+public function approveSong(Song $song, Request $request, EntityManagerInterface $em): Response
+{
+    if (!$this->isCsrfTokenValid('approve_song_' . $song->getId(), $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    }
+
+    $song->setSuggestion(false);
+    $em->persist($song);
+    $em->flush();
+
+    $this->addFlash('success', 'Suggestion validée !');
+    return $this->redirectToRoute('app_song_index');
+}
     #[Route('/delete/{id}', name: 'app_song_delete', methods: ['POST'])]
 public function delete(Request $request, Song $song, SongRepository $repo): Response
 {

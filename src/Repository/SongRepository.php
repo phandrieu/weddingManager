@@ -42,4 +42,13 @@ class SongRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findGlobalSongs(): array
+{
+    return $this->createQueryBuilder('s')
+        ->andWhere('s.suggestion = :suggestion')
+        ->setParameter('suggestion', false)
+        ->getQuery()
+        ->getResult();
+}
 }

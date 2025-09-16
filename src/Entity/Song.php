@@ -47,6 +47,9 @@ class Song
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $suggestion = false;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -169,6 +172,18 @@ class Song
     public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function isSuggestion(): ?bool
+    {
+        return $this->suggestion;
+    }
+
+    public function setSuggestion(?bool $suggestion): static
+    {
+        $this->suggestion = $suggestion;
+
         return $this;
     }
 }

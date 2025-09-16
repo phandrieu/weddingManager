@@ -47,6 +47,7 @@ security:
         - { path: ^/songs, roles: ROLE_USER }
         - { path: ^/songs/view, roles: ROLE_USER }
         - { path: ^/mariages/view, roles: ROLE_USER }
+        - { path: ^/suggest-song, roles: ROLE_USER}
         
 
         # --- ROLE_MUSICIAN ---

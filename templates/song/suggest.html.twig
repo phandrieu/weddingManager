@@ -1,0 +1,49 @@
+{# templates/song/suggest.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Proposer un chant{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
+        <h1 class="mb-4 text-center">Proposer un nouveau chant</h1>
+
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.type) }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.previewUrl) }}
+                {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.previewUrl) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.partitionPDFFile, 'Partition PDF (PDF)') }}
+                {{ form_widget(form.partitionPDFFile, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.partitionPDFFile) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.lyrics) }}
+                {{ form_widget(form.lyrics, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                {{ form_errors(form.lyrics) }}
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('app_song_index') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Envoyer la suggestion</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

@@ -7,7 +7,15 @@
     <h1>Liste des chants</h1>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ path('app_song_edit') }}" class="btn btn-primary">Ajouter un chant</a>
+        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+            <a href="{{ path('app_song_edit') }}" class="btn btn-primary">Ajouter un chant</a>
+            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
+                Voir les suggestions
+            </button>
+        {% elseif 'ROLE_USER' in app.user.roles %}
+            <a href="{{ path('app_song_suggest') }}" class="btn btn-outline-primary">Suggérer un chant</a>
+        {% endif %}
+
         <div class="form-group">
             <select id="typeFilter" class="form-select">
                 <option value="">Tous les types</option>
@@ -32,59 +40,105 @@
             </tr>
         </thead>
         <tbody id="songsTableBody">
-            {% for song in songs %}
-                <tr data-type="{{ song.type.name }}">
-                    <td>{{ song.name }}</td>
-                    <td>{{ song.type.name }}</td>
-                    <td>
-                        {% if song.previewUrl %}
-                            {% set youtubeId = song.previewUrl 
-                                |replace({'https://youtu.be/':'', 
-                                        'https://www.youtube.com/watch?v=':'', 
-                                        '&feature=youtu.be':'', 
-                                        '&si=':''}) 
-                            %}
-                            <div style="min-height: 150px; min-width: 250px;" class="ratio ratio-16x9">
-                                <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
-                                        title="{{ song.name }}" allowfullscreen></iframe>
-                            </div>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
-                        {% endif %}
-                        {% if 'ROLE_ADMIN' in app.user.roles %}
-                            <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" 
-          onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
-        <button class="btn btn-sm btn-danger">Supprimer</button>
-    </form>
-    {% endif %}
-                    </td>
-                </tr>
+            {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
+            {% if nonSuggestions is not empty %}
+                {% for song in nonSuggestions %}
+                    <tr data-type="{{ song.type.name }}">
+                        <td>{{ song.name }}</td>
+                        <td>{{ song.type.name }}</td>
+                        <td>
+                            {% if song.previewUrl %}
+                                {% set youtubeId = song.previewUrl 
+                                    |replace({'https://youtu.be/':'', 
+                                              'https://www.youtube.com/watch?v=':'', 
+                                              '&feature=youtu.be':'', 
+                                              '&si=':''}) 
+                                %}
+                                <div style="min-height: 150px; min-width: 250px;" class="ratio ratio-16x9">
+                                    <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                            {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                                <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            {% endif %}
+                            {% if 'ROLE_ADMIN' in app.user.roles %}
+                                <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
+                                    <button class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
             {% else %}
                 <tr>
                     <td colspan="4">Aucun chant trouvé.</td>
                 </tr>
-            {% endfor %}
+            {% endif %}
         </tbody>
     </table>
 </div>
+
+{# Modal Suggestions #}
+{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+<div class="modal fade" id="suggestionsModal" tabindex="-1" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Suggestions de chants</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                {% set suggestions = songs|filter(a => a.suggestion) %}
+                {% if suggestions %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for song in suggestions %}
+<tr id="suggestionRow{{ song.id }}">
+    <td>{{ song.name }}</td>
+    <td>{{ song.type.name }}</td>
+    <td>
+        <form method="post" action="{{ path('app_song_approve_suggestion', {'id': song.id}) }}" style="display:inline;" 
+              onsubmit="return confirm('Valider cette suggestion ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('approve_song_' ~ song.id) }}">
+            <button class="btn btn-sm btn-success">Valider</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Aucune suggestion en attente.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const typeFilter = document.getElementById('typeFilter');
     const rows = document.querySelectorAll('#songsTableBody tr');
 
-    typeFilter.addEventListener('change', function() {
+    // Filtrage par type
+    typeFilter.addEventListener('change', function () {
         const selectedType = this.value;
-        
         rows.forEach(row => {
             if (!selectedType || row.dataset.type === selectedType) {
                 row.style.display = '';
@@ -93,20 +147,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Afficher message si aucun résultat
+        // Message "Aucun résultat"
         const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
         const existingNoResults = document.querySelector('.no-results');
-        
-        if (visibleRows === 0) {
-            if (!existingNoResults) {
-                const noResults = document.createElement('tr');
-                noResults.className = 'no-results';
-                noResults.innerHTML = '<td colspan="4">Aucun chant trouvé pour ce type.</td>';
-                document.querySelector('#songsTableBody').appendChild(noResults);
-            }
+        if (visibleRows === 0 && !existingNoResults) {
+            const noResults = document.createElement('tr');
+            noResults.className = 'no-results';
+            noResults.innerHTML = '<td colspan="4">Aucun chant trouvé pour ce type.</td>';
+            document.querySelector('#songsTableBody').appendChild(noResults);
         } else if (existingNoResults) {
             existingNoResults.remove();
         }
+    });
+
+    // Approve suggestion
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const songId = this.dataset.songId;
+            const csrfToken = this.dataset.csrf;
+            if (!confirm('Valider cette suggestion ?')) return;
+
+            fetch(`{{ path('app_song_approve_suggestion', {'id': 0}) }}`.replace('0', songId), {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById('suggestionRow' + songId);
+                    if (row) row.remove();
+                    alert('Suggestion validée !');
+                } else {
+                    alert('Erreur lors de la validation : ' + (data.message || ''));
+                }
+            })
+            .catch(() => alert('Erreur lors de la validation.'));
+        });
     });
 });
 </script>
