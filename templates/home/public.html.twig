@@ -1,11 +1,82 @@
+{# templates/public/home.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil Public{% endblock %}
+{% block title %}Notre Messe de Mariage{% endblock %}
 
 {% block body %}
-<div class="container text-center mt-5">
-    <h1>Bienvenue sur mon application</h1>
-    <p>Cette page est accessible sans connexion.</p>
-    <a href="{{ path('app_login') }}" class="btn btn-primary mt-3">Se connecter</a>
+<div class="public-homepage">
+
+    {# Hero section #}
+    <section class="hero-section text-center position-relative" style="background-image: url('{{ asset('images/hero-bg.jpg') }}'); background-size: cover; background-position: center; height: 80vh;">
+        <div class="hero-content d-flex flex-column justify-content-center align-items-center h-100 text-white">
+            <h1 class="display-4 fw-bold">Notre Messe de Mariage</h1>
+            <p class="lead mt-3">La solution pour orchestrer la musique de votre cérémonie</p>
+        </div>
+        <div class="scroll-hint position-absolute bottom-0 start-50 translate-middle-x mb-3">
+            <i class="bi bi-chevron-double-down fs-2"></i>
+        </div>
+    </section>
+
+    {# Futurs mariés & Musiciens pro #}
+    <section class="user-types py-5 bg-light">
+        <div class="container text-center">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h4>Vous êtes des futurs mariés ?</h4>
+                    <p>Préparez sereinement la musique de votre messe de mariage : choisissez vos chants, créez votre déroulé, partagez-le avec vos musiciens et votre paroisse.</p>
+                    <a href="http://npr.andrieu.ch" target="_blank" class="btn btn-primary">Créez votre cérémonie</a>
+                </div>
+                <div class="col-md-6">
+                    <h4>Vous êtes musicien professionnel ?</h4>
+                    <p>Gagnez du temps et valorisez votre professionnalisme grâce à un outil pratique et collaboratif : centralisez vos mariages, partagez votre répertoire avec les couples et validez ensemble chaque déroulé en toute sérénité.</p>
+                    <a href="http://npr.andrieu.ch" target="_blank" class="btn btn-secondary">Découvrir l'espace Pro</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# À propos #}
+    <section class="about-section py-5">
+        <div class="container">
+            <h3 class="text-center mb-4">À propos</h3>
+            <p class="text-center">Notre Messe de Mariage est un outil en ligne conçu pour vous accompagner pas à pas dans la préparation musicale de votre messe de mariage. Il simplifie le choix des chants, la création du déroulé et le partage avec vos musiciens et votre paroisse.</p>
+            <p>Notre idée est née de notre expérience dans l’animation de messes et de cérémonies de mariage catholique : après avoir accompagné de nombreux couples, nous avons voulu créer une solution claire et pratique pour répondre à leurs besoins. Notre mission est de rendre la préparation musicale :</p>
+            <ul>
+                <li><b>Plus simple :</b> un répertoire adapté et des suggestions pour chaque étape de la messe.</li>
+                <li><b>Plus sereine :</b> un déroulé conforme à la liturgie, prêt à être validé par la paroisse.</li>
+                <li><b>Plus collaborative :</b> un outil qui facilite le partage avec musiciens, chorales et accompagnants.</li>
+            </ul>
+            <p>Avec Notre Messe de Mariage, vous gagnez du temps, de la sérénité et la certitude que la musique de votre cérémonie sera un véritable écrin d’émotion.</p>
+        </div>
+    </section>
+
+    {# Fonctionnalités et tarifs #}
+    <section class="features-section py-5 bg-light">
+        <div class="container text-center">
+            <h3 class="mb-4">Fonctionnalités & Tarifs</h3>
+            <p>Avec Notre Messe de Mariage, la préparation se fait en quelques étapes simples et sécurisées :</p>
+            <ol class="text-start mx-auto" style="max-width: 700px;">
+                <li><b>Créer votre projet :</b> Inscrivez-vous en tant que couple ou musicien. Les mariés accèdent directement à leur espace, les musiciens peuvent créer ou rejoindre un projet grâce à un lien.</li>
+                <li><b>Choisir vos chants :</b> Accédez à un répertoire guidé, avec des suggestions adaptées à chaque moment de la messe et des explications liturgiques.</li>
+                <li><b>Construire et partager le déroulé :</b> Le déroulé se construit pas à pas. Les musiciens peuvent le consulter, l’enrichir ou le valider.</li>
+                <li><b>Valider et générer les documents :</b> Chaque choix est confirmé avec les musiciens et la paroisse. Exportez un PDF final comprenant le déroulé et les partitions.</li>
+            </ol>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="http://npr.andrieu.ch/home" class="btn btn-primary">Créer votre cérémonie</a>
+                <a href="http://npr.andrieu.ch/home" class="btn btn-secondary">Découvrir l'espace Pro</a>
+            </div>
+        </div>
+    </section>
+
+    {# Témoignages #}
+    <section class="testimonials py-5">
+        <div class="container text-center">
+            <h3 class="mb-4">Témoignages</h3>
+            <p>"C'était super ! chouette projet"</p>
+        </div>
+    </section>
+
+    {# Footer déjà inclus dans base.html.twig #}
+
 </div>
 {% endblock %}
