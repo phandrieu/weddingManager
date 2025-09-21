@@ -52,10 +52,17 @@ private ?User $mariee = null;
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'weddingsAsMusicians')]
     private Collection $musicians;
 
+    /**
+     * @var Collection<int, Invitation>
+     */
+    #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'wedding')]
+    private Collection $invitations;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
         $this->musicians = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -210,6 +217,36 @@ private ?User $mariee = null;
     public function removeMusician(User $musician): static
     {
         $this->musicians->removeElement($musician);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getInvitations(): Collection
+    {
+        return $this->invitations;
+    }
+
+    public function addInvitation(Invitation $invitation): static
+    {
+        if (!$this->invitations->contains($invitation)) {
+            $this->invitations->add($invitation);
+            $invitation->setWedding($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvitation(Invitation $invitation): static
+    {
+        if ($this->invitations->removeElement($invitation)) {
+            // set the owning side to null (unless already changed)
+            if ($invitation->getWedding() === $this) {
+                $invitation->setWedding(null);
+            }
+        }
 
         return $this;
     }

@@ -40,6 +40,7 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles : PUBLIC_ACCESS}
+        - { path: ^/invitation, roles : PUBLIC_ACCESS }
 
         # --- ROLE_USER ---
         - { path: ^/logout, roles: ROLE_USER }

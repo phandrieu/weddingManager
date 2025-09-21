@@ -3,10 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Wedding;
+use App\Entity\Invitation;
 use App\Form\WeddingFormType;
 use App\Repository\WeddingRepository;
 use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +18,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\Security;
+use DateTime;
+
 
 #[Route('/mariages')]
 class WeddingController extends AbstractController
@@ -202,7 +212,44 @@ if (count($wedding->getMusicians()) > 0) {
 
         return $this->redirectToRoute('app_wedding_index');
     }
+    #[Route('/{id}/invite', name: 'app_wedding_invite')]
+public function invite(Wedding $wedding, Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
+{
+    if ($request->isMethod('POST')) {
+        $email = $request->request->get('email');
+        $role = $request->request->get('role');
 
+        $invitation = new Invitation();
+        $invitation->setEmail($email);
+        $invitation->setWedding($wedding);
+        $invitation->setRole($role);
+        $invitation->setToken(bin2hex(random_bytes(32)));
+        $invitation->setUsed(false);
+        $invitation->setCreatedAt(new \DateTimeImmutable());
+        $em->persist($invitation);
+        $em->flush();
+
+        $link = $this->generateUrl('app_invitation_accept', [
+            'token' => $invitation->getToken()
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $emailMessage = (new Email())
+            ->from('noreply@monsite.com')
+            ->to($email)
+            ->subject('Invitation à rejoindre un mariage')
+            ->html("Vous avez été invité à rejoindre un mariage. 
+                   <a href='$link'>Cliquez ici pour accepter l’invitation</a>");
+
+        $mailer->send($emailMessage);
+
+        $this->addFlash('success', 'Invitation envoyée !');
+        return $this->redirectToRoute('app_wedding_view', ['id' => $wedding->getId()]);
+    }
+
+    return $this->render('wedding/invite.html.twig', [
+        'wedding' => $wedding,
+    ]);
+}
     #[Route('/checkout', name: 'app_wedding_create_checkout', methods: ['POST'])]
     public function createCheckout(Request $request): JsonResponse
     {

@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Entity\Invitation;
 use App\Repository\SongRepository;
-
+use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,7 +21,8 @@ class RegistrationController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
-        SongRepository $songRepository
+        SongRepository $songRepository,
+        InvitationRepository $invitationRepo
     ): Response {
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
@@ -50,14 +51,27 @@ class RegistrationController extends AbstractController
 
             $em->persist($user);
             $em->flush();
-            if ($user->getRoles() === ['ROLE_MUSICIAN']) {
+
+            // ⚡ Ajout du répertoire par défaut si musicien
+            if (in_array('ROLE_MUSICIAN', $user->getRoles())) {
                 $allSongs = $songRepository->findAll();
                 foreach ($allSongs as $song) {
                     $user->addSongToRepertoire($song);
                 }
             }
-            // Si abonnement choisi → redirection vers Stripe
-            if ($user->getRoles() && in_array('ROLE_MUSICIAN', $user->getRoles()) && $user->isSubscription()) {
+
+            // ⚡ Vérifier si une invitation est en attente
+            $token = $request->getSession()->get('invitation_token');
+            if ($token) {
+                $invitation = $invitationRepo->findOneBy(['token' => $token, 'used' => false]);
+                if ($invitation) {
+                    $this->attachUserToWedding($user, $invitation, $em);
+                    $request->getSession()->remove('invitation_token');
+                }
+            }
+
+            // ⚡ Si abonnement choisi → redirection vers Stripe
+            if (in_array('ROLE_MUSICIAN', $user->getRoles()) && $user->isSubscription()) {
                 $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
 
                 $session = $stripe->checkout->sessions->create([
@@ -82,6 +96,25 @@ class RegistrationController extends AbstractController
         }
 
         return $this->render('registration/register.html.twig');
+    }
+
+    private function attachUserToWedding(User $user, Invitation $invitation, EntityManagerInterface $em): void
+    {
+        $wedding = $invitation->getWedding();
+        $role = $invitation->getRole();
+
+        if ($role === 'musicien') {
+            $wedding->addMusician($user);
+        } elseif ($role === 'marie') {
+            $wedding->setMarie($user);
+        } elseif ($role === 'mariee') {
+            $wedding->setMariee($user);
+        }
+
+        $invitation->setUsed(true);
+        $em->persist($wedding);
+        $em->persist($invitation);
+        $em->flush();
     }
 
     #[Route('/register/success', name: 'app_register_success')]

@@ -94,13 +94,49 @@
 
     {% if is_granted('ROLE_ADMIN') or wedding.id or app.user.subscription %}
         <button type="submit" class="btn btn-primary">Enregistrer</button>
+        {% if wedding.id %}
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                Inviter quelqu'un
+            </button>
+        {% endif %}
     {% else %}
-        {# Non-admin et création : afficher bouton Stripe #}
         <button id="stripe-button" class="btn btn-success">Payer 50€ pour créer le mariage</button>
     {% endif %}
 
     <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
     {{ form_end(form) }}
     <br>
+</div>
+
+<!-- Modal d'invitation -->
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="musicien">Musicien</option>
+                            <option value="marie">Marié</option>
+                            <option value="mariee">Mariée</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
