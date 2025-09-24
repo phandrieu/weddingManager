@@ -1,82 +1,160 @@
-{# templates/public/home.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Notre Messe de Mariage{% endblock %}
 
 {% block body %}
-<div class="public-homepage">
+<style>
+    /* Fonts et couleurs */
+    body {
+        font-family: "Avenir LT Pro", sans-serif;
+        background-color: #FFFCF2;
+    }
+    h1, h2, h3 {
+        font-family: "Alfarn", serif;
+        text-transform: uppercase;
+        color: #6B48A1;
+    }
+    h1 span {
+        color: #FA8211;
+    }
+    .btn-primary {
+        background-color: #FA8211;
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(250, 130, 17, 0.4);
+    }
+    .section {
+        padding: 5rem 2rem;
+    }
+    .section-alt {
+        background-color: #f8f9fb;
+    }
+    .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease;
+    }
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
 
-    {# Hero section #}
-    <section class="hero-section text-center position-relative" style="background-image: url('{{ asset('images/hero-bg.jpg') }}'); background-size: cover; background-position: center; height: 80vh;">
-        <div class="hero-content d-flex flex-column justify-content-center align-items-center h-100 text-white">
-            <h1 class="display-4 fw-bold">Notre Messe de Mariage</h1>
-            <p class="lead mt-3">La solution pour orchestrer la musique de votre cérémonie</p>
-        </div>
-        <div class="scroll-hint position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            <i class="bi bi-chevron-double-down fs-2"></i>
-        </div>
-    </section>
+<!-- Hero -->
+<section class="position-relative text-center text-white" style="height: 100vh; background: url('{{ asset('images/wide1.jpg') }}') center/cover no-repeat;">
+    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-dark bg-opacity-50">
+        <h1 class="display-3 fw-bold">NOTRE MESSE DE MARIAGE</h1>
+        <p class="fs-2 fw-bold">La solution pour orchestrer votre cérémonie</p>
+        <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg mt-3">Inscription / Connexion</a>
+    </div>
+</section>
 
-    {# Futurs mariés & Musiciens pro #}
-    <section class="user-types py-5 bg-light">
-        <div class="container text-center">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <h4>Vous êtes des futurs mariés ?</h4>
-                    <p>Préparez sereinement la musique de votre messe de mariage : choisissez vos chants, créez votre déroulé, partagez-le avec vos musiciens et votre paroisse.</p>
-                    <a href="http://npr.andrieu.ch" target="_blank" class="btn btn-primary">Créez votre cérémonie</a>
-                </div>
-                <div class="col-md-6">
-                    <h4>Vous êtes musicien professionnel ?</h4>
-                    <p>Gagnez du temps et valorisez votre professionnalisme grâce à un outil pratique et collaboratif : centralisez vos mariages, partagez votre répertoire avec les couples et validez ensemble chaque déroulé en toute sérénité.</p>
-                    <a href="http://npr.andrieu.ch" target="_blank" class="btn btn-secondary">Découvrir l'espace Pro</a>
-                </div>
+<!-- À propos -->
+<section class="section fade-in text-center">
+    <h2 class="mb-4 text-primary">À propos</h2>
+    <p class="fs-5">
+        <em>Notre Messe de Mariage</em> est un outil en ligne conçu pour accompagner <strong>tous les acteurs de la célébration</strong> — couples, paroisses et musiciens — dans la préparation pas à pas d’une messe ou d’une cérémonie de mariage.
+    </p>
+    <p>
+        Vous gagnez du <strong>temps</strong>, de la <strong>clarté</strong> et la certitude de vivre une célébration <strong>belle, fidèle et porteuse d’émotion</strong>.
+    </p>
+</section>
+
+<!-- Futurs mariés -->
+<section class="section section-alt fade-in">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <h2 class="mb-3">💍 Fonctionnalités pour les futurs mariés</h2>
+                <p>
+                    Textes, chants, prières, coordination avec vos musiciens et votre paroisse… <br>
+                    Notre Messe de Mariage devient votre compagnon de route pour avancer pas à pas.
+                </p>
+                <ul>
+                    <li>📖 Choisir vos textes (lectures, prières, bénédictions…)</li>
+                    <li>🎶 Construire votre répertoire musical</li>
+                    <li>🗂️ Générer automatiquement vos livrets et partitions</li>
+                </ul>
+                <p class="mt-3 text-primary">Prix : <strong>49,99€</strong> (paiement unique)</p>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">Créez votre cérémonie</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ asset('images/vertical1.jpg') }}" alt="Futurs mariés" class="img-fluid rounded shadow">
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    {# À propos #}
-    <section class="about-section py-5">
-        <div class="container">
-            <h3 class="text-center mb-4">À propos</h3>
-            <p class="text-center">Notre Messe de Mariage est un outil en ligne conçu pour vous accompagner pas à pas dans la préparation musicale de votre messe de mariage. Il simplifie le choix des chants, la création du déroulé et le partage avec vos musiciens et votre paroisse.</p>
-            <p>Notre idée est née de notre expérience dans l’animation de messes et de cérémonies de mariage catholique : après avoir accompagné de nombreux couples, nous avons voulu créer une solution claire et pratique pour répondre à leurs besoins. Notre mission est de rendre la préparation musicale :</p>
-            <ul>
-                <li><b>Plus simple :</b> un répertoire adapté et des suggestions pour chaque étape de la messe.</li>
-                <li><b>Plus sereine :</b> un déroulé conforme à la liturgie, prêt à être validé par la paroisse.</li>
-                <li><b>Plus collaborative :</b> un outil qui facilite le partage avec musiciens, chorales et accompagnants.</li>
-            </ul>
-            <p>Avec Notre Messe de Mariage, vous gagnez du temps, de la sérénité et la certitude que la musique de votre cérémonie sera un véritable écrin d’émotion.</p>
-        </div>
-    </section>
-
-    {# Fonctionnalités et tarifs #}
-    <section class="features-section py-5 bg-light">
-        <div class="container text-center">
-            <h3 class="mb-4">Fonctionnalités & Tarifs</h3>
-            <p>Avec Notre Messe de Mariage, la préparation se fait en quelques étapes simples et sécurisées :</p>
-            <ol class="text-start mx-auto" style="max-width: 700px;">
-                <li><b>Créer votre projet :</b> Inscrivez-vous en tant que couple ou musicien. Les mariés accèdent directement à leur espace, les musiciens peuvent créer ou rejoindre un projet grâce à un lien.</li>
-                <li><b>Choisir vos chants :</b> Accédez à un répertoire guidé, avec des suggestions adaptées à chaque moment de la messe et des explications liturgiques.</li>
-                <li><b>Construire et partager le déroulé :</b> Le déroulé se construit pas à pas. Les musiciens peuvent le consulter, l’enrichir ou le valider.</li>
-                <li><b>Valider et générer les documents :</b> Chaque choix est confirmé avec les musiciens et la paroisse. Exportez un PDF final comprenant le déroulé et les partitions.</li>
-            </ol>
-            <div class="d-flex justify-content-center gap-3 mt-4">
-                <a href="http://npr.andrieu.ch/home" class="btn btn-primary">Créer votre cérémonie</a>
-                <a href="http://npr.andrieu.ch/home" class="btn btn-secondary">Découvrir l'espace Pro</a>
+<!-- Paroisses -->
+<section class="section fade-in">
+    <div class="container">
+        <div class="row align-items-center g-4 flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <h2 class="mb-3">⛪ Fonctionnalités pour les paroisses</h2>
+                <p>
+                    Suivez les couples, validez leurs choix et gardez la maîtrise liturgique de chaque célébration.
+                </p>
+                <ul>
+                    <li>🗂️ Tableau de bord centralisé</li>
+                    <li>📖 Validation des textes et prières</li>
+                    <li>🎶 Suivi du répertoire musical</li>
+                </ul>
+                <p class="mt-3 text-success">Prix : <strong>Offert</strong></p>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">Accéder à l’espace paroisse</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ asset('images/vertical2.jpg') }}" alt="Paroisse" class="img-fluid rounded shadow">
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    {# Témoignages #}
-    <section class="testimonials py-5">
-        <div class="container text-center">
-            <h3 class="mb-4">Témoignages</h3>
-            <p>"C'était super ! chouette projet"</p>
+<!-- Musiciens -->
+<section class="section section-alt fade-in">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <h2 class="mb-3">🎶 Fonctionnalités pour les musiciens</h2>
+                <p>
+                    Disposez d’un espace unique pour piloter toute votre activité liée aux mariages.
+                </p>
+                <ul>
+                    <li>📂 Répertoire personnel enrichi</li>
+                    <li>📑 Génération automatique de partitions</li>
+                    <li>🤝 Collaboration simplifiée avec les couples</li>
+                </ul>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">Accéder à l’espace musicien</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ asset('images/vertical3.jpg') }}" alt="Musicien" class="img-fluid rounded shadow">
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    {# Footer déjà inclus dans base.html.twig #}
+<!-- Footer -->
+<footer class="text-center py-4">
+    <img src="{{ asset('logos/horizontal_onde_blanche.png') }}" alt="Logo" class="mb-2" style="height:80px;">
+    <p class="mb-0">© {{ "now"|date("Y") }} Notre Messe de Mariage. Tous droits réservés.</p>
+</footer>
 
-</div>
+<script>
+    // Animation au scroll
+    document.addEventListener("DOMContentLoaded", function() {
+        const elements = document.querySelectorAll(".fade-in");
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        elements.forEach(el => observer.observe(el));
+    });
+</script>
 {% endblock %}

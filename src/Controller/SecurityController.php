@@ -18,26 +18,16 @@ class SecurityController extends AbstractController
         AuthenticationUtils $authenticationUtils,
         Request $request,
         InvitationRepository $invitationRepo,
-        EntityManagerInterface $em
-    ): Response {
-        // get the login error if there is one
-        $error = $authenticationUtils->getLastAuthenticationError();
+        EntityManagerInterface $em,
 
-        // last username entered by the user
+    ): Response {
+        $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        // ⚡ Vérification après connexion réussie
         if ($this->getUser()) {
-            $token = $request->getSession()->get('invitation_token');
-            if ($token) {
-                $invitation = $invitationRepo->findOneBy(['token' => $token, 'used' => false]);
-                if ($invitation) {
-                    $this->attachUserToWedding($this->getUser(), $invitation, $em);
-                    $request->getSession()->remove('invitation_token');
-                }
-            }
-            return $this->redirectToRoute('home');
-        }
+    
+    return $this->redirectToRoute('app_home');
+}
 
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
@@ -52,6 +42,7 @@ class SecurityController extends AbstractController
 
         if ($role === 'musicien') {
             $wedding->addMusician($user);
+            $user->addRole('ROLE_MUSICIAN');
         } elseif ($role === 'marie') {
             $wedding->setMarie($user);
         } elseif ($role === 'mariee') {
@@ -59,7 +50,9 @@ class SecurityController extends AbstractController
         }
 
         $invitation->setUsed(true);
+
         $em->persist($wedding);
+        $em->persist($user);
         $em->persist($invitation);
         $em->flush();
     }
@@ -67,6 +60,6 @@ class SecurityController extends AbstractController
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {
-        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+        throw new \LogicException('Intercepted by Symfony firewall.');
     }
 }

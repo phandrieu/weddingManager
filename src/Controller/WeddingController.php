@@ -212,9 +212,17 @@ if (count($wedding->getMusicians()) > 0) {
 
         return $this->redirectToRoute('app_wedding_index');
     }
-    #[Route('/{id}/invite', name: 'app_wedding_invite')]
-public function invite(Wedding $wedding, Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
-{
+   #[Route('/{id}/invite', name: 'app_wedding_invite')]
+public function invite(
+    Wedding $wedding,
+    Request $request,
+    EntityManagerInterface $em,
+    MailerInterface $mailer,
+    SongTypeRepository $songTypeRepo,
+    SongRepository $songRepo
+): Response {
+    $generatedInvitationLink = null;
+
     if ($request->isMethod('POST')) {
         $email = $request->request->get('email');
         $role = $request->request->get('role');
@@ -229,26 +237,61 @@ public function invite(Wedding $wedding, Request $request, EntityManagerInterfac
         $em->persist($invitation);
         $em->flush();
 
-        $link = $this->generateUrl('app_invitation_accept', [
-            'token' => $invitation->getToken()
-        ], UrlGeneratorInterface::ABSOLUTE_URL);
+        // Génération du lien
+        $generatedInvitationLink = $this->generateUrl(
+            'app_invitation_accept',
+            ['token' => $invitation->getToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
 
+        // Envoi de l'email
         $emailMessage = (new Email())
             ->from('noreply@monsite.com')
             ->to($email)
             ->subject('Invitation à rejoindre un mariage')
-            ->html("Vous avez été invité à rejoindre un mariage. 
-                   <a href='$link'>Cliquez ici pour accepter l’invitation</a>");
+            ->html("Vous avez été invité à rejoindre un mariage.<br>
+                    <a href='$generatedInvitationLink'>Cliquez ici pour accepter l’invitation</a>");
 
         $mailer->send($emailMessage);
 
         $this->addFlash('success', 'Invitation envoyée !');
-        return $this->redirectToRoute('app_wedding_view', ['id' => $wedding->getId()]);
+
+        // 🔑 Reprend les mêmes données que edit()
+        $songTypes = $songTypeRepo->findAll();
+
+        $availableSongs = [];
+        foreach ($wedding->getMusicians() as $musician) {
+            foreach ($musician->getRepertoire() as $song) {
+                $availableSongs[$song->getId()] = $song;
+            }
+        }
+
+        $availableSongsByType = [];
+        if (count($wedding->getMusicians()) > 0) {
+            foreach ($wedding->getMusicians() as $musician) {
+                foreach ($musician->getRepertoire() as $song) {
+                    $availableSongsByType[$song->getType()->getId()][] = $song;
+                }
+            }
+        } else {
+            $allSongs = $songRepo->findAll();
+            foreach ($allSongs as $song) {
+                $availableSongsByType[$song->getType()->getId()][] = $song;
+            }
+        }
+
+        return $this->render('wedding/edit.html.twig', [
+            'form' => $this->createForm(WeddingFormType::class, $wedding)->createView(),
+            'wedding' => $wedding,
+            'songTypes' => $songTypes,
+            'availableSongs' => $availableSongs,
+            'availableSongsByType' => $availableSongsByType,
+            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'generatedInvitationLink' => $generatedInvitationLink,
+        ]);
     }
 
-    return $this->render('wedding/invite.html.twig', [
-        'wedding' => $wedding,
-    ]);
+    return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId()]);
 }
     #[Route('/checkout', name: 'app_wedding_create_checkout', methods: ['POST'])]
     public function createCheckout(Request $request): JsonResponse

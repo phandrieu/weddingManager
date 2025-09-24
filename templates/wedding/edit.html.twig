@@ -131,6 +131,25 @@
                         </select>
                     </div>
                 </div>
+                {% if generatedInvitationLink is defined %}
+                    <div class="alert alert-info mt-3">
+                        <p>Lien d'invitation généré :</p>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
+                            <button type="button" class="btn btn-outline-secondary" onclick="copyInvitationLink()">Copier</button>
+                        </div>
+                    </div>
+                    <script>
+                        function copyInvitationLink() {
+                            var copyText = document.getElementById("invitation-link");
+                            copyText.select();
+                            copyText.setSelectionRange(0, 99999); // For mobile
+                            navigator.clipboard.writeText(copyText.value).then(function() {
+                                alert("Lien copié dans le presse-papiers !");
+                            });
+                        }
+                    </script>
+                {% endif %}
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
