@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class InvitationController extends AbstractController
 {
     #[Route('/accept/{token}', name: 'app_invitation_accept')]
-public function accept(string $token, InvitationRepository $repo, Request $request, InvitationManager $manager): Response
+public function accept(string $token, InvitationRepository $repo, Request $request, EntityManagerInterface $em): Response
 {
     $invitation = $repo->findOneBy(['token' => $token, 'used' => false]);
 
@@ -26,7 +26,7 @@ public function accept(string $token, InvitationRepository $repo, Request $reque
     }
 
     if ($this->getUser()) {
-        $manager->attachUserToInvitation($this->getUser(), $invitation);
+        $this->attachUserToWedding($this->getUser(), $invitation, $em);
         $this->addFlash('success', 'Vous avez rejoint le mariage.');
         return $this->redirectToRoute('app_wedding_view', ['id' => $invitation->getWedding()->getId()]);
     }
