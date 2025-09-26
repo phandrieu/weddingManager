@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\SongType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -16,6 +17,13 @@ class SongTypeType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nom du type de chant',
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('messe', ChoiceType::class, [
+                'choices' => [
+                    'Non' => 0,
+                    'Oui' => 1,
+                ],
+                'expanded' => true,
             ]);
     }
 

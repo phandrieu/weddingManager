@@ -24,6 +24,9 @@ class SongType
     #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'type')]
     private Collection $songs;
 
+    #[ORM\Column]
+    private ?bool $messe = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -72,6 +75,18 @@ class SongType
                 $song->setType(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isMesse(): ?bool
+    {
+        return $this->messe;
+    }
+
+    public function setMesse(bool $messe): static
+    {
+        $this->messe = $messe;
 
         return $this;
     }

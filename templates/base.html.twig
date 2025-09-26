@@ -26,16 +26,18 @@
 
             /* Palette de couleurs */
             :root {
-                --color-bg: #FFFCF2;
-                --color-primary: #FA8211;
-                --color-secondary: #6A2FE0;
-                --color-tertiary: #98A882;
-                --color-last: #000000;
+                --color-bg: #FFFFFF;
+                --color-primary: #FF8100;
+                --color-secondary: #6B48A1;
+                --color-tertiary: #E6DEF6;
+                --color-last: #61616F;
+                /* padding utilisé par le container pour positionner les titres */
+                --container-padding: 1rem;
             }
-
+            
             /* Typographie */
             body {
-                font-family: 'Avenir LT Pro', Avenir, Helvetica, Arial, sans-serif;
+                font-family: 'Kanit', Avenir, Helvetica, Arial, sans-serif;
                 background-color: var(--color-bg);
                 min-height: 100vh;
                 display: flex;
@@ -48,6 +50,26 @@
                 font-weight: 400;
                 text-transform: uppercase;
                 color: var(--color-primary);
+            }
+            
+            /* Spécifique aux H1 demandées */
+            h1 {
+                font-size: 20px;                         /* taille demandée */
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: .03em;
+                color: var(--color-primary);             /* texte orange */
+                background-color: var(--color-secondary);/* rectangle violet (rempli) */
+                display: inline-block;                   /* boîte compacte */
+                width: 500px;                            /* largeur comme sur la maquette */
+                text-align: center;                      /* texte centré dans la boîte */
+                padding: 0.45rem 0;                      /* hauteur de la boîte */
+                margin: 0 0 1rem calc(-1 * var(--container-padding)); /* bord gauche à l'écran */
+                box-sizing: border-box;
+                border-radius: 0;
+                margin-top: 0;
+
+                transform: translate(-2rem, -2.20rem);
             }
 
             h4, h5, h6 {
@@ -63,8 +85,10 @@
 
             /* Navbar */
             .navbar {
-                background-color: #fff;
-                border-bottom: 2px solid var(--color-primary);
+                background-color: #6B48A1;
+                padding-top: 6px;
+                padding-bottom: 0;
+                /*border-bottom: 2px solid var(--color-primary);*/
             }
 
             .navbar-brand {
@@ -77,7 +101,7 @@
 
             .navbar-nav .nav-link {
                 margin-right: .75rem;
-                color: var(--color-last) !important;
+                color: var(--color-bg) !important;
                 transition: color .2s;
             }
             .navbar-nav .nav-link:hover {
@@ -116,20 +140,25 @@
             /* Conteneur */
             .container {
                 max-width: 100%;
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-left: var(--container-padding);
+                padding-right: var(--container-padding);
             }
 
             /* Responsive */
             @media (max-width: 576px) {
-                .container {
-                    padding-left: .75rem;
-                    padding-right: .75rem;
-                }
-                h1, h2, h3 {
-                    font-size: 1.25rem;
-                }
-            }
+                /* ajustement du padding pour petits écrans afin que la marge négative suive */
+                :root { --container-padding: .75rem; }
+                 .container {
+                    padding-left: var(--container-padding);
+                    padding-right: var(--container-padding);
+                 }
+                 h1 {
+                     width: 160px; /* réduit sur petit écran */
+                     font-size: 20px;
+                     margin-left: calc(-1 * var(--container-padding));
+                 }
+                 h2, h3 { font-size: 1.25rem; }
+             }
 
             /* Footer */
             footer {
@@ -149,17 +178,17 @@
         {% if app.user %}
         <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
-                    <img src="{{ asset('logo.png') }}" alt="Logo" style="height:40px; width:40px; object-fit:cover;" class="me-2">
+                <a class="navbar-brand d-flex align-items-center" style="font-size:24px;" href="{{ path('public') }}">
+                    <img src="{{ asset('logos/logo_white_nobg_noborder.png') }}" alt="Logo" style="height:45px; width:59px; object-fit:cover; transform: translate(0px, -7px);" class="me-2">
                     Notre Messe de Mariage
-                </a>
+                </a>  
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="margin-left: 30px;">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
                         </li>
@@ -185,9 +214,9 @@
                             </li>
                         {% endif %}
                     </ul>
-                    <a href="{{ path('app_logout') }}" class="navbar-text text-decoration-none" title="Se déconnecter">
-                        <span class="me-1">{{ app.user.firstName }}</span>
-                        <i class="bi bi-box-arrow-right"></i>
+                    <a href="{{ path('app_logout') }}" class="nav-link" title="Se déconnecter">
+                        <span class="me-1" style="color: var(--color-bg);">{{ app.user.firstName }}</span>
+                        <i style="color: var(--color-bg);" class="bi bi-box-arrow-right"></i>
                     </a>
                 </div>
             </div>

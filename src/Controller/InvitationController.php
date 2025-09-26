@@ -22,7 +22,7 @@ public function accept(string $token, InvitationRepository $repo, Request $reque
 
     if (!$invitation) {
         $this->addFlash('danger', 'Invitation invalide ou déjà utilisée.');
-        return $this->redirectToRoute('app_home');
+        return $this->redirectToRoute('home');
     }
 
     if ($this->getUser()) {

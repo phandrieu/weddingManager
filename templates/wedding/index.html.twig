@@ -4,7 +4,11 @@
 
 {% block body %}
 <div class="container mt-4">
+    {% if is_granted('ROLE_ADMIN') %}
     <h1>Liste des mariages</h1>
+    {% else %}
+    <h1>Mes mariages</h1>
+    {% endif %}
 
     <a href="{{ path('app_wedding_edit') }}" class="btn btn-primary mb-3">Ajouter un mariage</a>
 

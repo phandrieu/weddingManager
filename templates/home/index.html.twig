@@ -43,7 +43,7 @@
         </div>
 
     {% elseif is_granted('ROLE_MUSICIAN') %}
-        <h1 class="mb-4">Mes mariages en tant que musicien</h1>
+        <h1 class="mb-4">Mes mariages</h1>
         {% if app.user.weddingsAsMusicians|length > 0 %}
             <div class="row">
                 {% for wedding in app.user.weddingsAsMusicians %}

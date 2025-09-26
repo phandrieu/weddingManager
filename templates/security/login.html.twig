@@ -1,7 +1,159 @@
-{% extends 'base.html.twig' %} {# essentiel pour le profiler #}
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
+        <title>{% block title %}Notre Messe de Mariage{% endblock %}</title>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-{% block body %}
-<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <style>
+            /* === Intégration des polices locales === */
+            @font-face {
+                font-family: 'Alfarn';
+                src: url('{{ asset("fonts/Alfarn-Regular.ttf") }}') format("truetype");
+                font-weight: 400;
+                font-style: normal;
+            }
+
+            @font-face {
+                font-family: 'Avenir LT Pro';
+                src: url('{{ asset("fonts/AvenirLTPro.ttf") }}') format("truetype");
+                font-weight: 400;
+                font-style: normal;
+            }
+
+            /* Palette de couleurs */
+            :root {
+                --color-bg: #FFFFFF;
+                --color-primary: #FF8100;
+                --color-secondary: #6B48A1;
+                --color-tertiary: #E6DEF6;
+                --color-last: #61616F;
+            }
+
+            /* Typographie */
+            body {
+                font-family: 'Kanit', Avenir, Helvetica, Arial, sans-serif;
+                background-color: var(--color-bg);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                color: var(--color-last);
+            }
+
+            h1, h2, h3 {
+                font-family: 'Alfarn', serif;
+                font-weight: 400;
+                text-transform: uppercase;
+                color: var(--color-primary);
+            }
+
+            h4, h5, h6 {
+                font-family: 'Alfarn', serif;
+                font-weight: 400;
+                color: var(--color-secondary);
+            }
+
+            p, li, span, label, input, select, textarea {
+                font-family: 'Avenir LT Pro', Avenir, Helvetica, Arial, sans-serif;
+                font-size: 1rem;
+            }
+
+            /* Navbar */
+            .navbar {
+                background-color: #6B48A1;
+                padding-top: 6px;
+                padding-bottom: 0;
+                /*border-bottom: 2px solid var(--color-primary);*/
+            }
+
+            .navbar-brand {
+                font-weight: 600;
+                font-size: 1.2rem;
+                color: var(--color-primary) !important;
+                font-family: 'Alfarn', serif;
+                text-transform: uppercase;
+            }
+
+            .navbar-nav .nav-link {
+                margin-right: .75rem;
+                color: var(--color-bg) !important;
+                transition: color .2s;
+            }
+            .navbar-nav .nav-link:hover {
+                color: var(--color-primary) !important;
+            }
+
+            /* Boutons */
+            .btn-primary {
+                background-color: var(--color-primary);
+                border-color: var(--color-primary);
+            }
+            .btn-primary:hover {
+                background-color: #e56f05;
+                border-color: #e56f05;
+            }
+
+            .btn-secondary {
+                background-color: var(--color-secondary);
+                border-color: var(--color-secondary);
+            }
+            .btn-secondary:hover {
+                background-color: #5823c2;
+                border-color: #5823c2;
+            }
+
+            .btn-success {
+                background-color: var(--color-tertiary);
+                border-color: var(--color-tertiary);
+                color: #fff;
+            }
+            .btn-success:hover {
+                background-color: #81956c;
+                border-color: #81956c;
+            }
+
+            /* Conteneur */
+            .container {
+                max-width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Responsive */
+            @media (max-width: 576px) {
+                .container {
+                    padding-left: .75rem;
+                    padding-right: .75rem;
+                }
+                h1, h2, h3 {
+                    font-size: 1.25rem;
+                }
+            }
+
+            /* Footer */
+            footer {
+                margin-top: auto;
+                padding: 1rem;
+                text-align: center;
+                background: #fff;
+                border-top: 1px solid #ddd;
+                font-size: 0.9rem;
+            }
+        </style>
+
+        {% block stylesheets %}{% endblock %}
+        {{ encore_entry_link_tags('app') }}
+    </head>
+    <body>
+    {% set images = [
+        asset('images/login_screens/loginbanner1.png'),
+        asset('images/login_screens/loginbanner2.png')
+    ] %}
+    {% set bg = random(images) %}
+    <div class="d-flex justify-content-center align-items-center vh-100" style="background-image: url('{{ bg }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
     <div class="card shadow-lg p-4" style="width: 100%; max-width: 420px; border-radius: 1rem;">
         <div class="card-body">
             <h2 class="card-title text-center mb-4">Connexion</h2>
@@ -55,4 +207,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+</body>

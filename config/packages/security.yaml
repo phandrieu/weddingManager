@@ -62,6 +62,7 @@ security:
         - { path: ^/repertoire, roles: ROLE_MUSICIAN }
 
         # --- ROLE_ADMIN (accès total) ---
+        - { path: ^/mariages, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_ADMIN }
 
 when@test:
