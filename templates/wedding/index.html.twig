@@ -3,52 +3,75 @@
 {% block title %}Liste des mariages{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
+
+<div class="d-flex justify-content-between align-items-center mb-3" style="margin-top : 2rem;">
     {% if is_granted('ROLE_ADMIN') %}
-    <h1>Liste des mariages</h1>
+        <h1>Liste des mariages</h1>
     {% else %}
-    <h1>Mes mariages</h1>
+        <h1>Mes mariages</h1>
     {% endif %}
 
-    <a href="{{ path('app_wedding_edit') }}" class="btn btn-primary mb-3">Ajouter un mariage</a>
+    <a href="{{ path('app_wedding_edit') }}" class="btn btn-primary">+ Créer un mariage</a>
+</div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Marié</th>
-                <th>Mariée</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for wedding in weddings %}
-                <tr>
-                    <td>{{ wedding.id }}</td>
-                    <td>{{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</td>
-                    <td>{{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</td>
-                    <td>{{ wedding.date|date('d/m/Y') }}</td>
-                    <td>
-                        <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                        {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
-                        <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+<ul class="nav mb-4" role="tablist" style="gap:0.75rem;">
+    <li class="nav-item">
+        <button class="btn" style="background:var(--color-secondary);color:var(--color-bg);border-radius:20px;padding:6px 18px;">Mariages à venir</button>
+    </li>
+    <li class="nav-item">
+        <button class="btn" style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:20px;padding:6px 18px;">Mariages archivés</button>
+    </li>
+</ul>
+
+<div class="w-100">
+    {% for wedding in weddings %}
+        <div class="d-flex align-items-center justify-content-between mb-3 p-3" style="background: rgba(230,222,246,0.45);border-radius:8px;">
+            <div class="d-flex align-items-center" style="gap:1rem;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:var(--color-tertiary);color:var(--color-secondary);font-weight:700;">
+                    {% if wedding.mariee and wedding.marie %}
+                        {{ (wedding.mariee.firstName|default('')|slice(0,1)|upper) }}&{{ (wedding.marie.firstName|default('')|slice(0,1)|upper) }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="fw-bold">
+                        Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}
+                    </div>
+                    <div class="small text-muted">
+                        {{ wedding.church|default('') }}{% if wedding.postalCodeAndCity is defined and wedding.postalCodeAndCity %} — {{ wedding.postalCodeAndCity }}{% endif %}{% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center" style="gap:1rem;">
+                <div class="text-end me-3" style="min-width:150px;">
+                    <div class="fw-bold">{{ wedding.montantTotal|default('-') }}</div>
+                    <div class="small text-muted">
+                        {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
+                            {{ (wedding.montantTotal - wedding.montantPaye) }}
+                        {% else %}
+                            -
                         {% endif %}
-                        {% if 'ROLE_ADMIN' in app.user.roles %}
-                        <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;"
-          onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
-        <button class="btn btn-sm btn-danger">Supprimer</button>
-    </form>
-    {% endif %}
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="5">Aucun mariage trouvé.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="text-dark me-3" title="Voir"><i class="bi bi-eye"></i></a>
+
+                    {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
+                        <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="text-dark me-3" title="Modifier"><i class="bi bi-pencil"></i></a>
+                    
+                        <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
+                            <button class="btn btn-link p-0 text-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-muted">Aucun mariage trouvé.</div>
+    {% endfor %}
 </div>
 {% endblock %}

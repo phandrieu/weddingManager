@@ -94,11 +94,6 @@
 
     {% if is_granted('ROLE_ADMIN') or wedding.id or app.user.subscription %}
         <button type="submit" class="btn btn-primary">Enregistrer</button>
-        {% if wedding.id %}
-            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                Inviter quelqu'un
-            </button>
-        {% endif %}
     {% else %}
         <button id="stripe-button" class="btn btn-success">Payer 50€ pour créer le mariage</button>
     {% endif %}
@@ -106,6 +101,18 @@
     <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
     {{ form_end(form) }}
     <br>
+
+    {# Afficher le bouton/lien d'invitation uniquement si le mariage existe en base #}
+    {% if wedding.id %}
+      <a class="btn btn-primary" href="{{ path('app_wedding_invite', {'id': wedding.id}) }}">
+        Inviter un utilisateur
+      </a>
+    {% else %}
+      {# Optionnel : informer l'utilisateur qu'il doit d'abord sauvegarder #}
+      <button class="btn btn-secondary" disabled>
+        Sauvegardez le mariage pour pouvoir inviter
+      </button>
+    {% endif %}
 </div>
 
 <!-- Modal d'invitation -->
@@ -116,7 +123,7 @@
                 <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+            <form action="{{ wedding.id ? path('app_wedding_invite', {'id': wedding.id}) : '#' }}" method="POST" {% if not wedding.id %} onsubmit="return false;" {% endif %}>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
@@ -152,7 +159,7 @@
                 {% endif %}
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                    <button type="submit" class="btn btn-primary" {% if not wedding.id %} disabled {% endif %}>Envoyer l'invitation</button>
                 </div>
             </form>
         </div>

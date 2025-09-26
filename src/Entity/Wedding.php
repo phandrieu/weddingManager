@@ -58,6 +58,15 @@ private ?User $mariee = null;
     #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'wedding')]
     private Collection $invitations;
 
+    #[ORM\Column]
+    private ?bool $archive = null;
+
+    #[ORM\Column]
+    private ?float $montantTotal = null;
+
+    #[ORM\Column]
+    private ?float $montantPaye = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -247,6 +256,42 @@ private ?User $mariee = null;
                 $invitation->setWedding(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isArchive(): ?bool
+    {
+        return $this->archive;
+    }
+
+    public function setArchive(bool $archive): static
+    {
+        $this->archive = $archive;
+
+        return $this;
+    }
+
+    public function getMontantTotal(): ?float
+    {
+        return $this->montantTotal;
+    }
+
+    public function setMontantTotal(float $montantTotal): static
+    {
+        $this->montantTotal = $montantTotal;
+
+        return $this;
+    }
+
+    public function getMontantPaye(): ?float
+    {
+        return $this->montantPaye;
+    }
+
+    public function setMontantPaye(float $montantPaye): static
+    {
+        $this->montantPaye = $montantPaye;
 
         return $this;
     }
