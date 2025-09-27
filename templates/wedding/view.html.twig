@@ -3,60 +3,220 @@
 {% block title %}Détail du mariage{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>Détails du mariage</h1>
+<div class="mt-4">
+    <!-- Header compact -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center" style="gap:0.75rem;">
+            <h1 class="mb-0" style="background:var(--color-secondary);color:var(--color-primary);padding:8px 18px;border-radius:6px;font-size:16px;text-transform:uppercase;font-family:'Alfarn', serif;">
+                Détails du mariage
+            </h1>
 
-    <ul class="list-group mb-4">
-        <li class="list-group-item"><strong>ID :</strong> {{ wedding.id }}</li>
-        <li class="list-group-item"><strong>Marié :</strong> {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</li>
-        <li class="list-group-item"><strong>Mariée :</strong> {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</li>
-        <li class="list-group-item"><strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}</li>
-        <li class="list-group-item"><strong>Paroisse :</strong> {{ wedding.parish ?: '-' }}</li>
-        <li class="list-group-item"><strong>Église :</strong> {{ wedding.church ?: '-' }}</li>
-        <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ wedding.addressLine1 ?: '-' }}</li>
-        <li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ wedding.addressLine2 ?: '-' }}</li>
-        <li class="list-group-item"><strong>Code postal & Ville :</strong> {{ wedding.addressPostalCodeAndCity ?: '-' }}</li>
-        <li class="list-group-item">
-            <strong>Musiciens :</strong>
-            {% if wedding.musicians|length > 0 %}
-                <ul class="mb-0">
-                    {% for musician in wedding.musicians %}
-                        <li>{{ musician.firstName }} {{ musician.name }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                Aucun musicien affecté
-            {% endif %}
+            <div style="background:var(--color-tertiary);color:var(--color-secondary);padding:8px 14px;border-radius:6px;font-weight:600;font-size:13px;">
+                {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Célébration{% endif %} de mariage de 
+                {{ wedding.marie ? (wedding.marie.firstName ~ (wedding.marie.name ? ' ' ~ wedding.marie.name : '')) : '-' }}
+                &amp;
+                {{ wedding.mariee ? (wedding.mariee.firstName ~ (wedding.mariee.name ? ' ' ~ wedding.mariee.name : '')) : '-' }}
+                {% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
+            </div>
+        </div>
+
+        <div>
+            <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary"> <i class="bi bi-pencil"></i> Éditer les informations</a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav mb-4" role="tablist" style="gap:.6rem;">
+        <li class="nav-item">
+            <button class="btn btn-sm d-flex align-items-center active" id="tab-info" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" role="tab" aria-selected="true"
+                style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:999px;padding:8px 14px;gap:8px;">
+                <i class="bi bi-info-circle"></i>
+                <span style="font-weight:600;">Informations générales</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-sm d-flex align-items-center" id="tab-deroule" data-bs-toggle="tab" data-bs-target="#pane-deroule" type="button" role="tab" aria-selected="false"
+                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
+                <i class="bi bi-list-ul"></i>
+                <span style="font-weight:600;">Déroulé</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-sm d-flex align-items-center" id="tab-logistique" data-bs-toggle="tab" data-bs-target="#pane-logistique" type="button" role="tab" aria-selected="false"
+                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
+                <i class="bi bi-gear"></i>
+                <span style="font-weight:600;">Informations logistiques</span>
+            </button>
         </li>
     </ul>
 
-    <h2>Chants associés</h2>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Type de chant</th>
-                <th>Chant affecté</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for type in songTypes %}
-                <tr>
-                    <td>{{ type.name }}</td>
-                    <td>
-                        {% set song = wedding.songs|filter(s => s.type.id == type.id)|first %}
-                        {% if song %}
-                            {{ song.previewUrl ? '<a href="' ~ song.previewUrl ~ '" target="_blank">Écouter</a>'|raw : 'Sans preview' }}
-                            <br>
-                            <small>{{ song.lyrics|slice(0,50) ~ '...' }}</small>
-                        {% else %}
-                            Aucun chant affecté
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="tab-content">
+        <!-- Informations générales (mise en page comme la maquette) -->
+        <div class="tab-pane fade show active" id="pane-info" role="tabpanel" aria-labelledby="tab-info">
+            <div class="row g-3 mb-4">
+                <!-- Card template -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
+                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
+                            INFORMATIONS MARIAGE
+                        </div>
 
-    <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary mt-3">Retour</a>
+                        <div class="small text-muted">
+                            <div style="margin-top:6px;">
+                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Type de célébration</div>
+                                <strong style="color:var(--color-last);display:block;margin-bottom:6px;">{{ wedding.messe is defined and wedding.messe ? 'Messe' : 'Célébration' }}</strong>
+
+                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Date</div>
+                                {% if wedding.date is defined %}<div>{{ wedding.date|date('d/m/Y') }}</div>{% else %}<div>-</div>{% endif %}
+                            </div>
+
+                            <div style="margin-top:10px;">
+                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Église / Lieu</div>
+                                <div>{{ wedding.church ?: '-' }}</div>
+
+                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
+                                <div>{{ wedding.addressLine1 ?: '-' }}</div>
+                                {% if wedding.addressLine2 %}<div>{{ wedding.addressLine2 }}</div>{% endif %}
+
+                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Code postal & ville</div>
+                                <div>{{ wedding.addressPostalCodeAndCity ?: '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Futur marié -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
+                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
+                            INFORMATIONS FUTUR MARIÉ
+                        </div>
+
+                        <div class="text-center">
+                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
+                                {{ wedding.marie and wedding.marie.firstName ? wedding.marie.firstName|slice(0,1)|upper : 'A' }}
+                            </div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
+                            <div style="font-weight:700;">{{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
+                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.email : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
+                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.telephone : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
+                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.addressLine1 : '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Futur mariée -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
+                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
+                            INFORMATIONS FUTUR MARIÉE
+                        </div>
+
+                        <div class="text-center">
+                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
+                                {{ wedding.mariee and wedding.mariee.firstName ? wedding.mariee.firstName|slice(0,1)|upper : 'A' }}
+                            </div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
+                            <div style="font-weight:700;">{{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
+                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.email : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
+                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.telephone : '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
+                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.addressLine1 : '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paroisse / informations contact -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
+                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
+                            INFORMATIONS PAROISSE
+                        </div>
+
+                        <div class="small text-muted">
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Prêtre</div>
+                            <div>{{ wedding.priestFirstName ?: '-' }} {{ wedding.priestLastName ?: '' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
+                            <div class="small text-muted mt-2">{{ wedding.priestPhoneNumber ?: '-' }}</div>
+
+                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
+                            <div class="small text-muted">{{ wedding.priestEmail ?: '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloc financier -->
+            <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;">
+                <div style="display:grid;grid-template-columns: repeat(4, 1fr);gap:1rem;align-items:center;">
+                    <div class="text-center">
+                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant de la prestation</div>
+                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                            {{ wedding.montantTotal is defined and wedding.montantTotal ? (wedding.montantTotal ~ ' €') : '-' }}
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant déjà versé</div>
+                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                            {{ wedding.montantPaye is defined and wedding.montantPaye ? (wedding.montantPaye ~ ' €') : '-' }}
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Pourcentage de l'acompte</div>
+                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                            {% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
+                                {{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant restant dû</div>
+                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                            {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
+                                {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Déroulé (placeholder, structure prête) -->
+        <div class="tab-pane fade" id="pane-deroule" role="tabpanel" aria-labelledby="tab-deroule">
+            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
+                <h5>Déroulé</h5>
+                <p class="text-muted">Ajouter ici le déroulé (entrées, chants, timing...).</p>
+            </div>
+        </div>
+
+        <!-- Informations logistiques (placeholder) -->
+        <div class="tab-pane fade" id="pane-logistique" role="tabpanel" aria-labelledby="tab-logistique">
+            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
+                <h5>Informations logistiques</h5>
+                <p class="text-muted">Ajouter ici les informations de transport, hébergement, matériel, contacts.</p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

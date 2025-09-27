@@ -67,6 +67,24 @@ private ?User $mariee = null;
     #[ORM\Column]
     private ?float $montantPaye = null;
 
+    #[ORM\Column]
+    private ?bool $messe = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $priestFirstName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $priestLastName = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $priestPhoneNumber = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $priestEMail = null;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    private ?\DateTime $time = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -292,6 +310,78 @@ private ?User $mariee = null;
     public function setMontantPaye(float $montantPaye): static
     {
         $this->montantPaye = $montantPaye;
+
+        return $this;
+    }
+
+    public function isMesse(): ?bool
+    {
+        return $this->messe;
+    }
+
+    public function setMesse(bool $messe): static
+    {
+        $this->messe = $messe;
+
+        return $this;
+    }
+
+    public function getPriestFirstName(): ?string
+    {
+        return $this->priestFirstName;
+    }
+
+    public function setPriestFirstName(?string $priestFirstName): static
+    {
+        $this->priestFirstName = $priestFirstName;
+
+        return $this;
+    }
+
+    public function getPriestLastName(): ?string
+    {
+        return $this->priestLastName;
+    }
+
+    public function setPriestLastName(?string $priestLastName): static
+    {
+        $this->priestLastName = $priestLastName;
+
+        return $this;
+    }
+
+    public function getPriestPhoneNumber(): ?string
+    {
+        return $this->priestPhoneNumber;
+    }
+
+    public function setPriestPhoneNumber(?string $priestPhoneNumber): static
+    {
+        $this->priestPhoneNumber = $priestPhoneNumber;
+
+        return $this;
+    }
+
+    public function getPriestEMail(): ?string
+    {
+        return $this->priestEMail;
+    }
+
+    public function setPriestEMail(?string $priestEMail): static
+    {
+        $this->priestEMail = $priestEMail;
+
+        return $this;
+    }
+
+    public function getTime(): ?\DateTime
+    {
+        return $this->time;
+    }
+
+    public function setTime(?\DateTime $time): static
+    {
+        $this->time = $time;
 
         return $this;
     }

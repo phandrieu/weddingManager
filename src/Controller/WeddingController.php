@@ -329,4 +329,33 @@ public function invite(
 
         return $this->json(['sessionId' => $session->id]);
     }
+    #[Route('/{id}/archive', name: 'app_wedding_archive', methods: ['POST'])]
+    public function archive(Request $request, Wedding $wedding, WeddingRepository $repo): Response
+    {
+        if (!$this->isCsrfTokenValid('archive' . $wedding->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_wedding_index');
+        }
+
+        $wedding->setArchive(true);
+        $repo->save($wedding, true);
+
+        $this->addFlash('success', 'Mariage archivé.');
+        return $this->redirectToRoute('app_wedding_index');
+    }
+
+    #[Route('/{id}/unarchive', name: 'app_wedding_unarchive', methods: ['POST'])]
+    public function unarchive(Request $request, Wedding $wedding, WeddingRepository $repo): Response
+    {
+        if (!$this->isCsrfTokenValid('unarchive' . $wedding->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_wedding_index');
+        }
+
+        $wedding->setArchive(false);
+        $repo->save($wedding, true);
+
+        $this->addFlash('success', 'Mariage désarchivé.');
+        return $this->redirectToRoute('app_wedding_index');
+    }
 }

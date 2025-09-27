@@ -69,7 +69,7 @@
                 border-radius: 0;
                 margin-top: 0;
 
-                transform: translate(-2rem, -2.20rem);
+                transform: translate(-2rem,0);
             }
 
             h4, h5, h6 {
@@ -192,19 +192,19 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
                         </li>
+                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_wedding_index') }}">Mes mariages</a>
+                        </li>
+                        {% endif %}
+                        {% if 'ROLE_MUSICIAN' in app.user.roles %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_repertoire_index') }}">Mon répertoire</a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_song_index') }}">Répertoire global</a>
                         </li>
-                        {% if 'ROLE_MUSICIAN' in app.user.roles %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_repertoire_index') }}">Répertoire personnel</a>
-                        </li>
-                        {% endif %}
-                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_wedding_index') }}">Mariages</a>
-                        </li>
-                        {% endif %}
                         {% if 'ROLE_ADMIN' in app.user.roles %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('app_songtype_index') }}">Types de chants</a>
@@ -223,7 +223,7 @@
         </nav>
         {% endif %}
 
-        <div class="container mt-4">
+        <div class="container mt-4" style="margin-top: 0px !important;">
             {% block body %}{% endblock %}
         </div>
 
