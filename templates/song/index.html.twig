@@ -4,20 +4,32 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h1>Liste des chants</h1>
-
     <div class="d-flex justify-content-between align-items-center mb-3">
-        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-            <a href="{{ path('app_song_edit') }}" class="btn btn-primary">Ajouter un chant</a>
-            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
-                Voir les suggestions
-            </button>
-        {% elseif 'ROLE_USER' in app.user.roles %}
-            <a href="{{ path('app_song_suggest') }}" class="btn btn-outline-primary">Suggérer un chant</a>
-        {% endif %}
+        <div>
+            <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">Répertoire global</h1>
+            
+        </div>
 
-        <div class="form-group">
-            <select id="typeFilter" class="form-select">
+        <div class="d-flex align-items-center" style="gap:0.75rem;flex-wrap:wrap;">
+            {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#suggestionsModal"
+                    style="border-radius:999px;padding:4px 12px;border:2px solid #2f6c3b;color:#2f6c3b;background:transparent;font-size:16px;font-weight:600;">
+                    Voir les suggestions
+                </button>
+
+                <a href="{{ path('app_song_edit') }}" class="btn"
+                   style="border-radius:999px;padding:4px 12px;background:#ef8a2d;color:#fff;font-size:16x;font-weight:600;display:inline-flex;align-items:center;gap:12px;">
+                    <i class="bi bi-plus-lg" style="font-size:16px;line-height:1"></i>
+                    <span>Ajouter un chant</span>
+                </a>
+            {% elseif 'ROLE_USER' in app.user.roles %}
+                <a href="{{ path('app_song_suggest') }}" class="btn"
+                   style="border-radius:999px;padding:4px 12px;border:2px solid #2f6c3b;color:#2f6c3b;background:transparent;font-size:16px;font-weight:600;">
+                    Suggérer un chant
+                </a>
+            {% endif %}
+
+            <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:150px;">
                 <option value="">Tous les types</option>
                 {% set types = [] %}
                 {% for song in songs %}
@@ -30,61 +42,60 @@
         </div>
     </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Type</th>
-                <th>Preview</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="songsTableBody">
-            {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
-            {% if nonSuggestions is not empty %}
-                {% for song in nonSuggestions %}
-                    <tr data-type="{{ song.type.name }}">
-                        <td>{{ song.name }}</td>
-                        <td>{{ song.type.name }}</td>
-                        <td>
+    <div class="row g-4" id="songsGrid">
+        {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
+        {% if nonSuggestions is not empty %}
+            {% for song in nonSuggestions %}
+                {% set youtubeId = song.previewUrl
+                    |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
+                %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}">
+                    <div style="background:#f8e9e9;border-radius:12px;padding:14px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
+                        <div>
+                            <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
+                            <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+
                             {% if song.previewUrl %}
-                                {% set youtubeId = song.previewUrl 
-                                    |replace({'https://youtu.be/':'', 
-                                              'https://www.youtube.com/watch?v=':'', 
-                                              '&feature=youtu.be':'', 
-                                              '&si=':''}) 
-                                %}
-                                <div style="min-height: 150px; min-width: 250px;" class="ratio ratio-16x9">
+                                <div class="ratio ratio-16x9 mb-3" style="border-radius:8px;overflow:hidden;">
                                     <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
                                 </div>
                             {% else %}
-                                -
+                                <div class="mb-3 text-muted text-center" style="min-height:140px;display:flex;align-items:center;justify-content:center;">
+                                    Pas de preview
+                                </div>
                             {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                        </div>
+
+                        <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
+                            <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
+
                             {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                                <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
+                            {% else %}
+                                <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
                             {% endif %}
+
                             {% if 'ROLE_ADMIN' in app.user.roles %}
                                 <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
-                                    <button class="btn btn-sm btn-danger">Supprimer</button>
+                                    <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
                                 </form>
+                            {% else %}
+                                <button class="btn btn-sm btn-light invisible"><i class="bi bi-trash"></i></button>
                             {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4">Aucun chant trouvé.</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-secondary">Aucun chant trouvé.</div>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
-{# Modal Suggestions #}
+{# Modal Suggestions (inchangé) #}
 {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
 <div class="modal fade" id="suggestionsModal" tabindex="-1" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -134,33 +145,37 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const typeFilter = document.getElementById('typeFilter');
-    const rows = document.querySelectorAll('#songsTableBody tr');
+    const cards = Array.from(document.querySelectorAll('.song-card'));
 
-    // Filtrage par type
+    function updateNoResults() {
+        const container = document.getElementById('songsGrid');
+        const visible = cards.filter(c => c.style.display !== 'none');
+        const existing = document.querySelector('.no-results-card');
+        if (visible.length === 0) {
+            if (!existing) {
+                const no = document.createElement('div');
+                no.className = 'no-results-card col-12';
+                no.innerHTML = '<div class="alert alert-secondary">Aucun chant trouvé pour ce type.</div>';
+                container.appendChild(no);
+            }
+        } else if (existing) {
+            existing.remove();
+        }
+    }
+
     typeFilter.addEventListener('change', function () {
         const selectedType = this.value;
-        rows.forEach(row => {
-            if (!selectedType || row.dataset.type === selectedType) {
-                row.style.display = '';
+        cards.forEach(card => {
+            if (!selectedType || card.dataset.type === selectedType) {
+                card.style.display = '';
             } else {
-                row.style.display = 'none';
+                card.style.display = 'none';
             }
         });
-
-        // Message "Aucun résultat"
-        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
-        const existingNoResults = document.querySelector('.no-results');
-        if (visibleRows === 0 && !existingNoResults) {
-            const noResults = document.createElement('tr');
-            noResults.className = 'no-results';
-            noResults.innerHTML = '<td colspan="4">Aucun chant trouvé pour ce type.</td>';
-            document.querySelector('#songsTableBody').appendChild(noResults);
-        } else if (existingNoResults) {
-            existingNoResults.remove();
-        }
+        updateNoResults();
     });
 
-    // Approve suggestion
+    // Approve suggestion buttons (ajax) : keep compatibility with existing markup if any
     document.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const songId = this.dataset.songId;
