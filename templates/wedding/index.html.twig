@@ -59,7 +59,7 @@
                                      Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}
                                  </div>
                                  <div class="small text-muted">
-                                     {{ wedding.church|default('') }}{% if wedding.postalCodeAndCity is not null %} — {{ wedding.postalCodeAndCity }}{% endif %}{% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
+                                     {{ wedding.church|default('') }}{% if wedding.addressPostalCodeAndCity is not null %} — {{ wedding.addressPostalCodeAndCity }}{% endif %}{% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
                                  </div>
                              </div>
                          </div>
