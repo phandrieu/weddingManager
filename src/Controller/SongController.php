@@ -33,18 +33,18 @@ class SongController extends AbstractController
 #[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
 #[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
 public function approveSong(Song $song, Request $request, EntityManagerInterface $em): Response
-{
-    if (!$this->isCsrfTokenValid('approve_song_' . $song->getId(), $request->request->get('_token'))) {
-        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    {
+        if (!$this->isCsrfTokenValid('approve_song_' . $song->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        }
+
+        $song->setSuggestion(false);
+        $em->persist($song);
+        $em->flush();
+
+        $this->addFlash('success', 'Suggestion validée !');
+        return $this->redirectToRoute('app_song_index');
     }
-
-    $song->setSuggestion(false);
-    $em->persist($song);
-    $em->flush();
-
-    $this->addFlash('success', 'Suggestion validée !');
-    return $this->redirectToRoute('app_song_index');
-}
     #[Route('/delete/{id}', name: 'app_song_delete', methods: ['POST'])]
 public function delete(Request $request, Song $song, SongRepository $repo): Response
 {
@@ -59,14 +59,30 @@ public function delete(Request $request, Song $song, SongRepository $repo): Resp
     #[Route('/edit/{id?0}', name: 'app_song_edit')]
     public function edit(Request $request, Song $song = null, SongRepository $repo): Response
     {
+        // déterminer si création ou édition
+        $isNew = false;
         if (!$song) {
             $song = new Song();
+            $isNew = true;
         }
 
         $form = $this->createForm(SongFormType::class, $song);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // récupérer l'utilisateur courant et mettre à jour les relations
+            $user = $this->getUser();
+            if ($user instanceof \App\Entity\User) {
+                if ($isNew) {
+                    // à la création : addedBy + lastEditBy
+                    $song->setAddedBy($user);
+                    $song->setLastEditBy($user);
+                } else {
+                    // à la modification : lastEditBy uniquement
+                    $song->setLastEditBy($user);
+                }
+            }
+
             $repo->save($song, true);
             $this->addFlash('success', 'chant sauvegardée avec succès.');
             return $this->redirectToRoute('app_song_index');

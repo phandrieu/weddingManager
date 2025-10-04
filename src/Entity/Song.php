@@ -71,6 +71,12 @@ class Song
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $textTranslationName = null;
 
+    #[ORM\ManyToOne(inversedBy: 'songsAdded')]
+    private ?User $addedBy = null;
+
+    #[ORM\ManyToOne(inversedBy: 'songsLastEdited')]
+    private ?User $lastEditBy = null;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -288,6 +294,30 @@ class Song
     public function setTextTranslationName(?string $textTranslationName): static
     {
         $this->textTranslationName = $textTranslationName;
+
+        return $this;
+    }
+
+    public function getAddedBy(): ?User
+    {
+        return $this->addedBy;
+    }
+
+    public function setAddedBy(?User $addedBy): static
+    {
+        $this->addedBy = $addedBy;
+
+        return $this;
+    }
+
+    public function getLastEditBy(): ?User
+    {
+        return $this->lastEditBy;
+    }
+
+    public function setLastEditBy(?User $lastEditBy): static
+    {
+        $this->lastEditBy = $lastEditBy;
 
         return $this;
     }

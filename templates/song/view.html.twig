@@ -37,6 +37,8 @@
                 Aucune
             {% endif %}
         </li>
+        <li class="list-group-item"><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</li>
+        <li class="list-group-item"><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</li>
     </ul>
 
     <a href="{{ path('app_song_index') }}" class="btn btn-secondary mt-3">Retour</a>

@@ -71,12 +71,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinTable(name: 'user_repertoire')]
     private Collection $repertoire;
 
+    /**
+     * @var Collection<int, Song>
+     */
+    #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'addedBy')]
+    private Collection $songsAdded;
+
+    /**
+     * @var Collection<int, Song>
+     */
+    #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'lastEditBy')]
+    private Collection $songsLastEdited;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
         $this->weddingsAsMariee = new ArrayCollection();
         $this->weddingsAsMusicians = new ArrayCollection();
         $this->repertoire = new ArrayCollection();
+        $this->songsAdded = new ArrayCollection();
+        $this->songsLastEdited = new ArrayCollection();
     }
 
     /**
@@ -354,6 +368,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSubscription(bool $subscription): static
     {
         $this->subscription = $subscription;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Song>
+     */
+    public function getSongsAdded(): Collection
+    {
+        return $this->songsAdded;
+    }
+
+    public function addSongsAdded(Song $songsAdded): static
+    {
+        if (!$this->songsAdded->contains($songsAdded)) {
+            $this->songsAdded->add($songsAdded);
+            $songsAdded->setAddedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSongsAdded(Song $songsAdded): static
+    {
+        if ($this->songsAdded->removeElement($songsAdded)) {
+            // set the owning side to null (unless already changed)
+            if ($songsAdded->getAddedBy() === $this) {
+                $songsAdded->setAddedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Song>
+     */
+    public function getSongsLastEdited(): Collection
+    {
+        return $this->songsLastEdited;
+    }
+
+    public function addSongsLastEdited(Song $songsLastEdited): static
+    {
+        if (!$this->songsLastEdited->contains($songsLastEdited)) {
+            $this->songsLastEdited->add($songsLastEdited);
+            $songsLastEdited->setLastEditBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSongsLastEdited(Song $songsLastEdited): static
+    {
+        if ($this->songsLastEdited->removeElement($songsLastEdited)) {
+            // set the owning side to null (unless already changed)
+            if ($songsLastEdited->getLastEditBy() === $this) {
+                $songsLastEdited->setLastEditBy(null);
+            }
+        }
 
         return $this;
     }

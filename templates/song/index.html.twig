@@ -119,6 +119,8 @@
                                         <p><strong>Auteur de la musique :</strong> {{ song.musicAuthorName ?: '—' }}</p>
                                         <p><strong>Maison d'édition :</strong> {{ song.editorName ?: '—' }}</p>
                                         <p><strong>Interprète :</strong> {{ song.interpretName ?: '—' }}</p>
+                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</p>
+                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -178,6 +180,8 @@
                                     <div class="modal-body">
                                         <p><strong>Référence :</strong> {{ song.textRef ?: '—' }}</p>
                                         <p><strong>Traduction :</strong> {{ song.textTranslationName ?: '—' }}</p>
+                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</p>
+                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
