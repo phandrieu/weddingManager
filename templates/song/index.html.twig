@@ -1,13 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des chants{% endblock %}
+{% block title %}Liste des chants & textes{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">Répertoire global</h1>
-            
         </div>
 
         <div class="d-flex align-items-center" style="gap:0.75rem;flex-wrap:wrap;">
@@ -20,12 +19,12 @@
                 <a href="{{ path('app_song_edit') }}" class="btn"
                    style="border-radius:999px;padding:4px 12px;background:#ef8a2d;color:#fff;font-size:16x;font-weight:600;display:inline-flex;align-items:center;gap:12px;">
                     <i class="bi bi-plus-lg" style="font-size:16px;line-height:1"></i>
-                    <span>Ajouter un chant</span>
+                    <span>Ajouter un élément</span>
                 </a>
             {% elseif 'ROLE_USER' in app.user.roles %}
                 <a href="{{ path('app_song_suggest') }}" class="btn"
                    style="border-radius:999px;padding:4px 12px;border:2px solid #2f6c3b;color:#2f6c3b;background:transparent;font-size:16px;font-weight:600;">
-                    Suggérer un chant
+                    Suggérer un élément
                 </a>
             {% endif %}
 
@@ -42,56 +41,159 @@
         </div>
     </div>
 
-    <div class="row g-4" id="songsGrid">
-        {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
-        {% if nonSuggestions is not empty %}
-            {% for song in nonSuggestions %}
-                {% set youtubeId = song.previewUrl
-                    |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
-                %}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}">
-                    <div style="background:#f8e9e9;border-radius:12px;padding:14px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
-                        <div>
-                            <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
-                            <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+    {# tabs pour Chants / Textes #}
+    <ul class="nav nav-pills mb-3" id="songTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true">
+                <i class="bi bi-music-note"></i> Chants
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false">
+                <i class="bi bi-book"></i> Textes & Lectures
+            </button>
+        </li>
+    </ul>
 
-                            {% if song.previewUrl %}
-                                <div class="ratio ratio-16x9 mb-3" style="border-radius:8px;overflow:hidden;">
-                                    <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-chants" role="tabpanel" aria-labelledby="tab-chants-btn">
+            <div class="row g-4" id="songsGridChants">
+                {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
+                {% if nonSuggestions is not empty %}
+                    {% for song in nonSuggestions %}
+                        {% if song.song %}
+                        {% set youtubeId = song.previewUrl
+                            |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
+                        %}
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}" data-kind="chant">
+                            <div style="position:relative;background:#f8e9e9;border-radius:12px;padding:14px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
+                                <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
+
+                                <div>
+                                    <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
+                                    <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+
+                                    {% if song.previewUrl %}
+                                        <div class="ratio ratio-16x9 mb-3" style="border-radius:8px;overflow:hidden;">
+                                            <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
+                                        </div>
+                                    {% else %}
+                                        <div class="mb-3 text-muted text-center" style="min-height:140px;display:flex;align-items:center;justify-content:center;">
+                                            Pas de preview
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% else %}
-                                <div class="mb-3 text-muted text-center" style="min-height:140px;display:flex;align-items:center;justify-content:center;">
-                                    Pas de preview
+
+                                <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
+                                    <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
+
+                                    {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
+                                    {% endif %}
+
+                                    {% if 'ROLE_ADMIN' in app.user.roles %}
+                                        <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
+                                            <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-trash"></i></button>
+                                    {% endif %}
                                 </div>
-                            {% endif %}
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
-                            <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
-                            {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                                <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-                            {% else %}
-                                <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
-                            {% endif %}
-
-                            {% if 'ROLE_ADMIN' in app.user.roles %}
-                                <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
-                                    <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
-                                </form>
-                            {% else %}
-                                <button class="btn btn-sm btn-light invisible"><i class="bi bi-trash"></i></button>
-                            {% endif %}
+                        {# Modal crédits spécifique à la carte #}
+                        <div class="modal fade" id="creditsModal{{ song.id }}" tabindex="-1" aria-labelledby="creditsModalLabel{{ song.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="creditsModalLabel{{ song.id }}">Crédits — {{ song.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Titre :</strong> {{ song.name }}</p>
+                                        <p><strong>Auteur des paroles :</strong> {{ song.lyricsAuthorName ?: '—' }}</p>
+                                        <p><strong>Auteur de la musique :</strong> {{ song.musicAuthorName ?: '—' }}</p>
+                                        <p><strong>Maison d'édition :</strong> {{ song.editorName ?: '—' }}</p>
+                                        <p><strong>Interprète :</strong> {{ song.interpretName ?: '—' }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-secondary">Aucun élément trouvé.</div>
                     </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12">
-                <div class="alert alert-secondary">Aucun chant trouvé.</div>
+                {% endif %}
             </div>
-        {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="tab-textes" role="tabpanel" aria-labelledby="tab-textes-btn">
+            <div class="row g-4" id="songsGridTextes">
+                {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
+                {% if nonSuggestions is not empty %}
+                    {% for song in nonSuggestions %}
+                        {% if not song.song %}
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}" data-kind="texte">
+                            <div style="position:relative;background:#eef6ff;border-radius:12px;padding:14px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
+                                <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
+
+                                <div>
+                                    <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
+                                    <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+
+                                    <div class="mb-3 text-muted">
+                                        {{ song.lyrics ? song.lyrics|slice(0,120) ~ '…' : 'Pas de texte' }}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
+                                    <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
+
+                                    {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Modal crédits spécifique à la carte #}
+                        <div class="modal fade" id="creditsModal{{ song.id }}" tabindex="-1" aria-labelledby="creditsModalLabel{{ song.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="creditsModalLabel{{ song.id }}">Crédits — {{ song.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Référence :</strong> {{ song.textRef ?: '—' }}</p>
+                                        <p><strong>Traduction :</strong> {{ song.textTranslationName ?: '—' }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-secondary">Aucun texte trouvé.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -145,17 +247,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const typeFilter = document.getElementById('typeFilter');
-    const cards = Array.from(document.querySelectorAll('.song-card'));
 
-    function updateNoResults() {
-        const container = document.getElementById('songsGrid');
+    function updateNoResults(container) {
+        const cards = Array.from(container.querySelectorAll('.song-card'));
         const visible = cards.filter(c => c.style.display !== 'none');
-        const existing = document.querySelector('.no-results-card');
+        const existing = container.querySelector('.no-results-card');
         if (visible.length === 0) {
             if (!existing) {
                 const no = document.createElement('div');
                 no.className = 'no-results-card col-12';
-                no.innerHTML = '<div class="alert alert-secondary">Aucun chant trouvé pour ce type.</div>';
+                no.innerHTML = '<div class="alert alert-secondary">Aucun élément trouvé pour ce type.</div>';
                 container.appendChild(no);
             }
         } else if (existing) {
@@ -163,8 +264,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    typeFilter.addEventListener('change', function () {
-        const selectedType = this.value;
+    function applyFilterToPane(paneId) {
+        const container = document.getElementById(paneId);
+        const cards = Array.from(container.querySelectorAll('.song-card'));
+        const selectedType = typeFilter.value;
         cards.forEach(card => {
             if (!selectedType || card.dataset.type === selectedType) {
                 card.style.display = '';
@@ -172,10 +275,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.style.display = 'none';
             }
         });
-        updateNoResults();
+        updateNoResults(container);
+    }
+
+    // filter on change for both panes
+    typeFilter.addEventListener('change', function () {
+        applyFilterToPane('songsGridChants');
+        applyFilterToPane('songsGridTextes');
     });
 
-    // Approve suggestion buttons (ajax) : keep compatibility with existing markup if any
+    // when switching tabs, ensure the visible pane has filters applied
+    document.getElementById('tab-chants-btn').addEventListener('shown.bs.tab', function () {
+        applyFilterToPane('songsGridChants');
+    });
+    document.getElementById('tab-textes-btn').addEventListener('shown.bs.tab', function () {
+        applyFilterToPane('songsGridTextes');
+    });
+
+    // initial filter application
+    applyFilterToPane('songsGridChants');
+    applyFilterToPane('songsGridTextes');
+
+    // Approve suggestion buttons (ajax) compatibility
     document.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const songId = this.dataset.songId;
