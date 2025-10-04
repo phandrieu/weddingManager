@@ -50,6 +50,27 @@ class Song
     #[ORM\Column(nullable: true)]
     private ?bool $suggestion = false;
 
+    #[ORM\Column]
+    private ?bool $song = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lyricsAuthorName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $musicAuthorName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $editorName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $interpretName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $textRef = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $textTranslationName = null;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -183,6 +204,90 @@ class Song
     public function setSuggestion(?bool $suggestion): static
     {
         $this->suggestion = $suggestion;
+
+        return $this;
+    }
+
+    public function isSong(): ?bool
+    {
+        return $this->song;
+    }
+
+    public function setSong(bool $song): static
+    {
+        $this->song = $song;
+
+        return $this;
+    }
+
+    public function getLyricsAuthorName(): ?string
+    {
+        return $this->lyricsAuthorName;
+    }
+
+    public function setLyricsAuthorName(?string $lyricsAuthorName): static
+    {
+        $this->lyricsAuthorName = $lyricsAuthorName;
+
+        return $this;
+    }
+
+    public function getMusicAuthorName(): ?string
+    {
+        return $this->musicAuthorName;
+    }
+
+    public function setMusicAuthorName(?string $musicAuthorName): static
+    {
+        $this->musicAuthorName = $musicAuthorName;
+
+        return $this;
+    }
+
+    public function getEditorName(): ?string
+    {
+        return $this->editorName;
+    }
+
+    public function setEditorName(?string $editorName): static
+    {
+        $this->editorName = $editorName;
+
+        return $this;
+    }
+
+    public function getInterpretName(): ?string
+    {
+        return $this->interpretName;
+    }
+
+    public function setInterpretName(?string $interpretName): static
+    {
+        $this->interpretName = $interpretName;
+
+        return $this;
+    }
+
+    public function getTextRef(): ?string
+    {
+        return $this->textRef;
+    }
+
+    public function setTextRef(?string $textRef): static
+    {
+        $this->textRef = $textRef;
+
+        return $this;
+    }
+
+    public function getTextTranslationName(): ?string
+    {
+        return $this->textTranslationName;
+    }
+
+    public function setTextTranslationName(?string $textTranslationName): static
+    {
+        $this->textTranslationName = $textTranslationName;
 
         return $this;
     }

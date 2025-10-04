@@ -6,7 +6,14 @@
 <div class="container mt-4">
     <h1>{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}</h1>
 
-    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}, 'multipart': true}) }}
+
+    {# choix Chant / Texte : commande l'affichage des blocs #}
+    <div class="mb-3">
+        {{ form_label(form.song) }}
+        {{ form_widget(form.song) }}
+        {{ form_errors(form.song) }}
+    </div>
 
     <div class="mb-3">
         {{ form_label(form.name) }}
@@ -21,28 +28,98 @@
     </div>
 
     <div class="mb-3">
-        {{ form_label(form.previewUrl) }}
-        {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.previewUrl) }}
-    </div>
-
-    <div class="mb-3">
         {{ form_label(form.lyrics) }}
         {{ form_widget(form.lyrics, {'attr': {'class': 'form-control', 'rows': 5}}) }}
         {{ form_errors(form.lyrics) }}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.partitionPDFFile, 'Partition PDF (PDF)') }}
-        {{ form_widget(form.partitionPDFFile, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.partitionPDFFile) }}
-        {% if song.partitionPDFName %}
-            <p class="mt-2">
-                Fichier actuel : 
-                <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
-                    {{ song.partitionPDFName }}
-                </a>
-            </p>
+    {# suggestion (peut ne pas être présent) #}
+    {% if form.suggestion is defined %}
+        <div class="mb-3 form-check">
+            {{ form_widget(form.suggestion, {'attr': {'class': 'form-check-input'}}) }}
+            {{ form_label(form.suggestion, null, {'label_attr': {'class': 'form-check-label'}}) }}
+            {{ form_errors(form.suggestion) }}
+        </div>
+    {% endif %}
+
+    {# --- Champs spécifiques pour un CHANT --- #}
+    <div id="song-fields" class="mb-3">
+        {% if form.previewUrl is defined %}
+            <div class="mb-3">
+                {{ form_label(form.previewUrl) }}
+                {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.previewUrl) }}
+            </div>
+        {% endif %}
+
+        {# ne rendre que si le champ n'a pas encore été rendu ailleurs #}
+        {% if form.lyricsAuthorName is defined  %}
+            <div class="mb-3">
+                {{ form_label(form.lyricsAuthorName) }}
+                {{ form_widget(form.lyricsAuthorName, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.lyricsAuthorName) }}
+            </div>
+        {% endif %}
+
+        {% if form.partitionPDFFile is defined %}
+            <div class="mb-3">
+                {{ form_label(form.partitionPDFFile, 'Partition PDF (PDF)') }}
+                {{ form_widget(form.partitionPDFFile, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.partitionPDFFile) }}
+                {% if song.partitionPDFName %}
+                    <p class="mt-2">
+                        Fichier actuel :
+                        <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
+                            {{ song.partitionPDFName }}
+                        </a>
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if form.musicAuthorName is defined %}
+            <div class="mb-3">
+                {{ form_label(form.musicAuthorName) }}
+                {{ form_widget(form.musicAuthorName, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.musicAuthorName) }}
+            </div>
+        {% endif %}
+
+        {% if form.interpretName is defined %}
+            <div class="mb-3">
+                {{ form_label(form.interpretName) }}
+                {{ form_widget(form.interpretName, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.interpretName) }}
+            </div>
+        {% endif %}
+
+        {% if form.editorName is defined %}
+            <div class="mb-3">
+                {{ form_label(form.editorName) }}
+                {{ form_widget(form.editorName, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.editorName) }}
+            </div>
+        {% endif %}
+    </div>
+
+    {# --- Champs spécifiques pour un TEXTE --- #}
+    <div id="text-fields" class="mb-3">
+
+
+        {% if form.textRef is defined %}
+            <div class="mb-3">
+                {{ form_label(form.textRef, 'Référence du texte (ex: Jean 3:16)') }}
+                {{ form_widget(form.textRef, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.textRef) }}
+            </div>
+        {% endif %}
+
+        {% if form.textTranslationName is defined %}
+            <div class="mb-3">
+                {{ form_label(form.textTranslationName, 'Nom de la traduction') }}
+                {{ form_widget(form.textTranslationName, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.textTranslationName) }}
+            </div>
         {% endif %}
     </div>
 
@@ -51,4 +128,25 @@
 
     {{ form_end(form) }}
 </div>
+
+{# bascule d'affichage JS selon la valeur du radio 'song' #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const radioName = '{{ form.song.vars.full_name }}';
+    const radios = Array.from(document.querySelectorAll('input[name="' + radioName + '"]'));
+    const songBlock = document.getElementById('song-fields');
+    const textBlock = document.getElementById('text-fields');
+
+    function updateVisibility() {
+        const checked = radios.find(r => r.checked);
+        const isSong = checked ? (checked.value === '1' || checked.value === 'true') : true;
+
+        if (songBlock) songBlock.style.display = isSong ? '' : 'none';
+        if (textBlock) textBlock.style.display = isSong ? 'none' : '';
+    }
+
+    radios.forEach(r => r.addEventListener('change', updateVisibility));
+    updateVisibility();
+});
+</script>
 {% endblock %}
