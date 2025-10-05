@@ -1,152 +1,200 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}{% endblock %}
+{% block title %}{{ song.id ? 'Modifier le chant' : 'Ajouter un nouvel élément' }}{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <h1>{{ song.id ? 'Modifier le chant' : 'Ajouter un nouveau chant' }}</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">
+            {{ song.id ? 'Modifier le chant' : 'Ajouter un nouvel élément' }}
+        </h1>
 
-    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}, 'multipart': true}) }}
-
-    {# choix Chant / Texte : commande l'affichage des blocs #}
-    <div class="mb-3">
-        {{ form_label(form.song) }}
-        {{ form_widget(form.song) }}
-        {{ form_errors(form.song) }}
-    </div>
-
-    <div class="mb-3">
-        {{ form_label(form.name) }}
-        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.name) }}
-    </div>
-
-    <div class="mb-3">
-        {{ form_label(form.type) }}
-        {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.type) }}
-    </div>
-
-    <div class="mb-3">
-        {{ form_label(form.lyrics) }}
-        {{ form_widget(form.lyrics, {'attr': {'class': 'form-control', 'rows': 5}}) }}
-        {{ form_errors(form.lyrics) }}
-    </div>
-
-    {# suggestion (peut ne pas être présent) #}
-    {% if form.suggestion is defined %}
-        <div class="mb-3 form-check">
-            {{ form_widget(form.suggestion, {'attr': {'class': 'form-check-input'}}) }}
-            {{ form_label(form.suggestion, null, {'label_attr': {'class': 'form-check-label'}}) }}
-            {{ form_errors(form.suggestion) }}
+        <div class="d-flex align-items-center" style="gap:0.75rem;">
+            {# Bouton Enregistrer stylisé (soumis via form id) #}
+            <button type="submit" form="songForm"
+                class="btn"
+                style="background:#ff8a00;color:#fff;border-radius:20px;padding:8px 18px;font-weight:600;box-shadow:0 3px 0 rgba(0,0,0,0.08);">
+                Enregistrer
+            </button>
+            <a href="{{ path('app_song_index') }}" class="btn btn-secondary" style="border-radius:20px;padding:6px 14px;">Annuler</a>
         </div>
-    {% endif %}
-
-    {# --- Champs spécifiques pour un CHANT --- #}
-    <div id="song-fields" class="mb-3">
-        {% if form.previewUrl is defined %}
-            <div class="mb-3">
-                {{ form_label(form.previewUrl) }}
-                {{ form_widget(form.previewUrl, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.previewUrl) }}
-            </div>
-        {% endif %}
-
-        {# ne rendre que si le champ n'a pas encore été rendu ailleurs #}
-        {% if form.lyricsAuthorName is defined  %}
-            <div class="mb-3">
-                {{ form_label(form.lyricsAuthorName) }}
-                {{ form_widget(form.lyricsAuthorName, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.lyricsAuthorName) }}
-            </div>
-        {% endif %}
-
-        {% if form.partitionPDFFile is defined %}
-            <div class="mb-3">
-                {{ form_label(form.partitionPDFFile, 'Partition PDF (PDF)') }}
-                {{ form_widget(form.partitionPDFFile, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.partitionPDFFile) }}
-                {% if song.partitionPDFName %}
-                    <p class="mt-2">
-                        Fichier actuel :
-                        <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
-                            {{ song.partitionPDFName }}
-                        </a>
-                    </p>
-                {% endif %}
-            </div>
-        {% endif %}
-
-        {% if form.musicAuthorName is defined %}
-            <div class="mb-3">
-                {{ form_label(form.musicAuthorName) }}
-                {{ form_widget(form.musicAuthorName, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.musicAuthorName) }}
-            </div>
-        {% endif %}
-
-        {% if form.interpretName is defined %}
-            <div class="mb-3">
-                {{ form_label(form.interpretName) }}
-                {{ form_widget(form.interpretName, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.interpretName) }}
-            </div>
-        {% endif %}
-
-        {% if form.editorName is defined %}
-            <div class="mb-3">
-                {{ form_label(form.editorName) }}
-                {{ form_widget(form.editorName, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.editorName) }}
-            </div>
-        {% endif %}
     </div>
 
-    {# --- Champs spécifiques pour un TEXTE --- #}
-    <div id="text-fields" class="mb-3">
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'songForm'}, 'multipart': true}) }}
 
-
-        {% if form.textRef is defined %}
-            <div class="mb-3">
-                {{ form_label(form.textRef, 'Référence du texte (ex: Jean 3:16)') }}
-                {{ form_widget(form.textRef, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.textRef) }}
+    <div style="background:#f9e9ed;border-radius:12px;padding:18px;display:flex;gap:20px;">
+        <!-- Colonne gauche : champs principaux (titre / catégorie / paroles) -->
+        <div style="flex:1;min-width:0;">
+            <!-- Type switch (chant / lecture) - bouton stylisé -->
+            <div class="mb-3" style="display:flex;gap:10px;align-items:center;">
+                <div style="display:flex;gap:8px;background:transparent;">
+                    {# rendu des radios via form_widget (marque les champs comme "rendered") #}
+                    {{ form_widget(form.song, { 'attr': {'class':'d-flex gap-2'}, 'label_attr': {'class':'me-2'} }) }}
+                </div>
             </div>
-        {% endif %}
 
-        {% if form.textTranslationName is defined %}
             <div class="mb-3">
-                {{ form_label(form.textTranslationName, 'Nom de la traduction') }}
-                {{ form_widget(form.textTranslationName, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.textTranslationName) }}
+                <label class="form-label" style="font-weight:600;font-size:0.85rem;">Titre du chant :</label>
+                {{ form_widget(form.name, {'attr': {'class':'form-control', 'placeholder':'Écrire le titre ici','style':'border-radius:20px;padding:12px;'}}) }}
+                {{ form_errors(form.name) }}
             </div>
-        {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" style="font-weight:600;font-size:0.85rem;">Catégorie(s) :</label>
+                {{ form_widget(form.type, {'attr': {'class':'form-select', 'style':'border-radius:20px;padding:8px;'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" style="font-weight:600;font-size:0.85rem;">Paroles :</label>
+                {{ form_widget(form.lyrics, {'attr': {'class':'form-control', 'rows':18, 'placeholder':'Écrire le texte ici (Mettre « R » devant les refrains et « 1 » puis suites de nombres devant les couplets)','style':'border-radius:14px;padding:12px;'}}) }}
+                {{ form_errors(form.lyrics) }}
+            </div>
+
+            {# suggestion (render via form_widget si présent) #}
+            {% if form.suggestion is defined %}
+                <div class="mb-2">
+                    {{ form_widget(form.suggestion) }}
+                    {{ form_errors(form.suggestion) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Colonne droite : preview, partitions, crédits -->
+        <div style="width:380px;">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div id="song-specific" style="display:;"> {# conteneur des champs spécifiques aux chants #}
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const input = document.getElementById('song_form_previewUrl');
+                        const preview = document.getElementById('youtube-preview');
+                        const iframe = document.getElementById('youtube-iframe');
+                        function extractYoutubeId(url) {
+                            if (!url) return '';
+                            let match = url.match(/(?:youtube\.com.*[?&]v=|youtu\.be\/)([^&\s]+)/);
+                            return match ? match[1] : '';
+                        }
+                        function updatePreview() {
+                            const inputValue = input.value.trim();
+                            let url = null;
+                            try {
+                                // Vérifie si c'est une URL valide
+                                const testUrl = new URL(inputValue);
+                                url = inputValue;
+                            } catch (e) {
+                                url = null;
+                            }
+                            const vid = extractYoutubeId(url);
+                            if (url) {
+                                preview.style.display = '';
+                                if (vid) {
+                                    iframe.src = 'https://www.youtube.com/embed/' + vid;
+                                } else {
+                                    iframe.src = url;
+                                }
+                            } else {
+                                preview.style.display = 'none';
+                                iframe.src = 'about:blank';
+                            }
+                        }
+                        if (input) {
+                            input.addEventListener('input', updatePreview);
+                        }
+                    });
+                    </script>
+                    <div>
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem;">URL de prévisualisation (lien Youtube) :</label>
+                        {{ form_widget(form.previewUrl, {'attr': {'class':'form-control','placeholder':"Coller l'URL Youtube ici",'style':'border-radius:14px;padding:10px;','id':'song_form_previewUrl'}}) }}
+                        {{ form_errors(form.previewUrl) }}
+                    </div>
+
+                    <div id="youtube-preview" style="background:#000;border-radius:8px;overflow:hidden;{% if not (form.previewUrl is defined and form.previewUrl.vars.value) %}display:none;{% endif %}">
+                        {% set vid = '' %}
+                        {% if form.previewUrl is defined and form.previewUrl.vars.value %}
+                            {% if 'v=' in form.previewUrl.vars.value %}
+                                {% set vid = form.previewUrl.vars.value|split('v=')|last|split('&')|first %}
+                            {% elseif form.previewUrl.vars.value matches '~youtu\\.be/(.+)$~' %}
+                                {% set vid = (form.previewUrl.vars.value|replace({'https://youtu.be/':'','http://youtu.be/':''}) ) %}
+                            {% endif %}
+                        {% endif %}
+                        <div class="ratio ratio-16x9">
+                            <iframe id="youtube-iframe"
+                                src="{% if vid %}https://www.youtube.com/embed/{{ vid }}{% elseif form.previewUrl is defined and form.previewUrl.vars.value %}{{ form.previewUrl.vars.value }}{% else %}about:blank{% endif %}"
+                                title="{{ form.name.vars.value }}"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </div>
+
+                    
+
+                    <div style="background:#fff;padding:12px;border-radius:8px;">
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem;">Partition(s) : (PDF)</label>
+                        {{ form_widget(form.partitionPDFFile, {'attr': {'class':'form-control','style':'border-radius:10px;'}}) }}
+                        {{ form_errors(form.partitionPDFFile) }}
+                        {% if song.partitionPDFName %}
+                            <p class="mt-2 small">Fichier actuel :
+                                <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">{{ song.partitionPDFName }}</a>
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <div style="background:#fff;padding:12px;border-radius:8px;">
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem;">Compositeur(s) :</label>
+                        {{ form_widget(form.musicAuthorName, {'attr': {'class':'form-control','placeholder':'Écrire le(s) Nom(s) et Prénom(s) ici','style':'border-radius:10px;'}}) }}
+                        {{ form_errors(form.musicAuthorName) }}
+
+                        <label class="form-label mt-2" style="font-weight:600;font-size:0.85rem;">Écriture des paroles :</label>
+                        {{ form_widget(form.lyricsAuthorName, {'attr': {'class':'form-control','placeholder':'Écrire le(s) Nom(s) et Prénom(s)','style':'border-radius:10px;'}}) }}
+
+                        <label class="form-label mt-2" style="font-weight:600;font-size:0.85rem;">Interprète(s) :</label>
+                        {{ form_widget(form.interpretName, {'attr': {'class':'form-control','placeholder':'Écrire le(s) Nom(s) et Prénom(s)','style':'border-radius:10px;'}}) }}
+
+                        <label class="form-label mt-2" style="font-weight:600;font-size:0.85rem;">Éditeur(s) :</label>
+                        {{ form_widget(form.editorName, {'attr': {'class':'form-control','placeholder':'Écrire le(s) Nom(s) ou organisme','style':'border-radius:10px;'}}) }}
+                        {{ form_errors(form.editorName) }}
+                    </div>
+                </div>
+
+                {# Champs spécifiques aux textes (lectures) : affichés quand radio indique lecture (value '0') #}
+                <div id="text-specific" style="background:#fff;padding:12px;border-radius:8px;display:none;">
+                    {% if form.textRef is defined %}
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem;">Référence du texte (ex: Jean 3:16)</label>
+                        {{ form_widget(form.textRef, {'attr': {'class':'form-control','placeholder':'Référence du texte','style':'border-radius:10px;'}}) }}
+                        {{ form_errors(form.textRef) }}
+                    {% endif %}
+                    {% if form.textTranslationName is defined %}
+                        <label class="form-label mt-2" style="font-weight:600;font-size:0.85rem;">Nom de la traduction</label>
+                        {{ form_widget(form.textTranslationName, {'attr': {'class':'form-control','placeholder':'Nom de la traduction','style':'border-radius:10px;'}}) }}
+                        {{ form_errors(form.textTranslationName) }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
-    <a href="{{ path('app_song_index') }}" class="btn btn-secondary">Annuler</a>
-
-    {{ form_end(form) }}
-</div>
-
-{# bascule d'affichage JS selon la valeur du radio 'song' #}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const radioName = '{{ form.song.vars.full_name }}';
-    const radios = Array.from(document.querySelectorAll('input[name="' + radioName + '"]'));
-    const songBlock = document.getElementById('song-fields');
-    const textBlock = document.getElementById('text-fields');
-
-    function updateVisibility() {
-        const checked = radios.find(r => r.checked);
-        const isSong = checked ? (checked.value === '1' || checked.value === 'true') : true;
-
-        if (songBlock) songBlock.style.display = isSong ? '' : 'none';
-        if (textBlock) textBlock.style.display = isSong ? 'none' : '';
-    }
-
-    radios.forEach(r => r.addEventListener('change', updateVisibility));
-    updateVisibility();
-});
-</script>
-{% endblock %}
+    {# render any remaining hidden fields (csrf etc.) puis fermer le formulaire sans re-render le rest #}
+    {{ form_rest(form) }}
+    {{ form_end(form, {'render_rest': false}) }}
+ </div>
+ 
+ <script>
+ document.addEventListener('DOMContentLoaded', function () {
+     // gestion visibilité champs chant / lecture
+    const radios = Array.from(document.querySelectorAll('input[name="{{ form.song.vars.full_name }}"]'));
+    const textSpecific = document.getElementById('text-specific');
+    const songSpecific = document.getElementById('song-specific');
+ 
+     function updateBlocks() {
+         const checked = radios.find(r => r.checked);
+         // valeur '1' => Chant, '0' => Lecture / Texte
+        const isSong = checked ? (checked.value === '1' || checked.value === 'true' || checked.value === 'on') : true;
+        if (textSpecific) textSpecific.style.display = isSong ? 'none' : '';
+        if (songSpecific) songSpecific.style.display = isSong ? '' : 'none';
+     }
+ 
+     radios.forEach(r => r.addEventListener('change', updateBlocks));
+     updateBlocks();
+ });
+ </script>
+ {% endblock %}

@@ -37,7 +37,7 @@ class SongFormType extends AbstractType
             // choix Chant / Texte : doit rester présent pour décider quels champs afficher
             ->add('song', ChoiceType::class, [
                 'choices' => [
-                    'Texte' => 0,
+                    'Lecture et Prière' => 0,
                     'Chant' => 1,
                 ],
                 'expanded' => true,
