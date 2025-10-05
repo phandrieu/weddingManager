@@ -45,8 +45,15 @@ class SecurityController extends AbstractController
             $user->addRole('ROLE_MUSICIAN');
         } elseif ($role === 'marie') {
             $wedding->setMarie($user);
+            $user->addRole('ROLE_USER');
         } elseif ($role === 'mariee') {
             $wedding->setMariee($user);
+            $user->addRole('ROLE_USER');
+        }
+        elseif ($role === 'mariee') {
+            $wedding->setParish($user);
+            $user->addRole('ROLE_USER');
+            $user->addRole('ROLE_PARISH');
         }
 
         $invitation->setUsed(true);

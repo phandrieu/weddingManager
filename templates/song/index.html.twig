@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">Répertoire global</h1>
+            <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">Bibliothèque partagée</h1>
         </div>
 
         <div class="d-flex align-items-center" style="gap:0.75rem;flex-wrap:wrap;">
@@ -28,29 +28,37 @@
                 </a>
             {% endif %}
 
-            <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:150px;">
-                <option value="">Tous les types</option>
-                {% set types = [] %}
-                {% for song in songs %}
-                    {% if song.type.name not in types %}
-                        {% set types = types|merge([song.type.name]) %}
-                        <option value="{{ song.type.name }}">{{ song.type.name }}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
+            {# Champ de recherche + filtre par type #}
+            <div class="d-flex" style="gap:0.5rem;align-items:center;">
+                <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Rechercher..." style="min-width:180px;">
+                <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:160px;">
+                    <option value="">Tous les types</option>
+                    {% set types = [] %}
+                    {% for song in songs %}
+                        {% if song.type.name not in types %}
+                            {% set types = types|merge([song.type.name]) %}
+                            <option value="{{ song.type.name }}">{{ song.type.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
         </div>
     </div>
 
     {# tabs pour Chants / Textes #}
-    <ul class="nav nav-pills mb-3" id="songTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true">
-                <i class="bi bi-music-note"></i> Chants
+    <ul class="nav mb-4" id="songTabs" role="tablist" style="gap:0.75rem;">
+        <li class="nav-item">
+            <button class="btn d-flex align-items-center active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true"
+                style="background:var(--color-secondary);color:var(--color-bg);border-radius:999px;padding:10px 22px;gap:12px;min-height:48px;">
+                <i class="bi bi-music-note" style="font-size:1.15rem;"></i>
+                <span style="font-weight:600;">Chants</span>
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false">
-                <i class="bi bi-book"></i> Textes & Lectures
+        <li class="nav-item">
+            <button class="btn d-flex align-items-center" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false"
+                style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:999px;padding:10px 22px;gap:12px;min-height:48px;">
+                <i class="bi bi-book" style="font-size:1.15rem;"></i>
+                <span style="font-weight:600;">Textes & Lectures</span>
             </button>
         </li>
     </ul>
@@ -251,6 +259,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const typeFilter = document.getElementById('typeFilter');
+    const searchInput = document.getElementById('searchInput');
 
     function updateNoResults(container) {
         const cards = Array.from(container.querySelectorAll('.song-card'));
@@ -260,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!existing) {
                 const no = document.createElement('div');
                 no.className = 'no-results-card col-12';
-                no.innerHTML = '<div class="alert alert-secondary">Aucun élément trouvé pour ce type.</div>';
+                no.innerHTML = '<div class="alert alert-secondary">Aucun élément trouvé pour ce type / recherche.</div>';
                 container.appendChild(no);
             }
         } else if (existing) {
@@ -268,27 +277,48 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // applique filtre par type + recherche pour une pane donnée
     function applyFilterToPane(paneId) {
         const container = document.getElementById(paneId);
+        if (!container) return;
         const cards = Array.from(container.querySelectorAll('.song-card'));
-        const selectedType = typeFilter.value;
+        const selectedType = typeFilter.value.trim().toLowerCase();
+        const query = (searchInput.value || '').trim().toLowerCase();
+
         cards.forEach(card => {
-            if (!selectedType || card.dataset.type === selectedType) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
+            let visibleByType = !selectedType || (card.dataset.type && card.dataset.type.toLowerCase() === selectedType);
+            // recherche : titre, type, extrait de paroles et champs visibles dans la carte
+            const title = (card.querySelector('h6')?.textContent || '').toLowerCase();
+            const excerpt = (card.querySelector('.mb-3.text-muted')?.textContent || '').toLowerCase();
+            const meta = (card.querySelector('.small')?.textContent || '').toLowerCase();
+            const creditsText = (card.querySelector('.song-credits-text')?.textContent || '').toLowerCase();
+
+            const matchesQuery = !query || title.includes(query) || excerpt.includes(query) || meta.includes(query) || creditsText.includes(query);
+
+            card.style.display = (visibleByType && matchesQuery) ? '' : 'none';
         });
+
         updateNoResults(container);
     }
 
-    // filter on change for both panes
+    // recherche / filtre déclenchés sur entrée et changement
+    searchInput.addEventListener('input', function () {
+        // n'appliquer qu'à l'onglet visible
+        const activePane = document.querySelector('.tab-pane.show.active');
+        if (activePane && activePane.id) {
+            applyFilterToPane(activePane.querySelector('.row')?.id || activePane.id);
+        } else {
+            applyFilterToPane('songsGridChants');
+            applyFilterToPane('songsGridTextes');
+        }
+    });
+
     typeFilter.addEventListener('change', function () {
         applyFilterToPane('songsGridChants');
         applyFilterToPane('songsGridTextes');
     });
 
-    // when switching tabs, ensure the visible pane has filters applied
+    // when switching tabs, ré-appliquer recherche + filtre pour la pane devenue visible
     document.getElementById('tab-chants-btn').addEventListener('shown.bs.tab', function () {
         applyFilterToPane('songsGridChants');
     });

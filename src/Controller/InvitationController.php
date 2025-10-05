@@ -44,10 +44,13 @@ public function accept(string $token, InvitationRepository $repo, Request $reque
         if ($role === 'musicien') {
             $wedding->addMusician($user);
             $user->addRole('ROLE_MUSICIAN');
+            $user->addRole('ROLE_USER');
         } elseif ($role === 'marie') {
             $wedding->setMarie($user);
+            $user->addRole('ROLE_USER');
         } elseif ($role === 'mariee') {
             $wedding->setMariee($user);
+            $user->addRole('ROLE_USER');
         }
 
         $invitation->setUsed(true);

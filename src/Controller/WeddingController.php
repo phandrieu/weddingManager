@@ -145,7 +145,7 @@ if (count($wedding->getMusicians()) > 0) {
         }
     }
 } else {
-    // Aucun musicien → tout le répertoire global
+    // Aucun musicien → tout le Bibliothèque partagée
     $allSongs = $songRepo->findAll();
     foreach ($allSongs as $song) {
         $availableSongsByType[$song->getType()->getId()][] = $song;

@@ -203,6 +203,10 @@
             <div class="d-flex justify-content-start" style="gap:0.75rem;">
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
                 <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary">Annuler</a>
+                <!-- Bouton d'invitation -->
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                    <i class="bi bi-envelope-plus"></i> Inviter
+                </button>
             </div>
         </div>
 
@@ -224,5 +228,57 @@
     </div>
 
     {{ form_end(form) }}
-</div>
-{% endblock %}
+
+    <!-- Modal d'invitation -->
+    <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rôle</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="paroisse">Paroisse</option>
+                                <option value="musicien">Musicien</option>
+                                <option value="marie">Marié</option>
+                                <option value="mariee">Mariée</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% if generatedInvitationLink is defined %}
+                        <div class="alert alert-info mt-3 mx-3">
+                            <p>Lien d'invitation généré :</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
+                                <button type="button" class="btn btn-outline-secondary" onclick="copyInvitationLink()">Copier</button>
+                            </div>
+                        </div>
+                        <script>
+                            function copyInvitationLink() {
+                                var copyText = document.getElementById("invitation-link");
+                                copyText.select();
+                                copyText.setSelectionRange(0, 99999); // For mobile
+                                navigator.clipboard.writeText(copyText.value).then(function() {
+                                    alert("Lien copié dans le presse-papiers !");
+                                });
+                            }
+                        </script>
+                    {% endif %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+ </div>
+ {% endblock %}
