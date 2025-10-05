@@ -76,10 +76,13 @@ public function delete(Request $request, Song $song, SongRepository $repo): Resp
                 if ($isNew) {
                     // à la création : addedBy + lastEditBy
                     $song->setAddedBy($user);
+                    $song->setAddedAt(new \DateTime());
+                    $song->setLastEditAt(new \DateTime());
                     $song->setLastEditBy($user);
                 } else {
                     // à la modification : lastEditBy uniquement
                     $song->setLastEditBy($user);
+                    $song->setLastEditAt(new \DateTime());
                 }
             }
 

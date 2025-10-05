@@ -77,6 +77,12 @@ class Song
     #[ORM\ManyToOne(inversedBy: 'songsLastEdited')]
     private ?User $lastEditBy = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTime $addedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTime $lastEditAt = null;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -318,6 +324,30 @@ class Song
     public function setLastEditBy(?User $lastEditBy): static
     {
         $this->lastEditBy = $lastEditBy;
+
+        return $this;
+    }
+
+    public function getAddedAt(): ?\DateTime
+    {
+        return $this->addedAt;
+    }
+
+    public function setAddedAt(?\DateTime $addedAt): static
+    {
+        $this->addedAt = $addedAt;
+
+        return $this;
+    }
+
+    public function getLastEditAt(): ?\DateTime
+    {
+        return $this->lastEditAt;
+    }
+
+    public function setLastEditAt(?\DateTime $lastEditAt): static
+    {
+        $this->lastEditAt = $lastEditAt;
 
         return $this;
     }

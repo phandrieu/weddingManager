@@ -68,7 +68,7 @@
             <div class="row g-4" id="songsGridChants">
                 {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
                 {% if nonSuggestions is not empty %}
-                    {% for song in nonSuggestions %}
+                    {% for song in nonSuggestions|sort((a, b) => a.name|lower <=> b.name|lower) %}
                         {% if song.song %}
                         {% set youtubeId = song.previewUrl
                             |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
@@ -90,6 +90,9 @@
                                             Pas de preview
                                         </div>
                                     {% endif %}
+
+                                    {# full lyrics hidden for search (chants) #}
+                                    <div class="song-lyrics-text" style="display:none;">{{ song.lyrics ?: '' }}</div>
                                 </div>
 
                                 <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
@@ -127,8 +130,8 @@
                                         <p><strong>Auteur de la musique :</strong> {{ song.musicAuthorName ?: '—' }}</p>
                                         <p><strong>Maison d'édition :</strong> {{ song.editorName ?: '—' }}</p>
                                         <p><strong>Interprète :</strong> {{ song.interpretName ?: '—' }}</p>
-                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</p>
-                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</p>
+                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }} {% if song.addedAt is not null %} ({{ song.addedAt ? song.addedAt|date('d/m/Y H:i', 'Europe/Paris') : '' }}){% endif %}</p>
+                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }} {% if song.lastEditAt is not null %} ({{ song.lastEditAt ? song.lastEditAt|date('d/m/Y H:i', 'Europe/Paris') : '' }}){% endif %}</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -163,6 +166,9 @@
                                     <div class="mb-3 text-muted">
                                         {{ song.lyrics ? song.lyrics|slice(0,120) ~ '…' : 'Pas de texte' }}
                                     </div>
+
+                                    {# full lyrics hidden for search (textes) #}
+                                    <div class="song-lyrics-text" style="display:none;">{{ song.lyrics ?: '' }}</div>
                                 </div>
 
                                 <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
@@ -253,6 +259,19 @@
     </div>
 </div>
 {% endif %}
+
+<div class="container-fluid mt-4" role="note" aria-label="Information légale">
+    <div class="mx-auto" style="max-width:1100px; margin-bottom:2rem;">
+        <div class="p-3" style="background:var(--color-tertiary);border-radius:10px;border:1px solid rgba(0,0,0,0.04);">
+            <p class="small mb-0 text-muted" style="line-height:1.4;text-align:center;">
+                Ce site agit en tant qu’hébergeur (LCEN, 21 juin 2004). Les publications restent sous la responsabilité de chaque contributeur.
+                Toute personne peut notifier un contenu illicite via
+                <a href="mailto:contact@notremessedemariage.fr">contact@notremessedemariage.fr</a>.
+                Les contenus signalés sont retirés promptement.
+            </p>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -292,8 +311,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const excerpt = (card.querySelector('.mb-3.text-muted')?.textContent || '').toLowerCase();
             const meta = (card.querySelector('.small')?.textContent || '').toLowerCase();
             const creditsText = (card.querySelector('.song-credits-text')?.textContent || '').toLowerCase();
+            const lyrics = (card.querySelector('.song-lyrics-text')?.textContent || '').toLowerCase();
 
-            const matchesQuery = !query || title.includes(query) || excerpt.includes(query) || meta.includes(query) || creditsText.includes(query);
+            const matchesQuery = !query || title.includes(query) || excerpt.includes(query) || meta.includes(query) || creditsText.includes(query) || lyrics.includes(query);
 
             card.style.display = (visibleByType && matchesQuery) ? '' : 'none';
         });
