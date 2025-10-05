@@ -27,6 +27,7 @@ class UserType extends AbstractType
                 'choices' => [
                     'Utilisateur' => 'ROLE_USER',
                     'Musicien' => 'ROLE_MUSICIAN',
+                    'Paroisse' => 'ROLE_PARISH',
                     'Admin' => 'ROLE_ADMIN',
                 ],
                 'multiple' => true,

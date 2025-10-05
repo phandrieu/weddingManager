@@ -83,6 +83,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'lastEditBy')]
     private Collection $songsLastEdited;
 
+    /**
+     * @var Collection<int, Wedding>
+     */
+    #[ORM\ManyToMany(targetEntity: Wedding::class, mappedBy: 'parishUsers')]
+    private Collection $weddingsAsParish;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -91,6 +97,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->repertoire = new ArrayCollection();
         $this->songsAdded = new ArrayCollection();
         $this->songsLastEdited = new ArrayCollection();
+        $this->weddingsAsParish = new ArrayCollection();
     }
 
     /**
@@ -427,6 +434,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             if ($songsLastEdited->getLastEditBy() === $this) {
                 $songsLastEdited->setLastEditBy(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Wedding>
+     */
+    public function getWeddingsAsParish(): Collection
+    {
+        return $this->weddingsAsParish;
+    }
+
+    public function addWeddingsAsParish(Wedding $weddingsAsParish): static
+    {
+        if (!$this->weddingsAsParish->contains($weddingsAsParish)) {
+            $this->weddingsAsParish->add($weddingsAsParish);
+            $weddingsAsParish->addParishUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWeddingsAsParish(Wedding $weddingsAsParish): static
+    {
+        if ($this->weddingsAsParish->removeElement($weddingsAsParish)) {
+            $weddingsAsParish->removeParishUser($this);
         }
 
         return $this;

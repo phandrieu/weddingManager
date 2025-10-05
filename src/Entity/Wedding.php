@@ -85,11 +85,18 @@ private ?User $mariee = null;
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTime $time = null;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'weddingsAsParish')]
+    private Collection $parishUsers;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
         $this->musicians = new ArrayCollection();
         $this->invitations = new ArrayCollection();
+        $this->parishUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -382,6 +389,30 @@ private ?User $mariee = null;
     public function setTime(?\DateTime $time): static
     {
         $this->time = $time;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getParishUsers(): Collection
+    {
+        return $this->parishUsers;
+    }
+
+    public function addParishUser(User $parishUser): static
+    {
+        if (!$this->parishUsers->contains($parishUser)) {
+            $this->parishUsers->add($parishUser);
+        }
+
+        return $this;
+    }
+
+    public function removeParishUser(User $parishUser): static
+    {
+        $this->parishUsers->removeElement($parishUser);
 
         return $this;
     }

@@ -51,6 +51,10 @@ public function accept(string $token, InvitationRepository $repo, Request $reque
         } elseif ($role === 'mariee') {
             $wedding->setMariee($user);
             $user->addRole('ROLE_USER');
+        } elseif ($role === 'paroisse') {
+            $wedding->addParishUser($user);
+            $user->addRole('ROLE_USER');
+            $user->addRole('ROLE_PARISH');
         }
 
         $invitation->setUsed(true);
