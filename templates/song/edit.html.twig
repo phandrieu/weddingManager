@@ -20,6 +20,18 @@
         </div>
     </div>
 
+    <div class="container-fluid my-3" role="note" aria-label="Présentation de la bibliothèque">
+        <div class="mx-auto" style="max-width:1100px;">
+            <div class="p-3" style="background:var(--color-tertiary);border-radius:10px;border:1px solid rgba(0,0,0,0.04);">
+                <p class="small mb-0 text-muted" style="line-height:1.4;">
+                    Cette bibliothèque vit grâce aux apports de la communauté : musiciens, paroisses et futurs mariés.
+                    Chacun peut y proposer ses versions de chants, partitions ou textes pour enrichir la préparation des célébrations.
+                    Chaque contributeur reste responsable de ses publications.
+                </p>
+            </div>
+        </div>
+    </div>
+
     {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'songForm'}, 'multipart': true}) }}
 
     <div style="background:#f9e9ed;border-radius:12px;padding:18px;display:flex;gap:20px;">
@@ -47,7 +59,7 @@
 
             <div class="mb-3">
                 <label class="form-label" style="font-weight:600;font-size:0.85rem;">Paroles :</label>
-                {{ form_widget(form.lyrics, {'attr': {'class':'form-control', 'rows':18, 'placeholder':'Écrire le texte ici (Mettre « R » devant les refrains et « 1 » puis suites de nombres devant les couplets)','style':'border-radius:14px;padding:12px;'}}) }}
+                {{ form_widget(form.lyrics, {'attr': {'class':'form-control', 'rows':18, 'placeholder':'Écrire le texte ici (Mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)','style':'border-radius:14px;padding:12px;'}}) }}
                 {{ form_errors(form.lyrics) }}
             </div>
 
@@ -197,4 +209,17 @@
      updateBlocks();
  });
  </script>
- {% endblock %}
+
+<div class="container-fluid mt-4" role="note" aria-label="Information légale">
+    <div class="mx-auto" style="max-width:1100px; margin-bottom:2rem;">
+        <div class="p-3" style="background:var(--color-tertiary);border-radius:10px;border:1px solid rgba(0,0,0,0.04);">
+            <p class="small mb-0 text-muted" style="line-height:1.4;text-align:center;">
+                Ce site agit en tant qu’hébergeur (LCEN, 21 juin 2004). Les publications restent sous la responsabilité de chaque contributeur.
+                Toute personne peut notifier un contenu illicite via
+                <a href="mailto:contact@notremessedemariage.fr">contact@notremessedemariage.fr</a>.
+                Les contenus signalés sont retirés promptement.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
