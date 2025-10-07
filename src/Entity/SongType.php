@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\SongTypeRepository;
+use App\Enum\CelebrationPeriod;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -26,10 +27,22 @@ class SongType
 
     #[ORM\Column]
     private ?bool $messe = null;
+    #[ORM\Column(type: 'string', enumType: CelebrationPeriod::class, nullable: true)]
+    private ?CelebrationPeriod $celebrationPeriod = null;
 
     public function __construct()
     {
         $this->songs = new ArrayCollection();
+    }
+    public function getCelebrationPeriod(): ?CelebrationPeriod
+    {
+        return $this->celebrationPeriod;
+    }
+    public function setCelebrationPeriod(?CelebrationPeriod $celebrationPeriod): static
+    {
+        $this->celebrationPeriod = $celebrationPeriod;
+
+        return $this;
     }
 
     public function getId(): ?int

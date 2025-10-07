@@ -202,19 +202,111 @@
             <!-- Actions -->
             <div class="d-flex justify-content-start" style="gap:0.75rem;">
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
-                <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary">Annuler</a>
-                <!-- Bouton d'invitation -->
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                    <i class="bi bi-envelope-plus"></i> Inviter
-                </button>
+                {# si le mariage existe on renvoie vers la vue, sinon vers la liste (création en cours) #}
+                {% if wedding.id %}
+                    <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary">Annuler</a>
+                    <!-- Bouton d'invitation (disponible seulement après création du mariage) -->
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="bi bi-envelope-plus"></i> Inviter
+                    </button>
+                {% else %}
+                    <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Déroulé (placeholder) -->
+        <!-- Déroulé -->
         <div class="tab-pane fade" id="pane-deroule">
-            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
-                <h5>Déroulé</h5>
-                <p class="text-muted">Section désactivée pour l'instant.</p>
+            <div class="p-3" style="background:transparent;">
+                <div style="background:var(--color-tertiary);border-radius:8px;padding:0 12px 12px 12px;">
+                    <div class="d-flex align-items-center" style="gap:8px;padding:12px 6px;">
+                        <div class="flex-fill" style="font-weight:700;color:var(--color-bg);background:transparent;">TYPE</div>
+                        <div class="flex-fill" style="font-weight:700;color:var(--color-bg);background:transparent;">VOTRE CHOIX</div>
+                        <div style="width:150px;text-align:center;font-weight:700;color:var(--color-bg);">VALIDATION CÉLÉBRANT</div>
+                        <div style="width:150px;text-align:center;font-weight:700;color:var(--color-bg);">VALIDATION MUSICIEN</div>
+                        <div style="width:220px;text-align:center;font-weight:700;color:var(--color-bg);">COMMENTAIRES / QUESTIONS</div>
+                    </div>
+                </div>
+
+                {# regroupement des songTypes par celebrationPeriod #}
+                {% set types = songTypes is defined ? songTypes : [] %}
+                {% set groups = {} %}
+                {% for t in types %}
+                    {% set label = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
+                    {% if groups[label] is defined %}
+                        {% set groups = groups|merge({ (label) : groups[label]|merge([t]) }) %}
+                    {% else %}
+                        {% set groups = groups|merge({ (label) : [t] }) %}
+                    {% endif %}
+                {% endfor %}
+
+                {# ordre souhaité basé sur l'enum (les labels doivent correspondre aux values de l'enum) #}
+                {% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
+
+                {% if groups is empty %}
+                    <div class="p-3 mt-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
+                        <p class="text-muted mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</p>
+                    </div>
+                {% else %}
+                    <div class="mt-3" style="display:flex;flex-direction:column;gap:10px;">
+                        {% for label in order %}
+                            {% if groups[label] is defined %}
+                                <div style="background:#7a3f98;color:#fff;padding:8px 12px;border-radius:6px;font-weight:700;">
+                                    {{ label }}
+                                </div>
+
+                                <div style="background:#f5f5f5;border-radius:6px;padding:8px 0;">
+                                    {% for type in groups[label] %}
+                                        <div class="d-flex align-items-center" style="gap:8px;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.03);">
+                                            <div class="flex-fill" style="min-width:220px;">
+                                                <div style="background:#4b5e3a;color:#fff;padding:6px 8px;border-radius:6px;display:inline-block;font-weight:700;font-size:13px;">
+                                                    {{ type.name }}
+                                                </div>
+                                            </div>
+
+                                            <div class="flex-fill">
+                                                <label class="visually-hidden">Votre choix</label>
+                                                <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select" style="border-radius:8px;">
+                                                    <option value="">VOTRE CHOIX</option>
+                                                    {% for song in type.songs %}
+                                                        <option value="{{ song.id }}">{{ song.title is defined and song.title ? song.title : (song.name is defined and song.name ? song.name : 'Titre inconnu') }}</option>
+                                                    {% else %}
+                                                        <option disabled>Pas de chants définis</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div style="width:150px;text-align:center;">
+                                                <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                            </div>
+
+                                            <div style="width:150px;text-align:center;">
+                                                <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                            </div>
+
+                                            <div style="width:220px;text-align:center;">
+                                                {% if wedding.id %}
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary open-comments"
+                                                            data-wedding="{{ wedding.id }}"
+                                                            data-songtype="{{ type.id }}"
+                                                            aria-haspopup="dialog"
+                                                            aria-controls="commentsModal">
+                                                        Commentaires / questions
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
+                                                        Commentaires / questions
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -229,56 +321,164 @@
 
     {{ form_end(form) }}
 
-    <!-- Modal d'invitation -->
-    <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Rôle</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="paroisse">Paroisse</option>
-                                <option value="musicien">Musicien</option>
-                                <option value="marie">Marié</option>
-                                <option value="mariee">Mariée</option>
-                            </select>
-                        </div>
+    {# Modal d'invitation : ne pas afficher lors de la création tant que wedding.id n'existe pas #}
+    {% if wedding.id %}
+        <!-- Modal d'invitation -->
+        <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    {% if generatedInvitationLink is defined %}
-                        <div class="alert alert-info mt-3 mx-3">
-                            <p>Lien d'invitation généré :</p>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
-                                <button type="button" class="btn btn-outline-secondary" onclick="copyInvitationLink()">Copier</button>
+                    <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Rôle</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="paroisse">Paroisse</option>
+                                    <option value="musicien">Musicien</option>
+                                    <option value="marie">Marié</option>
+                                    <option value="mariee">Mariée</option>
+                                </select>
                             </div>
                         </div>
-                        <script>
-                            function copyInvitationLink() {
-                                var copyText = document.getElementById("invitation-link");
-                                copyText.select();
-                                copyText.setSelectionRange(0, 99999); // For mobile
-                                navigator.clipboard.writeText(copyText.value).then(function() {
-                                    alert("Lien copié dans le presse-papiers !");
-                                });
-                            }
-                        </script>
-                    {% endif %}
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                        {% if generatedInvitationLink is defined %}
+                            <div class="alert alert-info mt-3 mx-3">
+                                <p>Lien d'invitation généré :</p>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="copyInvitationLink()">Copier</button>
+                                </div>
+                            </div>
+                            <script>
+                                function copyInvitationLink() {
+                                    var copyText = document.getElementById("invitation-link");
+                                    copyText.select();
+                                    copyText.setSelectionRange(0, 99999); // For mobile
+                                    navigator.clipboard.writeText(copyText.value).then(function() {
+                                        alert("Lien copié dans le presse-papiers !");
+                                    });
+                                }
+                            </script>
+                        {% endif %}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# Modal générique pour afficher la conversation de commentaires en popup #}
+    <div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Commentaires</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center py-4" id="commentsModalSpinner">
+                        <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
                     </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <!-- le formulaire de commentaire sera injecté ici -->
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('commentsModal');
+        const bsModal = new bootstrap.Modal(modalEl);
+
+        // ouverture : charger la conversation (HTML complet) et en extraire les parties utiles
+        document.querySelectorAll('.open-comments').forEach(btn => {
+            btn.addEventListener('click', async function (e) {
+                const weddingId = this.dataset.wedding;
+                const songTypeId = this.dataset.songtype;
+                const url = `/comments/${weddingId}/${songTypeId}`;
+
+                const body = modalEl.querySelector('.modal-body');
+                const footer = modalEl.querySelector('.modal-footer');
+                body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                footer.innerHTML = '';
+                bsModal.show();
+
+                try {
+                    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const text = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+
+                    // extraire titre, boîte de commentaires et formulaire
+                    const header = doc.querySelector('h2');
+                    const commentsBox = doc.querySelector('#comments-box');
+                    // formulaire de commentaire (dans .card-footer ou premier form présent)
+                    const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
+
+                    body.innerHTML = '';
+                    if (header) body.appendChild(header.cloneNode(true));
+                    if (commentsBox) body.appendChild(commentsBox.cloneNode(true));
+                    else body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
+
+                    footer.innerHTML = '';
+                    if (form) {
+                        // injecter le form dans le footer et intercepter son envoi pour mise à jour ajax
+                        const injectedForm = form.cloneNode(true);
+                        // s'assurer que les boutons et classes restent Bootstrap-friendly
+                        footer.appendChild(injectedForm);
+
+                        injectedForm.addEventListener('submit', async function (evt) {
+                            evt.preventDefault();
+                            const fd = new FormData(injectedForm);
+                            const action = injectedForm.getAttribute('action') || url;
+                            const method = (injectedForm.getAttribute('method') || 'POST').toUpperCase();
+
+                            try {
+                                const r = await fetch(action, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                // après soumission, recharger la conversation pour afficher le nouveau message
+                                const r2 = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                const t2 = await r2.text();
+                                const d2 = new DOMParser().parseFromString(t2, 'text/html');
+                                const newComments = d2.querySelector('#comments-box');
+                                const newForm = d2.querySelector('.card-footer form') || d2.querySelector('form');
+                                body.querySelector('h2')?.remove();
+                                if (newComments) {
+                                    // remplacer la boîte de commentaires
+                                    const old = body.querySelector('#comments-box');
+                                    if (old) old.replaceWith(newComments.cloneNode(true));
+                                    else body.appendChild(newComments.cloneNode(true));
+                                }
+                                if (newForm) {
+                                    footer.innerHTML = '';
+                                    footer.appendChild(newForm.cloneNode(true));
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                alert('Erreur lors de l\'envoi du commentaire.');
+                            }
+                        });
+                    } else {
+                        footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+                    }
+                } catch (err) {
+                    console.error(err);
+                    body.innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
+                    modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+                }
+            });
+        });
+    });
+    </script>
  </div>
  {% endblock %}

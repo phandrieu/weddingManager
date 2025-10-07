@@ -89,6 +89,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Wedding::class, mappedBy: 'parishUsers')]
     private Collection $weddingsAsParish;
 
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -98,6 +104,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->songsAdded = new ArrayCollection();
         $this->songsLastEdited = new ArrayCollection();
         $this->weddingsAsParish = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     /**
@@ -461,6 +468,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->weddingsAsParish->removeElement($weddingsAsParish)) {
             $weddingsAsParish->removeParishUser($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getUser() === $this) {
+                $comment->setUser(null);
+            }
         }
 
         return $this;

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commentaires - {{ songType.name }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2>💬 Commentaires pour "{{ songType.name }}" du mariage de
+        {{ wedding.marie.firstName|default('') }} &amp; {{ wedding.mariee.firstName|default('') }}
+    </h2>
+
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body" id="comments-box" style="max-height: 400px; overflow-y: auto;">
+            {% if comments is not empty %}
+                {% for comment in comments %}
+                    <div class="mb-3 p-2 rounded {% if comment.user == app.user %}bg-light text-end{% else %}bg-white{% endif %}">
+                        <div class="fw-bold">
+                            {{ comment.user.firstName }} {{ comment.user.name }}
+                            <small class="text-muted">
+                                — {{ comment.createdAt|date('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                        <div>{{ comment.content }}</div>
+                        {% if comment.user == app.user %}
+                            <a href="{{ path('app_comment_edit', {id: comment.id}) }}" class="text-secondary small">✏️ Modifier</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Aucun commentaire pour l’instant. Soyez le premier à écrire !</p>
+            {% endif %}
+        </div>
+
+        <div class="card-footer">
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<style>
+#comments-box::-webkit-scrollbar {
+    width: 6px;
+}
+#comments-box::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+</style>
+{% endblock %}

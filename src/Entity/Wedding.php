@@ -50,6 +50,7 @@ private ?User $mariee = null;
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'weddingsAsMusicians')]
+    #[ORM\JoinTable(name: 'wedding_musicians')]
     private Collection $musicians;
 
     /**
@@ -89,7 +90,14 @@ private ?User $mariee = null;
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'weddingsAsParish')]
+    #[ORM\JoinTable(name: 'wedding_parish_users')]
     private Collection $parishUsers;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'wedding', orphanRemoval: true)]
+    private Collection $comments;
 
     public function __construct()
     {
@@ -97,6 +105,7 @@ private ?User $mariee = null;
         $this->musicians = new ArrayCollection();
         $this->invitations = new ArrayCollection();
         $this->parishUsers = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -413,6 +422,36 @@ private ?User $mariee = null;
     public function removeParishUser(User $parishUser): static
     {
         $this->parishUsers->removeElement($parishUser);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setWedding($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getWedding() === $this) {
+                $comment->setWedding(null);
+            }
+        }
 
         return $this;
     }

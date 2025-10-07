@@ -49,6 +49,7 @@ security:
         - { path: ^/songs/view, roles: ROLE_USER }
         - { path: ^/mariages/view, roles: ROLE_USER }
         - { path: ^/suggest-song, roles: ROLE_USER}
+        - { path: ^/comments, roles: ROLE_USER}
         
 
         # --- ROLE_MUSICIAN ---
@@ -60,6 +61,7 @@ security:
         - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
         - { path: ^/mariages, roles: ROLE_MUSICIAN }
         - { path: ^/repertoire, roles: ROLE_MUSICIAN }
+        - { path: ^/comments, roles: ROLE_MUSICIAN}
 
         # --- ROLE_ADMIN (accès total) ---
         - { path: ^/mariages, roles: ROLE_ADMIN }
