@@ -52,10 +52,16 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label" style="font-weight:600;font-size:0.85rem;">Catégorie(s) :</label>
-                {{ form_widget(form.type, {'attr': {'class':'form-select', 'style':'border-radius:20px;padding:8px;'}}) }}
-                {{ form_errors(form.type) }}
-            </div>
+    <label class="form-label" style="font-weight:600;font-size:0.85rem;">Catégorie(s) :</label>
+    {{ form_widget(form.types, {
+        'attr': {
+            'class': 'form-select song-type-select',
+            'style': 'border-radius:20px;padding:8px;',
+            'data-placeholder': 'Rechercher et sélectionner'
+        }
+    }) }}
+    {{ form_errors(form.types) }}
+</div>
 
             <div class="mb-3">
                 <label class="form-label" style="font-weight:600;font-size:0.85rem;">Paroles :</label>

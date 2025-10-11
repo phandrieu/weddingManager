@@ -8,7 +8,16 @@
 
     <ul class="list-group">
         <li class="list-group-item"><strong>Titre :</strong> {{ song.name }}</li>
-        <li class="list-group-item"><strong>Type :</strong> {{ song.type.name }}</li>
+        <li class="list-group-item">
+    <strong>Catégories :</strong>
+    {% if song.types is not empty %}
+        {% for t in song.types %}
+            <span class="badge bg-primary me-1">{{ t.name }}</span>
+        {% endfor %}
+    {% else %}
+        Aucune
+    {% endif %}
+</li>
         <li class="list-group-item">
             <strong>Preview :</strong>
             {% if song.previewUrl %}

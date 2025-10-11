@@ -19,9 +19,8 @@ class Song
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'songs')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?SongType $type = null;
+    #[ORM\ManyToMany(targetEntity: SongType::class, inversedBy: 'songs')]
+    private Collection $types;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $previewUrl = null;
@@ -86,6 +85,7 @@ class Song
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
+        $this->types = new ArrayCollection();
     }
 
     // --- Getters / Setters existants ---
@@ -101,16 +101,28 @@ class Song
         return $this;
     }
 
-    public function getType(): ?SongType
-    {
-        return $this->type;
+    /**
+ * @return Collection<int, SongType>
+ */
+public function getTypes(): Collection
+{
+    return $this->types;
+}
+
+public function addType(SongType $type): self
+{
+    if (!$this->types->contains($type)) {
+        $this->types->add($type);
     }
 
-    public function setType(?SongType $type): static
-    {
-        $this->type = $type;
-        return $this;
-    }
+    return $this;
+}
+
+public function removeType(SongType $type): self
+{
+    $this->types->removeElement($type);
+    return $this;
+}
 
     public function getPreviewUrl(): ?string
     {

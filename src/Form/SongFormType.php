@@ -28,13 +28,16 @@ class SongFormType extends AbstractType
                 'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('type', EntityType::class, [
+            ->add('types', EntityType::class, [
                 'class' => SongType::class,
                 'choice_label' => 'name',
-                'label' => 'Type d\'élément',
-                'attr' => ['class' => 'form-select']
+                'label' => 'Catégorie(s)',
+                'multiple' => true,
+                'attr' => [
+                    'class' => 'form-select song-type-select',
+                    'data-placeholder' => 'Sélectionnez une ou plusieurs catégories'
+                ]
             ])
-            // choix Chant / Texte : doit rester présent pour décider quels champs afficher
             ->add('song', ChoiceType::class, [
                 'choices' => [
                     'Lecture et Prière' => 0,
@@ -43,14 +46,13 @@ class SongFormType extends AbstractType
                 'expanded' => true,
                 'label' => 'Type d\'élément',
             ])
-            // champs de base affichés pour les deux cas
             ->add('lyrics', TextareaType::class, [
                 'label' => 'Texte',
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'rows' => 5]
             ]);
 
-        // fonction utilitaire pour ajouter les champs spécifiques Chant
+        // fonction utilitaire pour les champs Chant
         $addSongFields = function ($form) {
             $form
                 ->add('previewUrl', UrlType::class, [
@@ -58,7 +60,6 @@ class SongFormType extends AbstractType
                     'required' => false,
                     'attr' => ['class' => 'form-control']
                 ])
-                // auteur des paroles pour les chants
                 ->add('lyricsAuthorName', TextType::class, [
                     'label' => 'Auteur des paroles',
                     'required' => false,
@@ -87,7 +88,7 @@ class SongFormType extends AbstractType
                 ]);
         };
 
-        // fonction utilitaire pour ajouter les champs spécifiques Texte
+        // fonction utilitaire pour les champs Texte
         $addTextFields = function ($form) {
             $form
                 ->add('textRef', TextType::class, [
@@ -102,11 +103,9 @@ class SongFormType extends AbstractType
                 ]);
         };
 
-        // Ajout des deux groupes de champs au rendu initial pour que le JS puisse les afficher/cacher
         $addSongFields($builder);
         $addTextFields($builder);
 
-        // garder un listener pour assurer la présence du champ suggestion lors du submit si besoin
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $form = $event->getForm();
             if (!$form->has('suggestion')) {

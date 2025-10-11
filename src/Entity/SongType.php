@@ -19,10 +19,7 @@ class SongType
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    /**
-     * @var Collection<int, Song>
-     */
-    #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'type')]
+    #[ORM\ManyToMany(targetEntity: Song::class, mappedBy: 'types')]
     private Collection $songs;
 
     #[ORM\Column]
@@ -70,23 +67,20 @@ class SongType
         return $this->songs;
     }
 
-    public function addSong(Song $song): static
+    public function addSong(Song $song): self
     {
         if (!$this->songs->contains($song)) {
             $this->songs->add($song);
-            $song->setType($this);
+            $song->addType($this);
         }
 
         return $this;
     }
 
-    public function removeSong(Song $song): static
+    public function removeSong(Song $song): self
     {
         if ($this->songs->removeElement($song)) {
-            // set the owning side to null (unless already changed)
-            if ($song->getType() === $this) {
-                $song->setType(null);
-            }
+            $song->removeType($this);
         }
 
         return $this;
