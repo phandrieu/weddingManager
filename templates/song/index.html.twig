@@ -35,10 +35,12 @@
                     <option value="">Tous les types</option>
                     {% set types = [] %}
                     {% for song in songs %}
-                        {% if song.type.name not in types %}
-                            {% set types = types|merge([song.type.name]) %}
-                            <option value="{{ song.type.name }}">{{ song.type.name }}</option>
-                        {% endif %}
+                        {% for t in song.types %}
+    {% if t.name not in types %}
+        {% set types = types|merge([t.name]) %}
+        <option value="{{ t.name }}">{{ t.name }}</option>
+    {% endif %}
+{% endfor %}
                     {% endfor %}
                 </select>
             </div>
@@ -73,13 +75,17 @@
                         {% set youtubeId = song.previewUrl
                             |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
                         %}
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}" data-kind="chant">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.types|map(t => t.name)|join(', ') }}" data-kind="chant">
                             <div style="position:relative;background:#f8e9e9;border-radius:12px;padding:14px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
                                 <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
 
                                 <div>
                                     <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
-                                    <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+                                    <div class="small text-muted mb-2" style="font-style:italic;">
+    {% for t in song.types %}
+        {{ t.name }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+</div>
 
                                     {% if song.previewUrl %}
                                         <div class="ratio ratio-16x9 mb-3" style="border-radius:8px;overflow:hidden;">
@@ -155,13 +161,17 @@
                 {% if nonSuggestions is not empty %}
                     {% for song in nonSuggestions %}
                         {% if not song.song %}
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.type.name }}" data-kind="texte">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.types|map(t => t.name)|join(', ') }}" data-kind="texte">
                             <div style="position:relative;background:#eef6ff;border-radius:12px;padding:14px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
                                 <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
 
                                 <div>
                                     <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
-                                    <div class="small text-muted mb-2" style="font-style:italic;">{{ song.type.name }}</div>
+                                    <div class="small text-muted mb-2" style="font-style:italic;">
+    {% for t in song.types %}
+        {{ t.name }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+</div>
 
                                     <div class="mb-3 text-muted">
                                         {{ song.lyrics ? song.lyrics|slice(0,120) ~ '…' : 'Pas de texte' }}
@@ -239,7 +249,9 @@
                             {% for song in suggestions %}
 <tr id="suggestionRow{{ song.id }}">
     <td>{{ song.name }}</td>
-    <td>{{ song.type.name }}</td>
+    <td>{% for t in song.types %}
+    {{ t.name }}{% if not loop.last %}, {% endif %}
+{% endfor %}</td>
     <td>
         <form method="post" action="{{ path('app_song_approve_suggestion', {'id': song.id}) }}" style="display:inline;" 
               onsubmit="return confirm('Valider cette suggestion ?');">
