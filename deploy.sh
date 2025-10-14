@@ -65,6 +65,6 @@ sudo chown -R $HTTP_USER:$HTTP_USER public/
 # 7. Redémarrage PHP-FPM
 # -------------------------------
 echo "Redémarrage de PHP-FPM..."
-sudo systemctl reload php8.3-fpm || sudo systemctl restart php8.3-fpm
+sudo systemctl reload php8.4-fpm || sudo systemctl restart php8.4fpm
 
 echo "=== Déploiement terminé ==="
