@@ -134,23 +134,30 @@ public function edit(
         }
     }
 
-    // 🔑 Construire la liste des chants disponibles
-$availableSongsByType = [];
+    // 🔑 Construire la liste des chants disponibles, regroupés par type
+    $availableSongsByType = [];
 
-if (count($wedding->getMusicians()) > 0) {
-    // Si des musiciens sont rattachés → union de leurs répertoires
-    foreach ($wedding->getMusicians() as $musician) {
-        foreach ($musician->getRepertoire() as $song) {
-            $availableSongsByType[$song->getType()->getId()][] = $song;
+    foreach ($songTypes as $songType) {
+        $songsForType = [];
+
+        if (count($wedding->getMusicians()) > 0) {
+            foreach ($wedding->getMusicians() as $musician) {
+                foreach ($musician->getRepertoire() as $song) {
+                    if ($song->getTypes()->contains($songType)) {
+                        $songsForType[$song->getId()] = $song;
+                    }
+                }
+            }
         }
+
+        if (empty($songsForType)) {
+            foreach ($songType->getSongs() as $song) {
+                $songsForType[$song->getId()] = $song;
+            }
+        }
+
+        $availableSongsByType[$songType->getId()] = array_values($songsForType);
     }
-} else {
-    // Aucun musicien → tout le Bibliothèque partagée
-    $allSongs = $songRepo->findAll();
-    foreach ($allSongs as $song) {
-        $availableSongsByType[$song->getType()->getId()][] = $song;
-    }
-}
 
     return $this->render('wedding/edit.html.twig', [
         'form' => $form->createView(),
@@ -267,17 +274,26 @@ public function invite(
         }
 
         $availableSongsByType = [];
-        if (count($wedding->getMusicians()) > 0) {
-            foreach ($wedding->getMusicians() as $musician) {
-                foreach ($musician->getRepertoire() as $song) {
-                    $availableSongsByType[$song->getType()->getId()][] = $song;
+        foreach ($songTypes as $songType) {
+            $songsForType = [];
+
+            if (count($wedding->getMusicians()) > 0) {
+                foreach ($wedding->getMusicians() as $musician) {
+                    foreach ($musician->getRepertoire() as $song) {
+                        if ($song->getTypes()->contains($songType)) {
+                            $songsForType[$song->getId()] = $song;
+                        }
+                    }
                 }
             }
-        } else {
-            $allSongs = $songRepo->findAll();
-            foreach ($allSongs as $song) {
-                $availableSongsByType[$song->getType()->getId()][] = $song;
+
+            if (empty($songsForType)) {
+                foreach ($songType->getSongs() as $song) {
+                    $songsForType[$song->getId()] = $song;
+                }
             }
+
+            $availableSongsByType[$songType->getId()] = array_values($songsForType);
         }
 
         return $this->render('wedding/edit.html.twig', [

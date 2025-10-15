@@ -3,15 +3,22 @@
 {% block title %}Liste des types de chants{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
+<header class="page-header">
     <h1>Types de chants</h1>
-    <a href="{{ path('app_songtype_edit') }}" class="btn btn-success mb-3">Ajouter un type</a>
+    <div class="app-actions">
+        <a href="{{ path('app_songtype_edit') }}" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-plus-lg"></i>
+            Ajouter un type
+        </a>
+    </div>
+</header>
 
-    <table class="table table-striped">
+<div class="app-table-wrapper">
+    <table class="app-table">
         <thead>
             <tr>
                 <th>Nom</th>
-                <th>Actions</th>
+                <th style="text-align: center;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -19,14 +26,26 @@
                 <tr>
                     <td>{{ type.name }}</td>
                     <td>
-                        <a href="{{ path('app_songtype_view', {'id': type.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                        <a href="{{ path('app_songtype_edit', {'id': type.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
-                         <form method="post" action="{{ path('app_songtype_delete', {'id': type.id}) }}" style="display:inline;"
-          onsubmit="return confirm('Voulez-vous vraiment supprimer ce type de chant ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ type.id) }}">
-        <button class="btn btn-sm btn-danger">Supprimer</button>
-    </form>
+                        <div class="d-flex justify-content-center align-items-center" style="gap: 0.5rem;">
+                            <a href="{{ path('app_songtype_view', {'id': type.id}) }}" class="btn btn-sm btn-light" title="Voir">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_songtype_edit', {'id': type.id}) }}" class="btn btn-sm btn-light" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_songtype_delete', {'id': type.id}) }}" style="display:inline-block;"
+                                  onsubmit="return confirm('Voulez-vous vraiment supprimer ce type de chant ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ type.id) }}">
+                                <button class="btn btn-sm btn-danger" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted">Aucun type de chant trouvé.</td>
                 </tr>
             {% endfor %}
         </tbody>

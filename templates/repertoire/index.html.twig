@@ -3,20 +3,44 @@
 {% block title %}Mon répertoire{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
+<header class="page-header">
     <h1>Mon répertoire</h1>
+</header>
 
-    <form method="POST" action="{{ path('app_repertoire_update') }}">
-        <div class="list-group">
-            {% for song in allSongs %}
-                <label class="list-group-item">
-                    <input type="checkbox" name="songs[]" value="{{ song.id }}"
-                        {% if song in mySongs %}checked{% endif %}>
-                    {{ song.name }} ({{ song.type.name }})
-                </label>
-            {% endfor %}
-        </div>
-        <button type="submit" class="btn btn-success mt-3">Sauvegarder</button>
-    </form>
-</div>
+<form method="POST" action="{{ path('app_repertoire_update') }}" class="app-card">
+    <p class="text-muted mb-4">
+        Sélectionnez les chants que vous maîtrisez pour qu'ils apparaissent dans votre répertoire personnel.
+    </p>
+
+    <div class="row g-3">
+        {% for song in allSongs %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="form-check app-card-light">
+                    <input type="checkbox" name="songs[]" value="{{ song.id }}" 
+                           id="song{{ song.id }}" class="form-check-input"
+                           {% if song in mySongs %}checked{% endif %}>
+                    <label class="form-check-label w-100" for="song{{ song.id }}" style="cursor: pointer;">
+                        <div class="fw-bold">{{ song.name }}</div>
+                        {% if song.types is not empty %}
+                            <div class="small text-muted">
+                                {% for t in song.types %}
+                                    {{ t.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </label>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center text-muted">Aucun chant disponible.</div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-check-lg"></i>
+            Sauvegarder mon répertoire
+        </button>
+    </div>
+</form>
 {% endblock %}

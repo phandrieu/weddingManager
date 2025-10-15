@@ -1,0 +1,925 @@
+.song-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    padding-bottom: 2.5rem;
+}
+
+/* ========================================
+   DESIGN SYSTEM GLOBAL - COMPOSANTS
+======================================== */
+
+/* Badges & Pills */
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.badge-primary {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.badge-secondary {
+    background: var(--color-secondary);
+    color: #fff;
+}
+
+.badge-tertiary {
+    background: var(--color-tertiary);
+    color: var(--color-secondary);
+}
+
+/* Boutons harmonisés */
+.btn-rounded {
+    border-radius: 999px;
+    padding: 0.65rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-rounded-sm {
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Cartes uniformes */
+.app-card {
+    background: #fff;
+    border: 1px solid rgba(101, 45, 144, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(38, 12, 64, 0.08);
+    transition: box-shadow 0.2s ease;
+}
+
+.app-card:hover {
+    box-shadow: 0 8px 24px rgba(38, 12, 64, 0.12);
+}
+
+.app-card-light {
+    background: rgba(230, 222, 246, 0.45);
+    border: 1px solid rgba(101, 45, 144, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+}
+
+/* Tabs harmonisés */
+.app-tabs {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.app-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+}
+
+.app-tab-primary {
+    background: var(--color-secondary);
+    color: var(--color-bg);
+}
+
+.app-tab-primary.active,
+.app-tab-primary:hover {
+    background: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(255, 129, 0, 0.3);
+}
+
+.app-tab-secondary {
+    background: var(--color-tertiary);
+    color: var(--color-secondary);
+}
+
+.app-tab-secondary.active,
+.app-tab-secondary:hover {
+    background: var(--color-secondary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(101, 45, 144, 0.3);
+}
+
+/* Tableaux responsive */
+.app-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.app-table thead {
+    background: var(--color-secondary);
+    color: #fff;
+}
+
+.app-table th,
+.app-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(101, 45, 144, 0.1);
+}
+
+.app-table tbody tr:hover {
+    background: rgba(230, 222, 246, 0.3);
+}
+
+.app-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+/* Grilles responsive */
+.app-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.app-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.app-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.app-grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* Actions group */
+.app-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.app-actions-end {
+    justify-content: flex-end;
+}
+
+/* Header page */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* Avatar */
+.app-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-tertiary);
+    color: var(--color-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.app-avatar-lg {
+    width: 76px;
+    height: 76px;
+    font-size: 1.6rem;
+}
+
+/* Wedding Info Cards */
+.wedding-info-card {
+    background: var(--color-tertiary);
+    border-radius: 12px;
+    padding: 1.25rem;
+    min-height: 260px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.wedding-info-card__header {
+    background: var(--color-secondary);
+    color: var(--color-bg);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wedding-info-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-label-sm {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: rgba(97, 97, 111, 0.8);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.form-group-sm {
+    margin-bottom: 0.75rem;
+}
+
+.form-group-sm:last-child {
+    margin-bottom: 0;
+}
+
+/* Wedding Finance Panel */
+.wedding-finance-panel {
+    background: var(--color-tertiary);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.wedding-finance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.wedding-finance-item {
+    text-align: center;
+}
+
+.wedding-finance-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: rgba(97, 97, 111, 0.7);
+    margin-bottom: 0.5rem;
+    display: block;
+    letter-spacing: 0.5px;
+}
+
+.wedding-finance-value {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-last);
+}
+
+@media (max-width: 991.98px) {
+    .wedding-finance-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wedding-info-card {
+        min-height: auto;
+    }
+    
+    .wedding-finance-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Wedding Déroulé Section */
+.deroule-container {
+    padding: 1rem 0;
+}
+
+.deroule-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--color-tertiary);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.deroule-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.deroule-group-header {
+    background: var(--color-secondary);
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.deroule-group-body {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.deroule-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.deroule-row:last-child {
+    border-bottom: none;
+}
+
+.deroule-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.deroule-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: rgba(97, 97, 111, 0.7);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.deroule-col-type {
+    flex: 1;
+    min-width: 180px;
+}
+
+.deroule-col-choice {
+    flex: 1.5;
+    min-width: 220px;
+}
+
+.deroule-col-check {
+    width: 150px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.deroule-col-comments {
+    width: 180px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.deroule-type-badge {
+    background: #4b5e3a;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.deroule-select {
+    border-radius: 8px;
+}
+
+/* Form Actions Bar */
+.form-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 0;
+    margin-top: 2rem;
+    border-top: 2px solid var(--color-tertiary);
+}
+
+@media (max-width: 991.98px) {
+    /* Déroulé passe en mode vertical sur tablette/mobile */
+    .deroule-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .deroule-col {
+        width: 100%;
+    }
+
+    .deroule-col-type,
+    .deroule-col-choice,
+    .deroule-col-check,
+    .deroule-col-comments {
+        width: 100%;
+        min-width: auto;
+        text-align: left;
+    }
+
+    .deroule-label {
+        display: block;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .form-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions-bar .btn {
+        width: 100%;
+    }
+}
+
+/* Info label */
+.info-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label-value {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.info-label-caption {
+    font-size: 0.85rem;
+    color: rgba(97, 97, 111, 0.7);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 991.98px) {
+    .app-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .app-table {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .app-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .app-actions .btn {
+        flex: 1;
+    }
+
+    .app-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .app-card,
+    .app-card-light {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .app-tab {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.9rem;
+    }
+
+    .app-table th,
+    .app-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   WEDDING INDEX PAGE
+======================================== */
+
+.wedding-grid {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    grid-template-areas: "main type total restant actions";
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.wedding-grid__main {
+    grid-area: main;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.wedding-grid__item {
+    min-width: 100px;
+}
+
+.wedding-grid__actions {
+    grid-area: actions;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-self: end;
+}
+
+@media (max-width: 1199.98px) {
+    .wedding-grid {
+        grid-template-columns: 1fr auto auto auto;
+        grid-template-areas: 
+            "main type total actions"
+            "main restant restant actions";
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .wedding-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+            "main main"
+            "type total"
+            "restant actions";
+        gap: 1rem;
+        row-gap: 1.25rem;
+    }
+
+    .wedding-grid__item {
+        text-align: left !important;
+    }
+
+    .info-label {
+        align-items: flex-start;
+    }
+
+    .wedding-grid__actions {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wedding-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "main"
+            "type"
+            "total"
+            "restant"
+            "actions";
+    }
+
+    .wedding-grid__main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .wedding-grid__actions {
+        justify-self: stretch;
+        justify-content: space-around;
+        width: 100%;
+    }
+}
+
+/* ========================================
+   SONG EDIT PAGE (existing)
+======================================== */.song-edit__header {
+	 display: flex;
+	 align-items: center;
+	 justify-content: space-between;
+	 flex-wrap: wrap;
+	 gap: 1rem;
+ }
+
+.song-edit__title {
+	 background: transparent;
+	 color: var(--color-secondary);
+	 font-family: 'Alfarn', serif;
+	 font-size: clamp(1.4rem, 2.2vw, 2rem);
+	 font-weight: 600;
+	 letter-spacing: 0.04em;
+	 margin: 0;
+	 padding: 0;
+	 text-transform: uppercase;
+	 transform: none;
+	 width: auto;
+ }
+
+.song-edit__actions {
+	 display: flex;
+	 align-items: center;
+	 gap: 0.75rem;
+	 flex-wrap: wrap;
+ }
+
+.song-edit__actions .btn {
+	 border-radius: 999px;
+	 font-weight: 600;
+	 padding: 0.55rem 1.5rem;
+ }
+
+.song-edit__submit {
+	 box-shadow: 0 14px 24px -18px rgba(255, 129, 0, 0.75);
+ }
+
+.song-edit__cancel {
+	 border-color: rgba(101, 45, 144, 0.45);
+	 color: var(--color-secondary);
+ }
+
+.song-edit__cancel:hover,
+.song-edit__cancel:focus {
+	 background-color: var(--color-secondary);
+	 border-color: var(--color-secondary);
+	 color: #fff;
+ }
+
+.song-edit__intro,
+.song-edit__legal {
+	 background: linear-gradient(120deg, rgba(230, 222, 246, 0.7), rgba(255, 129, 0, 0.12));
+	 border: 1px solid rgba(101, 45, 144, 0.12);
+	 border-radius: 1.25rem;
+	 padding: 1.5rem;
+	 line-height: 1.55;
+ }
+
+.song-edit__intro p,
+.song-edit__legal p {
+	 color: var(--color-last);
+	 margin-bottom: 0;
+ }
+
+.song-edit__legal {
+	 text-align: center;
+ }
+
+.song-edit__layout {
+	 display: grid;
+	 gap: 1.5rem;
+	 grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+ }
+
+.song-edit__main,
+.song-edit__sidebar {
+	 display: flex;
+	 flex-direction: column;
+	 gap: 1.5rem;
+ }
+
+.song-edit__panel {
+	 background: #fff;
+	 border: 1px solid rgba(101, 45, 144, 0.08);
+	 border-radius: 1.25rem;
+	 box-shadow: 0 32px 48px -36px rgba(38, 12, 64, 0.4);
+	 display: flex;
+	 flex-direction: column;
+	 gap: 1.5rem;
+	 padding: 1.5rem;
+ }
+
+.song-edit__panel-group {
+	 display: flex;
+	 flex-direction: column;
+	 gap: 1rem;
+ }
+
+.song-edit__panel-group + .song-edit__panel-group {
+	 border-top: 1px dashed rgba(101, 45, 144, 0.18);
+	 padding-top: 1.5rem;
+ }
+
+.song-edit__section-title {
+	 color: var(--color-secondary);
+	 font-family: 'Alfarn', serif;
+	 font-size: 1rem;
+	 letter-spacing: 0.12em;
+	 margin: 0;
+	 text-transform: uppercase;
+ }
+
+.song-edit__field-group {
+	 display: flex;
+	 flex-direction: column;
+	 gap: 0.5rem;
+ }
+
+.song-edit__field-label {
+	 color: var(--color-secondary);
+	 font-size: 0.78rem;
+	 font-weight: 600;
+	 letter-spacing: 0.12em;
+	 margin-bottom: 0;
+	 text-transform: uppercase;
+ }
+
+.song-edit .form-control,
+.song-edit .form-select {
+	 border-color: rgba(101, 45, 144, 0.18);
+	 border-radius: 0.9rem;
+	 color: var(--color-last);
+	 padding: 0.7rem 1rem;
+	 transition: box-shadow 0.2s ease, border-color 0.2s ease;
+ }
+
+.song-edit .form-control:focus,
+.song-edit .form-select:focus {
+	 border-color: var(--color-secondary);
+	 box-shadow: 0 0 0 0.2rem rgba(101, 45, 144, 0.12);
+ }
+
+.song-edit .form-control::placeholder {
+	 color: rgba(97, 97, 111, 0.65);
+ }
+
+.song-edit .ts-wrapper.single .ts-control,
+.song-edit .ts-wrapper.multi .ts-control {
+	 border-color: rgba(101, 45, 144, 0.18);
+	 border-radius: 0.9rem;
+	 min-height: 3rem;
+	 padding: 0.45rem 0.75rem;
+ }
+
+.song-edit .ts-wrapper.multi .ts-control .item {
+	 background: rgba(101, 45, 144, 0.14);
+	 border-radius: 999px;
+	 border: 0;
+	 color: var(--color-secondary);
+	 font-weight: 600;
+ }
+
+.song-edit__textarea {
+	 min-height: 18rem;
+	 resize: vertical;
+ }
+
+.song-edit__type {
+	 display: flex;
+	 flex-wrap: wrap;
+	 gap: 0.75rem;
+ }
+
+.song-edit__type .form-check {
+	 margin: 0;
+	 padding: 0;
+ }
+
+.song-edit__type .form-check-input {
+	 display: none;
+ }
+
+.song-edit__type .form-check-label {
+	 align-items: center;
+	 border: 1px solid rgba(101, 45, 144, 0.45);
+	 border-radius: 999px;
+	 color: var(--color-secondary);
+	 cursor: pointer;
+	 display: inline-flex;
+	 font-weight: 600;
+	 gap: 0.35rem;
+	 padding: 0.6rem 1.4rem;
+	 transition: all 0.2s ease;
+ }
+
+.song-edit__type .form-check-input:checked + .form-check-label {
+	 background: var(--color-secondary);
+	 border-color: var(--color-secondary);
+	 box-shadow: 0 18px 32px -28px rgba(101, 45, 144, 0.8);
+	 color: #fff;
+ }
+
+.song-edit__type .form-check-input:focus + .form-check-label {
+	 box-shadow: 0 0 0 0.15rem rgba(101, 45, 144, 0.25);
+ }
+
+.song-edit__video {
+	 background: #000;
+	 border-radius: 1rem;
+	 overflow: hidden;
+ }
+
+.song-edit__video iframe {
+	 border: 0;
+	 height: 100%;
+	 width: 100%;
+ }
+
+.song-edit__file-info {
+	 color: rgba(97, 97, 111, 0.8);
+	 font-size: 0.85rem;
+ }
+
+.song-edit__file-info a {
+	 color: var(--color-secondary);
+	 font-weight: 600;
+	 text-decoration: none;
+ }
+
+.song-edit__file-info a:hover,
+.song-edit__file-info a:focus {
+	 text-decoration: underline;
+ }
+
+.song-edit__legal a {
+	 color: var(--color-secondary);
+	 font-weight: 600;
+ }
+
+@media (max-width: 1199.98px) {
+	 .song-edit__layout {
+		  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+	 }
+ }
+
+@media (max-width: 991.98px) {
+	 .song-edit__layout {
+		  grid-template-columns: 1fr;
+	 }
+
+	 .song-edit__sidebar {
+		  flex-direction: column;
+	 }
+ }
+
+@media (max-width: 767.98px) {
+	 .song-edit__header {
+		  align-items: flex-start;
+	 }
+
+	 .song-edit__actions {
+		  justify-content: flex-start;
+		  width: 100%;
+	 }
+ }
+
+@media (max-width: 575.98px) {
+	 .song-edit {
+		  gap: 1.5rem;
+	 }
+
+	 .song-edit__panel,
+	 .song-edit__intro,
+	 .song-edit__legal {
+		  padding: 1.25rem;
+	 }
+
+	 .song-edit__section-title {
+		  font-size: 0.95rem;
+	 }
+
+	 .song-edit__actions {
+		  flex-direction: column;
+		  align-items: stretch;
+		  gap: 0.5rem;
+	 }
+
+	 .song-edit__actions .btn {
+		  width: 100%;
+		  text-align: center;
+	 }
+ }

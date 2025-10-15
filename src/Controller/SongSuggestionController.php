@@ -16,7 +16,8 @@ class SongSuggestionController extends AbstractController
     {
         $song = new Song();
         $song->setSuggestion(true); // marquer comme suggestion
-        $song->setType(null); // type 'song' par défaut si tu as un type générique, sinon lier un type par défaut
+        // Plus besoin de setType() car maintenant une song a plusieurs types (relation ManyToMany)
+        // Les types seront définis via le formulaire
 
         $form = $this->createForm(SongSuggestionType::class, $song);
         $form->handleRequest($request);

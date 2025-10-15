@@ -3,181 +3,209 @@
 {% block title %}{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}{% endblock %}
 
 {% block body %}
-<div class="mt-4">
-    <!-- Header similaire à view -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center" style="gap:0.75rem;">
-            <h1 class="mb-0" style="background:var(--color-secondary);color:var(--color-primary);padding:8px 18px;border-radius:6px;font-size:16px;text-transform:uppercase;font-family:'Alfarn', serif;">
-                {{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}
-            </h1>
-
-            <div style="background:var(--color-tertiary);color:var(--color-secondary);padding:8px 14px;border-radius:6px;font-weight:600;font-size:13px;">
+<header class="page-header">
+    <div>
+        <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
+        {% if wedding.marie or wedding.mariee %}
+            <div class="badge-pill badge-tertiary mt-2">
                 {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Célébration{% endif %} de mariage de
                 {{ wedding.marie ? (wedding.marie.firstName ~ (wedding.marie.name ? ' ' ~ wedding.marie.name : '')) : '-' }}
                 &amp;
                 {{ wedding.mariee ? (wedding.mariee.firstName ~ (wedding.mariee.name ? ' ' ~ wedding.mariee.name : '')) : '-' }}
                 {% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
             </div>
-        </div>
-
-        <div>
-            <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Retour</a>
-        </div>
+        {% endif %}
     </div>
 
-    <!-- Tabs (présentation identique à view) -->
-    <ul class="nav mb-4" role="tablist" style="gap:.6rem;">
+    <div class="app-actions">
+        <button type="submit" form="weddingForm" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-check-lg"></i>
+            Enregistrer
+        </button>
+        {% if wedding.id %}
+            <button type="button" class="btn btn-outline-primary btn-rounded btn-icon" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                <i class="bi bi-envelope-plus"></i>
+                Inviter
+            </button>
+        {% endif %}
+        <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+    </div>
+</header>
+
+    <!-- Tabs -->
+    <ul class="app-tabs" role="tablist">
         <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center active" id="tab-info" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" role="tab" aria-selected="true"
-                style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:999px;padding:8px 14px;gap:8px;">
+            <button class="app-tab app-tab-primary active" id="tab-info" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" role="tab" aria-selected="true">
                 <i class="bi bi-info-circle"></i>
-                <span style="font-weight:600;">Informations générales</span>
+                <span>Informations générales</span>
             </button>
         </li>
         <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center" id="tab-deroule" data-bs-toggle="tab" data-bs-target="#pane-deroule" type="button" role="tab" aria-selected="false"
-                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
+            <button class="app-tab app-tab-secondary" id="tab-deroule" data-bs-toggle="tab" data-bs-target="#pane-deroule" type="button" role="tab" aria-selected="false">
                 <i class="bi bi-list-ul"></i>
-                <span style="font-weight:600;">Déroulé</span>
+                <span>Déroulé</span>
             </button>
         </li>
         <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center" id="tab-logistique" data-bs-toggle="tab" data-bs-target="#pane-logistique" type="button" role="tab" aria-selected="false"
-                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
+            <button class="app-tab app-tab-secondary" id="tab-logistique" data-bs-toggle="tab" data-bs-target="#pane-logistique" type="button" role="tab" aria-selected="false">
                 <i class="bi bi-gear"></i>
-                <span style="font-weight:600;">Informations logistiques</span>
+                <span>Logistique</span>
             </button>
         </li>
     </ul>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
 
     <div class="tab-content">
-        <!-- Informations générales : disposition inspirée de view.html.twig -->
+        <!-- Informations générales -->
         <div class="tab-pane fade show active" id="pane-info">
             <div class="row g-3 mb-4">
                 <!-- Card Informations Mariage -->
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:260px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS MARIAGE
+                    <div class="wedding-info-card">
+                        <div class="wedding-info-card__header">
+                            Informations mariage
                         </div>
 
-                        <div class="small text-muted">
-                            {{ form_row(form.messe) }}
-                            {{ form_row(form.date) }}
-                            {{ form_row(form.time) }}
-                            {{ form_row(form.parish) }}
-                            {{ form_row(form.church) }}
-                            {{ form_row(form.addressLine1) }}
-                            {{ form_row(form.addressLine2) }}
-                            {{ form_row(form.addressPostalCodeAndCity) }}
-                            {{ form_row(form.archive) }}
+                        <div class="wedding-info-card__body">
+                            {{ form_row(form.messe, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.date, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.time, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.parish, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.church, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.archive, {'label_attr': {'class': 'form-label-sm'}}) }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Futur marié -->
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:260px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS FUTUR MARIÉ
+                    <div class="wedding-info-card">
+                        <div class="wedding-info-card__header">
+                            Informations futur marié
                         </div>
 
-                        <div class="text-center">
-                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
+                        <div class="wedding-info-card__body text-center">
+                            <div class="app-avatar app-avatar-lg mx-auto mb-3" style="background: var(--color-primary);">
                                 {{ wedding.marie and wedding.marie.firstName ? wedding.marie.firstName|slice(0,1)|upper : 'A' }}
                             </div>
 
                             <div class="mb-2">
-                                {{ form_label(form.marie) }}
-                                {{ form_widget(form.marie, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_label(form.marie, null, {'label_attr': {'class': 'form-label-sm'}}) }}
+                                {{ form_widget(form.marie, {'attr': {'class': 'form-select form-select-sm'}}) }}
                                 {{ form_errors(form.marie) }}
                             </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
-                            <input type="text" name="marie[firstName]" class="form-control mb-2" value="{{ wedding.marie ? wedding.marie.firstName : '' }}">
-                            <input type="text" name="marie[name]" class="form-control mb-2" value="{{ wedding.marie ? wedding.marie.name : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Prénom</label>
+                                <input type="text" name="marie[firstName]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.firstName : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
-                            <input type="email" name="marie[email]" class="form-control mb-2" value="{{ wedding.marie ? wedding.marie.email : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Nom</label>
+                                <input type="text" name="marie[name]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.name : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
-                            <input type="text" name="marie[telephone]" class="form-control mb-2" value="{{ wedding.marie ? wedding.marie.telephone : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Email</label>
+                                <input type="email" name="marie[email]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.email : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
-                            <input type="text" name="marie[addressLine1]" class="form-control mb-2" value="{{ wedding.marie ? wedding.marie.addressLine1 : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Téléphone</label>
+                                <input type="text" name="marie[telephone]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.telephone : '' }}">
+                            </div>
+
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Adresse</label>
+                                <input type="text" name="marie[addressLine1]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.addressLine1 : '' }}">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Futur mariée -->
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:260px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS FUTUR MARIÉE
+                    <div class="wedding-info-card">
+                        <div class="wedding-info-card__header">
+                            Informations futur mariée
                         </div>
 
-                        <div class="text-center">
-                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
+                        <div class="wedding-info-card__body text-center">
+                            <div class="app-avatar app-avatar-lg mx-auto mb-3" style="background: var(--color-primary);">
                                 {{ wedding.mariee and wedding.mariee.firstName ? wedding.mariee.firstName|slice(0,1)|upper : 'A' }}
                             </div>
 
                             <div class="mb-2">
-                                {{ form_label(form.mariee) }}
-                                {{ form_widget(form.mariee, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_label(form.mariee, null, {'label_attr': {'class': 'form-label-sm'}}) }}
+                                {{ form_widget(form.mariee, {'attr': {'class': 'form-select form-select-sm'}}) }}
                                 {{ form_errors(form.mariee) }}
                             </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
-                            <input type="text" name="mariee[firstName]" class="form-control mb-2" value="{{ wedding.mariee ? wedding.mariee.firstName : '' }}">
-                            <input type="text" name="mariee[name]" class="form-control mb-2" value="{{ wedding.mariee ? wedding.mariee.name : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Prénom</label>
+                                <input type="text" name="mariee[firstName]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.firstName : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
-                            <input type="email" name="mariee[email]" class="form-control mb-2" value="{{ wedding.mariee ? wedding.mariee.email : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Nom</label>
+                                <input type="text" name="mariee[name]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.name : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
-                            <input type="text" name="mariee[telephone]" class="form-control mb-2" value="{{ wedding.mariee ? wedding.mariee.telephone : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Email</label>
+                                <input type="email" name="mariee[email]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.email : '' }}">
+                            </div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
-                            <input type="text" name="mariee[addressLine1]" class="form-control mb-2" value="{{ wedding.mariee ? wedding.mariee.addressLine1 : '' }}">
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Téléphone</label>
+                                <input type="text" name="mariee[telephone]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.telephone : '' }}">
+                            </div>
+
+                            <div class="form-group-sm">
+                                <label class="form-label-sm">Adresse</label>
+                                <input type="text" name="mariee[addressLine1]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.addressLine1 : '' }}">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Paroisse / informations contact (éditable) -->
+                <!-- Paroisse -->
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:260px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS PAROISSE
+                    <div class="wedding-info-card">
+                        <div class="wedding-info-card__header">
+                            Informations paroisse
                         </div>
 
-                        <div class="small text-muted">
-                            {{ form_row(form.priestFirstName) }}
-                            {{ form_row(form.priestLastName) }}
-                            {{ form_row(form.priestPhoneNumber) }}
-                            {{ form_row(form.priestEMail) }}
+                        <div class="wedding-info-card__body">
+                            {{ form_row(form.priestFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.priestLastName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.priestPhoneNumber, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            {{ form_row(form.priestEMail, {'label_attr': {'class': 'form-label-sm'}}) }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Bloc financier (card) -->
-            <div class="mb-3" style="background:var(--color-tertiary);border-radius:12px;padding:18px;">
-                <div style="display:grid;grid-template-columns: repeat(4, 1fr);gap:1rem;align-items:center;">
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant de la prestation</div>
+            <!-- Bloc financier -->
+            <div class="wedding-finance-panel">
+                <div class="wedding-finance-grid">
+                    <div class="wedding-finance-item">
+                        <label class="wedding-finance-label">Montant de la prestation</label>
                         {{ form_widget(form.montantTotal, {'attr': {'class':'form-control text-center'}}) }}
                     </div>
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant déjà versé</div>
+                    <div class="wedding-finance-item">
+                        <label class="wedding-finance-label">Montant déjà versé</label>
                         {{ form_widget(form.montantPaye, {'attr': {'class':'form-control text-center'}}) }}
                     </div>
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Pourcentage de l'acompte</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                    <div class="wedding-finance-item">
+                        <div class="wedding-finance-label">Pourcentage de l'acompte</div>
+                        <div class="wedding-finance-value">
                             {% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
                                 {{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
                             {% else %}
@@ -186,9 +214,9 @@
                         </div>
                     </div>
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant restant dû</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
+                    <div class="wedding-finance-item">
+                        <div class="wedding-finance-label">Montant restant dû</div>
+                        <div class="wedding-finance-value">
                             {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
                                 {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
                             {% else %}
@@ -198,36 +226,11 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Actions -->
-            <div class="d-flex justify-content-start" style="gap:0.75rem;">
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                {# si le mariage existe on renvoie vers la vue, sinon vers la liste (création en cours) #}
-                {% if wedding.id %}
-                    <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary">Annuler</a>
-                    <!-- Bouton d'invitation (disponible seulement après création du mariage) -->
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                        <i class="bi bi-envelope-plus"></i> Inviter
-                    </button>
-                {% else %}
-                    <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary">Annuler</a>
-                {% endif %}
-            </div>
         </div>
 
         <!-- Déroulé -->
         <div class="tab-pane fade" id="pane-deroule">
-            <div class="p-3" style="background:transparent;">
-                <div style="background:var(--color-tertiary);border-radius:8px;padding:0 12px 12px 12px;">
-                    <div class="d-flex align-items-center" style="gap:8px;padding:12px 6px;">
-                        <div class="flex-fill" style="font-weight:700;color:var(--color-bg);background:transparent;">TYPE</div>
-                        <div class="flex-fill" style="font-weight:700;color:var(--color-bg);background:transparent;">VOTRE CHOIX</div>
-                        <div style="width:150px;text-align:center;font-weight:700;color:var(--color-bg);">VALIDATION CÉLÉBRANT</div>
-                        <div style="width:150px;text-align:center;font-weight:700;color:var(--color-bg);">VALIDATION MUSICIEN</div>
-                        <div style="width:220px;text-align:center;font-weight:700;color:var(--color-bg);">COMMENTAIRES / QUESTIONS</div>
-                    </div>
-                </div>
-
+            <div class="deroule-container">
                 {# regroupement des songTypes par celebrationPeriod #}
                 {% set types = songTypes is defined ? songTypes : [] %}
                 {% set groups = {} %}
@@ -240,68 +243,88 @@
                     {% endif %}
                 {% endfor %}
 
-                {# ordre souhaité basé sur l'enum (les labels doivent correspondre aux values de l'enum) #}
+                {# ordre souhaité basé sur l'enum #}
                 {% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
 
                 {% if groups is empty %}
-                    <div class="p-3 mt-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
+                    <div class="app-card">
                         <p class="text-muted mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</p>
                     </div>
                 {% else %}
-                    <div class="mt-3" style="display:flex;flex-direction:column;gap:10px;">
+                    <!-- En-têtes des colonnes (masqué sur mobile) -->
+                    <div class="deroule-header d-none d-lg-flex">
+                        <div class="deroule-col-type">TYPE</div>
+                        <div class="deroule-col-choice">VOTRE CHOIX</div>
+                        <div class="deroule-col-check">VALIDATION CÉLÉBRANT</div>
+                        <div class="deroule-col-check">VALIDATION MUSICIEN</div>
+                        <div class="deroule-col-comments">COMMENTAIRES</div>
+                    </div>
+
+                    <div class="deroule-groups">
                         {% for label in order %}
                             {% if groups[label] is defined %}
-                                <div style="background:#7a3f98;color:#fff;padding:8px 12px;border-radius:6px;font-weight:700;">
-                                    {{ label }}
-                                </div>
+                                <div class="deroule-group">
+                                    <div class="deroule-group-header">
+                                        {{ label }}
+                                    </div>
 
-                                <div style="background:#f5f5f5;border-radius:6px;padding:8px 0;">
-                                    {% for type in groups[label] %}
-                                        <div class="d-flex align-items-center" style="gap:8px;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.03);">
-                                            <div class="flex-fill" style="min-width:220px;">
-                                                <div style="background:#4b5e3a;color:#fff;padding:6px 8px;border-radius:6px;display:inline-block;font-weight:700;font-size:13px;">
-                                                    {{ type.name }}
+                                    <div class="deroule-group-body">
+                                        {% for type in groups[label] %}
+                                            {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
+                                            <div class="deroule-row">
+                                                <div class="deroule-col deroule-col-type">
+                                                    <span class="deroule-label d-lg-none">Type</span>
+                                                    <span class="deroule-type-badge">{{ type.name }}</span>
+                                                </div>
+
+                                                <div class="deroule-col deroule-col-choice">
+                                                    <label class="deroule-label d-lg-none">Votre choix</label>
+                                                    <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]"
+                                                            class="form-select deroule-select js-deroule-select"
+                                                            data-placeholder="Rechercher un chant">
+                                                        <option value="">Aucun chant sélectionné</option>
+                                                        {% if songsForType|length > 0 %}
+                                                            {% for song in songsForType %}
+                                                                <option value="{{ song.id }}">{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <option disabled>Pas de chants disponibles</option>
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+
+                                                <div class="deroule-col deroule-col-check">
+                                                    <label class="deroule-label d-lg-none">Validation célébrant</label>
+                                                    <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                </div>
+
+                                                <div class="deroule-col deroule-col-check">
+                                                    <label class="deroule-label d-lg-none">Validation musicien</label>
+                                                    <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                </div>
+
+                                                <div class="deroule-col deroule-col-comments">
+                                                    <label class="deroule-label d-lg-none">Commentaires</label>
+                                                    {% if wedding.id %}
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-secondary open-comments"
+                                                                data-wedding="{{ wedding.id }}"
+                                                                data-songtype="{{ type.id }}"
+                                                                aria-haspopup="dialog"
+                                                                aria-controls="commentsModal">
+                                                            <i class="bi bi-chat-dots"></i>
+                                                            <span class="d-none d-md-inline">Commentaires</span>
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
+                                                            <i class="bi bi-chat-dots"></i>
+                                                            <span class="d-none d-md-inline">Commentaires</span>
+                                                        </button>
+                                                    {% endif %}
                                                 </div>
                                             </div>
-
-                                            <div class="flex-fill">
-                                                <label class="visually-hidden">Votre choix</label>
-                                                <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select" style="border-radius:8px;">
-                                                    <option value="">VOTRE CHOIX</option>
-                                                    {% for song in type.songs %}
-                                                        <option value="{{ song.id }}">{{ song.title is defined and song.title ? song.title : (song.name is defined and song.name ? song.name : 'Titre inconnu') }}</option>
-                                                    {% else %}
-                                                        <option disabled>Pas de chants définis</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-
-                                            <div style="width:150px;text-align:center;">
-                                                <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
-                                            </div>
-
-                                            <div style="width:150px;text-align:center;">
-                                                <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
-                                            </div>
-
-                                            <div style="width:220px;text-align:center;">
-                                                {% if wedding.id %}
-                                                    <button type="button"
-                                                            class="btn btn-sm btn-outline-secondary open-comments"
-                                                            data-wedding="{{ wedding.id }}"
-                                                            data-songtype="{{ type.id }}"
-                                                            aria-haspopup="dialog"
-                                                            aria-controls="commentsModal">
-                                                        Commentaires / questions
-                                                    </button>
-                                                {% else %}
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
-                                                        Commentaires / questions
-                                                    </button>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             {% endif %}
                         {% endfor %}
@@ -310,13 +333,32 @@
             </div>
         </div>
 
-        <!-- Logistique (placeholder) -->
+        <!-- Logistique -->
         <div class="tab-pane fade" id="pane-logistique">
-            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
+            <div class="app-card">
                 <h5>Informations logistiques</h5>
-                <p class="text-muted">Section désactivée pour l'instant.</p>
+                <p class="text-muted mb-0">Section désactivée pour l'instant.</p>
             </div>
         </div>
+    </div>
+
+    <!-- Actions du formulaire (boutons visibles sur tous les onglets) -->
+    <div class="form-actions-bar">
+        <button type="submit" class="btn btn-primary btn-rounded">
+            <i class="bi bi-check-circle"></i> Enregistrer
+        </button>
+        {% if wedding.id %}
+            <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary btn-rounded">
+                Annuler
+            </a>
+            <button type="button" class="btn btn-outline-primary btn-rounded" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                <i class="bi bi-envelope-plus"></i> Inviter
+            </button>
+        {% else %}
+            <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary btn-rounded">
+                Annuler
+            </a>
+        {% endif %}
     </div>
 
     {{ form_end(form) }}
@@ -357,11 +399,11 @@
                             </div>
                             <script>
                                 function copyInvitationLink() {
-                                    var copyText = document.getElementById("invitation-link");
+                                    var copyText = document.getElementById('invitation-link');
                                     copyText.select();
-                                    copyText.setSelectionRange(0, 99999); // For mobile
-                                    navigator.clipboard.writeText(copyText.value).then(function() {
-                                        alert("Lien copié dans le presse-papiers !");
+                                    copyText.setSelectionRange(0, 99999);
+                                    navigator.clipboard.writeText(copyText.value).then(function () {
+                                        alert('Lien copié dans le presse-papiers !');
                                     });
                                 }
                             </script>
@@ -398,12 +440,25 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+        if (window.TomSelect) {
+            document.querySelectorAll('.js-deroule-select').forEach((select) => {
+                if (!select.tomselect) {
+                    new TomSelect(select, {
+                        placeholder: select.dataset.placeholder || 'Rechercher un chant',
+                        allowEmptyOption: true,
+                        create: false,
+                        maxOptions: 500,
+                    });
+                }
+            });
+        }
+
         const modalEl = document.getElementById('commentsModal');
         const bsModal = new bootstrap.Modal(modalEl);
 
         // ouverture : charger la conversation (HTML complet) et en extraire les parties utiles
         document.querySelectorAll('.open-comments').forEach(btn => {
-            btn.addEventListener('click', async function (e) {
+            btn.addEventListener('click', async function () {
                 const weddingId = this.dataset.wedding;
                 const songTypeId = this.dataset.songtype;
                 const url = `/comments/${weddingId}/${songTypeId}`;
@@ -435,7 +490,6 @@
                     if (form) {
                         // injecter le form dans le footer et intercepter son envoi pour mise à jour ajax
                         const injectedForm = form.cloneNode(true);
-                        // s'assurer que les boutons et classes restent Bootstrap-friendly
                         footer.appendChild(injectedForm);
 
                         injectedForm.addEventListener('submit', async function (evt) {
@@ -445,20 +499,28 @@
                             const method = (injectedForm.getAttribute('method') || 'POST').toUpperCase();
 
                             try {
-                                const r = await fetch(action, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                const response = await fetch(action, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                if (!response.ok) {
+                                    throw new Error('Requête invalide');
+                                }
+
                                 // après soumission, recharger la conversation pour afficher le nouveau message
-                                const r2 = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                                const t2 = await r2.text();
-                                const d2 = new DOMParser().parseFromString(t2, 'text/html');
-                                const newComments = d2.querySelector('#comments-box');
-                                const newForm = d2.querySelector('.card-footer form') || d2.querySelector('form');
+                                const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                const refreshedText = await refreshed.text();
+                                const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
+                                const newComments = refreshedDoc.querySelector('#comments-box');
+                                const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
+
                                 body.querySelector('h2')?.remove();
                                 if (newComments) {
-                                    // remplacer la boîte de commentaires
                                     const old = body.querySelector('#comments-box');
-                                    if (old) old.replaceWith(newComments.cloneNode(true));
-                                    else body.appendChild(newComments.cloneNode(true));
+                                    if (old) {
+                                        old.replaceWith(newComments.cloneNode(true));
+                                    } else {
+                                        body.appendChild(newComments.cloneNode(true));
+                                    }
                                 }
+
                                 if (newForm) {
                                     footer.innerHTML = '';
                                     footer.appendChild(newForm.cloneNode(true));

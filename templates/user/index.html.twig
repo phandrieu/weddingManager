@@ -3,47 +3,62 @@
 {% block title %}Liste des utilisateurs{% endblock %}
 
 {% block body %}
-<h1>Liste des utilisateurs</h1>
+<header class="page-header">
+    <h1>Utilisateurs</h1>
+    <div class="app-actions">
+        <a href="{{ path('app_user_edit') }}" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-plus-lg"></i>
+            Ajouter un utilisateur
+        </a>
+    </div>
+</header>
 
-<a href="{{ path('app_user_edit') }}" class="btn btn-success mb-3">Ajouter un utilisateur</a>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Rôle</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
+<div class="app-table-wrapper">
+    <table class="app-table">
+        <thead>
             <tr>
-                <td>{{ user.firstName }}</td>
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.telephone }}</td>
-                <td>{{ user.roles|join(', ') }}</td>
-                <td>
-                    <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-info">Voir</a>
-                    {% if 'ROLE_ADMIN' in app.user.roles %}
-                    <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
-
-                    <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" style="display:inline-block;" 
-                          onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                        <button class="btn btn-sm btn-danger">Supprimer</button>
-                    </form>
-                    {% endif %}
-                </td>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Rôle</th>
+                <th style="text-align: center;">Actions</th>
             </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">Aucun utilisateur trouvé.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.firstName }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.telephone ?: '—' }}</td>
+                    <td>{{ user.roles|join(', ') }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center align-items-center" style="gap: 0.5rem;">
+                            <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-light" title="Voir">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if 'ROLE_ADMIN' in app.user.roles %}
+                                <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-light" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_user_delete', {'id': user.id}) }}" style="display:inline-block;" 
+                                      onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                    <button class="btn btn-sm btn-danger" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

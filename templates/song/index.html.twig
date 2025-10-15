@@ -3,64 +3,56 @@
 {% block title %}Liste des chants & textes{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h1 class="h5 mb-0" style="text-transform:uppercase;color:var(--color-primary);font-weight:700;">Bibliothèque partagée</h1>
-        </div>
+<header class="page-header">
+    <h1>Bibliothèque partagée</h1>
 
-        <div class="d-flex align-items-center" style="gap:0.75rem;flex-wrap:wrap;">
-            {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#suggestionsModal"
-                    style="border-radius:999px;padding:4px 12px;border:2px solid #2f6c3b;color:#2f6c3b;background:transparent;font-size:16px;font-weight:600;">
-                    Voir les suggestions
-                </button>
+    <div class="app-actions">
+        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+            <button type="button" class="btn btn-outline-secondary btn-rounded" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
+                Voir les suggestions
+            </button>
 
-                <a href="{{ path('app_song_edit') }}" class="btn"
-                   style="border-radius:999px;padding:4px 12px;background:#ef8a2d;color:#fff;font-size:16x;font-weight:600;display:inline-flex;align-items:center;gap:12px;">
-                    <i class="bi bi-plus-lg" style="font-size:16px;line-height:1"></i>
-                    <span>Ajouter un élément</span>
-                </a>
-            {% elseif 'ROLE_USER' in app.user.roles %}
-                <a href="{{ path('app_song_suggest') }}" class="btn"
-                   style="border-radius:999px;padding:4px 12px;border:2px solid #2f6c3b;color:#2f6c3b;background:transparent;font-size:16px;font-weight:600;">
-                    Suggérer un élément
-                </a>
-            {% endif %}
+            <a href="{{ path('app_song_edit') }}" class="btn btn-primary btn-rounded btn-icon">
+                <i class="bi bi-plus-lg"></i>
+                <span>Ajouter un élément</span>
+            </a>
+        {% elseif 'ROLE_USER' in app.user.roles %}
+            <a href="{{ path('app_song_suggest') }}" class="btn btn-outline-secondary btn-rounded">
+                Suggérer un élément
+            </a>
+        {% endif %}
 
-            {# Champ de recherche + filtre par type #}
-            <div class="d-flex" style="gap:0.5rem;align-items:center;">
-                <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Rechercher..." style="min-width:180px;">
-                <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:160px;">
-                    <option value="">Tous les types</option>
-                    {% set types = [] %}
-                    {% for song in songs %}
-                        {% for t in song.types %}
-    {% if t.name not in types %}
-        {% set types = types|merge([t.name]) %}
-        <option value="{{ t.name }}">{{ t.name }}</option>
-    {% endif %}
-{% endfor %}
+        {# Champ de recherche + filtre par type #}
+        <div class="d-flex" style="gap:0.5rem;align-items:center;">
+            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Rechercher..." style="min-width:180px;">
+            <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:160px;">
+                <option value="">Tous les types</option>
+                {% set types = [] %}
+                {% for song in songs %}
+                    {% for t in song.types %}
+                        {% if t.name not in types %}
+                            {% set types = types|merge([t.name]) %}
+                            <option value="{{ t.name }}">{{ t.name }}</option>
+                        {% endif %}
                     {% endfor %}
-                </select>
-            </div>
+                {% endfor %}
+            </select>
         </div>
     </div>
+</header>
 
     {# tabs pour Chants / Textes #}
-    <ul class="nav mb-4" id="songTabs" role="tablist" style="gap:0.75rem;">
+    <ul class="app-tabs" id="songTabs" role="tablist">
         <li class="nav-item">
-            <button class="btn d-flex align-items-center active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true"
-                style="background:var(--color-secondary);color:var(--color-bg);border-radius:999px;padding:10px 22px;gap:12px;min-height:48px;">
+            <button class="app-tab app-tab-primary active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true">
                 <i class="bi bi-music-note" style="font-size:1.15rem;"></i>
-                <span style="font-weight:600;">Chants</span>
+                <span>Chants</span>
             </button>
         </li>
         <li class="nav-item">
-            <button class="btn d-flex align-items-center" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false"
-                style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:999px;padding:10px 22px;gap:12px;min-height:48px;">
+            <button class="app-tab app-tab-secondary" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false">
                 <i class="bi bi-book" style="font-size:1.15rem;"></i>
-                <span style="font-weight:600;">Textes & Lectures</span>
+                <span>Textes & Lectures</span>
             </button>
         </li>
     </ul>

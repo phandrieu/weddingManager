@@ -23,7 +23,14 @@
                                     <ul>
                                         {% if wedding.songs is not empty %}
                                             {% for song in wedding.songs %}
-                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                                <li>
+                                                    {% if song.types|length > 0 %}
+                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                                    {% else %}
+                                                        Sans type
+                                                    {% endif %}
+                                                    : {{ song.name }}
+                                                </li>
                                             {% endfor %}
                                         {% else %}
                                             <li>Aucun chant</li>
@@ -60,7 +67,14 @@
                                     <ul>
                                         {% if wedding.songs is not empty %}
                                             {% for song in wedding.songs %}
-                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                                <li>
+                                                    {% if song.types|length > 0 %}
+                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                                    {% else %}
+                                                        Sans type
+                                                    {% endif %}
+                                                    : {{ song.name }}
+                                                </li>
                                             {% endfor %}
                                         {% else %}
                                             <li>Aucun chant</li>
@@ -98,7 +112,14 @@
                                     <ul>
                                         {% if wedding.songs is not empty %}
                                             {% for song in wedding.songs %}
-                                                <li>{{ song.type.name }} : {{ song.name }}</li>
+                                                <li>
+                                                    {% if song.types|length > 0 %}
+                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                                    {% else %}
+                                                        Sans type
+                                                    {% endif %}
+                                                    : {{ song.name }}
+                                                </li>
                                             {% endfor %}
                                         {% else %}
                                             <li>Aucun chant</li>

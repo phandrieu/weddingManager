@@ -69,14 +69,14 @@ class WeddingFormType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('musicians', EntityType::class, [
+            /*->add('musicians', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => 'fullName',
                 'label' => 'Musiciens',
                 'multiple' => true,
                 'expanded' => false,
                 'attr' => ['class' => 'form-select', 'multiple' => 'multiple'],
-            ])
+            ])*/
             ->add('songs', EntityType::class, [
                 'class' => Song::class,
                 'choice_label' => 'name',

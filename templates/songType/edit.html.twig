@@ -3,29 +3,46 @@
 {% block title %}{{ songType.id ? 'Modifier' : 'Ajouter' }} un type de chant{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
+<header class="page-header">
     <h1>{{ songType.id ? 'Modifier' : 'Ajouter' }} un type de chant</h1>
+    <div class="app-actions">
+        <button type="submit" form="songTypeForm" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-check-lg"></i>
+            Enregistrer
+        </button>
+        <a href="{{ path('app_songtype_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+    </div>
+</header>
 
-    {{ form_start(form) }}
-        <div class="mb-3">
-            {{ form_label(form.name) }}
-            {{ form_widget(form.name) }}
-            {{ form_errors(form.name) }}
+{{ form_start(form, {'attr': {'id': 'songTypeForm'}}) }}
+
+<div class="app-card">
+    <div class="row g-4">
+        <div class="col-12 col-md-6">
+            <div class="form-group">
+                {{ form_label(form.name, 'Nom du type de chant', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Ex: Entrée, Offertoire...'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
         </div>
-        <div class="mb-3">
-        {{ form_label(form.messe) }}
-        {{ form_widget(form.messe, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.messe) }}
-    </div>
 
-    <div class="mb-3">
-        {{ form_label(form.celebrationPeriod) }}
-        {{ form_widget(form.celebrationPeriod, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.celebrationPeriod) }}
+        <div class="col-12 col-md-3">
+            <div class="form-group">
+                {{ form_label(form.messe, 'Type de célébration', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.messe, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.messe) }}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <div class="form-group">
+                {{ form_label(form.celebrationPeriod, 'Période liturgique', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.celebrationPeriod, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.celebrationPeriod) }}
+            </div>
+        </div>
     </div>
-+
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <a href="{{ path('app_songtype_index') }}" class="btn btn-secondary">Annuler</a>
-    {{ form_end(form) }}
 </div>
+
+{{ form_end(form) }}
 {% endblock %}

@@ -31,18 +31,30 @@
                 --color-secondary: #652D90;
                 --color-tertiary: #E6DEF6;
                 --color-last: #61616F;
-                /* padding utilisé par le container pour positionner les titres */
-                --container-padding: 1rem;
+                --container-padding: clamp(0.75rem, 2vw, 1.5rem);
+                --layout-max-width: 1100px;
+            }
+
+            *, *::before, *::after {
+                box-sizing: border-box;
             }
             
             /* Typographie */
             body {
                 font-family: 'Kanit', Avenir, Helvetica, Arial, sans-serif;
                 background-color: var(--color-bg);
+                color: var(--color-last);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
-                color: var(--color-last);
+                line-height: 1.6;
+                margin: 0;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            main {
+                flex: 1 0 auto;
+                width: 100%;
             }
 
             h1, h2, h3 {
@@ -54,22 +66,21 @@
             
             /* Spécifique aux H1 demandées */
             h1 {
-                font-size: 20px;                         /* taille demandée */
-                font-weight: 600;
+                font-size: clamp(1.2rem, 2.6vw, 1.75rem);
+                font-weight: 700;
+                letter-spacing: .08em;
                 text-transform: uppercase;
-                letter-spacing: .03em;
-                color: var(--color-primary);             /* texte orange */
-                background-color: var(--color-secondary);/* rectangle violet (rempli) */
-                display: inline-block;                   /* boîte compacte */
-                width: 500px;                            /* largeur comme sur la maquette */
-                text-align: center;                      /* texte centré dans la boîte */
-                padding: 0.45rem 0;                      /* hauteur de la boîte */
-                margin: 0 0 1rem calc(-1 * var(--container-padding)); /* bord gauche à l'écran */
-                box-sizing: border-box;
-                border-radius: 0;
-                margin-top: 0;
-
-                transform: translate(-2rem,0);
+                color: var(--color-primary);
+                background-color: var(--color-secondary);
+                display: inline-block;
+                width: auto;
+                text-align: left;
+                padding: 0.75rem 2.5rem 0.75rem 1.5rem;
+                margin: 0 0 1.5rem 0;
+                margin-left: calc(-1 * var(--container-padding));
+                border-radius: 0 1.5rem 1.5rem 0;
+                box-shadow: 0 4px 12px rgba(38, 12, 64, 0.25);
+                position: relative;
             }
 
             h4, h5, h6 {
@@ -86,26 +97,57 @@
             /* Navbar */
             .navbar {
                 background-color: #652D90;
-                padding-top: 6px;
-                padding-bottom: 0;
-                /*border-bottom: 2px solid var(--color-primary);*/
+                padding: 0.6rem 0;
+            }
+
+            .navbar .container {
+                align-items: center;
+                gap: 1rem;
             }
 
             .navbar-brand {
                 font-weight: 600;
-                font-size: 1.2rem;
+                font-size: clamp(1.1rem, 3vw, 1.5rem);
                 color: var(--color-primary) !important;
                 font-family: 'Alfarn', serif;
                 text-transform: uppercase;
             }
 
+            .navbar-brand img {
+                height: clamp(40px, 4vw, 52px);
+                width: clamp(48px, 5vw, 60px);
+                object-fit: cover;
+                transform: translateY(-4px);
+            }
+
+            .navbar-nav {
+                align-items: center;
+                gap: clamp(0.5rem, 2vw, 1.25rem);
+            }
+
             .navbar-nav .nav-link {
-                margin-right: .75rem;
+                margin-right: 0;
                 color: var(--color-bg) !important;
                 transition: color .2s;
+                padding: 0.65rem 0;
             }
-            .navbar-nav .nav-link:hover {
+
+            .navbar-nav .nav-link:hover,
+            .navbar-nav .nav-link:focus {
                 color: var(--color-primary) !important;
+            }
+
+            .navbar-toggler {
+                border-color: rgba(255, 255, 255, 0.45);
+                padding: 0.35rem 0.6rem;
+            }
+
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.1rem rgba(255, 255, 255, 0.45);
+            }
+
+            .navbar-toggler-icon {
+                filter: invert(100%);
             }
 
             /* Boutons */
@@ -113,6 +155,7 @@
                 background-color: var(--color-primary);
                 border-color: var(--color-primary);
             }
+
             .btn-primary:hover {
                 background-color: #e56f05;
                 border-color: #e56f05;
@@ -122,6 +165,7 @@
                 background-color: var(--color-secondary);
                 border-color: var(--color-secondary);
             }
+
             .btn-secondary:hover {
                 background-color: #5823c2;
                 border-color: #5823c2;
@@ -132,6 +176,7 @@
                 border-color: var(--color-tertiary);
                 color: #fff;
             }
+
             .btn-success:hover {
                 background-color: #81956c;
                 border-color: #81956c;
@@ -139,31 +184,78 @@
 
             /* Conteneur */
             .container {
-                max-width: 100%;
+                width: 100%;
+                max-width: none;
+                margin-left: auto;
+                margin-right: auto;
                 padding-left: var(--container-padding);
                 padding-right: var(--container-padding);
             }
 
+            /* Sur très grands écrans, on peut recentrer un peu si besoin */
+            @media (min-width: 1600px) {
+                .container {
+                    width: min(100%, 1400px);
+                }
+            }
+
+            .app-main {
+                padding-top: clamp(1.75rem, 3vw, 2.75rem);
+                padding-bottom: clamp(2rem, 4vw, 3rem);
+            }
+
             /* Responsive */
+            @media (min-width: 992px) {
+                h1 {
+                    /* Déjà collé grâce à margin-left négatif */
+                }
+
+                .navbar-nav .nav-link {
+                    padding: 0;
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .navbar-collapse {
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                    margin-top: 0.75rem;
+                    padding-top: 0.75rem;
+                }
+
+                .navbar-brand img {
+                    transform: translateY(0);
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                h1 {
+                    /* Sur tablette/mobile, on garde le H1 collé au bord gauche */
+                }
+            }
+
             @media (max-width: 576px) {
-                /* ajustement du padding pour petits écrans afin que la marge négative suive */
-                :root { --container-padding: .75rem; }
-                 .container {
-                    padding-left: var(--container-padding);
-                    padding-right: var(--container-padding);
-                 }
-                 h1 {
-                     width: 160px; /* réduit sur petit écran */
-                     font-size: 20px;
-                     margin-left: calc(-1 * var(--container-padding));
-                 }
-                 h2, h3 { font-size: 1.25rem; }
-             }
+                :root { --container-padding: 0.85rem; }
+
+                h1 {
+                    font-size: 1.15rem;
+                    padding: 0.65rem 1.75rem 0.65rem 1.25rem;
+                    letter-spacing: 0.05em;
+                    margin-left: calc(-1 * var(--container-padding));
+                }
+
+                h2, h3 {
+                    font-size: 1.15rem;
+                }
+
+                .navbar {
+                    padding: 0.5rem 0;
+                }
+            }
 
             /* Footer */
             footer {
                 margin-top: auto;
-                padding: 1rem;
+                padding: clamp(1.25rem, 2vw, 1.75rem);
                 text-align: center;
                 background: #fff;
                 border-top: 1px solid #ddd;
@@ -172,17 +264,16 @@
         </style>
 
         {% block stylesheets %}
-    
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-{% endblock %}
+            <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+        {% endblock %}
         {{ encore_entry_link_tags('app') }}
     </head>
     <body>
         {% if app.user %}
-        <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" style="font-size:24px;" href="{{ path('public') }}">
-                    <img src="{{ asset('logos/logo_white_nobg_noborder.png') }}" alt="Logo" style="height:45px; width:59px; object-fit:cover; transform: translate(0px, -7px);" class="me-2">
+                <a class="navbar-brand d-flex align-items-center" href="{{ path('public') }}">
+                    <img src="{{ asset('logos/logo_white_nobg_noborder.png') }}" alt="Logo" class="me-2">
                     Notre Messe de Mariage
                 </a>  
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
@@ -191,7 +282,7 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="margin-left: 30px;">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
                         </li>
@@ -226,9 +317,11 @@
         </nav>
         {% endif %}
 
-        <div class="container mt-4" style="margin-top: 0px !important;">
-            {% block body %}{% endblock %}
-        </div>
+        <main class="app-main">
+            <div class="container">
+                {% block body %}{% endblock %}
+            </div>
+        </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         {{ encore_entry_script_tags('app') }}
@@ -238,7 +331,6 @@
 
 
 {% block javascripts %}
-    
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -251,8 +343,8 @@
                     maxItems: null,
                     placeholder: select.dataset.placeholder || 'Sélectionner',
                     sortField: {
-                        field: "text",
-                        direction: "asc"
+                        field: 'text',
+                        direction: 'asc'
                     }
                 });
             });

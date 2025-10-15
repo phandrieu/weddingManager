@@ -3,64 +3,127 @@
 {% block title %}{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}</h1>
+<header class="page-header">
+    <h1>{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur' }}</h1>
+    <div class="app-actions">
+        <button type="submit" form="userForm" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-check-lg"></i>
+            Enregistrer
+        </button>
+        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+    </div>
+</header>
 
-    {{ form_start(form) }}
-    <div class="mb-3">
-        {{ form_label(form.firstName) }}
-        {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.firstName) }}
+{{ form_start(form, {'attr': {'id': 'userForm'}}) }}
+
+<div class="row g-4">
+    <!-- Informations personnelles -->
+    <div class="col-12 col-lg-6">
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-person-fill me-2"></i>Informations personnelles
+            </h2>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.firstName, 'Prénom', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                        {{ form_errors(form.firstName) }}
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.name, 'Nom', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-group">
+                        {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'email@exemple.fr'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-group">
+                        {{ form_label(form.telephone, 'Téléphone', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.telephone, {'attr': {'class': 'form-control', 'placeholder': '+33 6 12 34 56 78'}}) }}
+                        {{ form_errors(form.telephone) }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.name) }}
-        {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.name) }}
+    <!-- Adresse -->
+    <div class="col-12 col-lg-6">
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-geo-alt-fill me-2"></i>Adresse
+            </h2>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="form-group">
+                        {{ form_label(form.addressLine1, 'Ligne 1', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.addressLine1, {'attr': {'class': 'form-control', 'placeholder': 'Numéro et rue'}}) }}
+                        {{ form_errors(form.addressLine1) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-group">
+                        {{ form_label(form.addressLine2, 'Ligne 2 (optionnel)', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.addressLine2, {'attr': {'class': 'form-control', 'placeholder': 'Complément d\'adresse'}}) }}
+                        {{ form_errors(form.addressLine2) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-group">
+                        {{ form_label(form.addressPostalCodeAndCity, 'Code postal et ville', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.addressPostalCodeAndCity, {'attr': {'class': 'form-control', 'placeholder': '75001 Paris'}}) }}
+                        {{ form_errors(form.addressPostalCodeAndCity) }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.email) }}
-        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.email) }}
+    <!-- Accès et sécurité -->
+    <div class="col-12">
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-shield-lock-fill me-2"></i>Accès et sécurité
+            </h2>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.roles, 'Rôle', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.roles, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.roles) }}
+                        <small class="form-text text-muted">Définit les permissions de l'utilisateur dans l'application.</small>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.password, user.id ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.password, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
+                        {{ form_help(form.password) }}
+                        {{ form_errors(form.password) }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        {{ form_label(form.telephone) }}
-        {{ form_widget(form.telephone, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.telephone) }}
-    </div>
-<div class="mb-3">
-    {{ form_label(form.addressLine1) }}
-    {{ form_widget(form.addressLine1, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressLine1) }}
 </div>
 
-<div class="mb-3">
-    {{ form_label(form.addressLine2) }}
-    {{ form_widget(form.addressLine2, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressLine2) }}
-</div>
-
-<div class="mb-3">
-    {{ form_label(form.addressPostalCodeAndCity) }}
-    {{ form_widget(form.addressPostalCodeAndCity, {'attr': {'class': 'form-control'}}) }}
-    {{ form_errors(form.addressPostalCodeAndCity) }}
-</div>
-    <div class="mb-3">
-        {{ form_label(form.roles) }}
-        {{ form_widget(form.roles, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.roles) }}
-    </div>
-    <div class="mb-3">
-    {{ form_label(form.password) }}
-    {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
-    {{ form_help(form.password) }}
-    {{ form_errors(form.password) }}
-</div>
-
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
-    <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
-    {{ form_end(form) }}
-</div>
+{{ form_end(form) }}
 {% endblock %}
