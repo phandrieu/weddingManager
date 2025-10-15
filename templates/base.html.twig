@@ -4,7 +4,21 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
         <title>{% block title %}Notre Messe de Mariage{% endblock %}</title>
-        
+
+        {% set apple_touch_icon = asset('logos/logo_app_pro.png') %}
+        {% if app.user is defined and app.user %}
+            {% if 'ROLE_USER' in app.user.roles and app.user.roles|length == 1 %}
+                {% set apple_touch_icon = asset('logos/logo_app.png') %}
+            {% endif %}
+        {% endif %}
+
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-touch-fullscreen" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ block('title')|striptags|default('Notre Messe de Mariage') }}">
+        <link rel="apple-touch-icon" href="{{ apple_touch_icon }}" sizes="180x180">
+
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
@@ -274,7 +288,7 @@
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('public') }}">
                     <img src="{{ asset('logos/logo_white_nobg_noborder.png') }}" alt="Logo" class="me-2">
-                    Notre Messe de Mariage
+                    <span class="d-none d-sm-inline">Notre Messe de Mariage</span>
                 </a>  
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
