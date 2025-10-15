@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>{% block email_title %}Notre Messe de Mariage{% endblock %}</title>
+    
+    <style>
+        /* Reset styles */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+        }
+        
+        * {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* Prevent auto-scaling */
+        div[style*="margin: 16px 0"] {
+            margin: 0 !important;
+        }
+        
+        /* Remove extra spacing */
+        table, td {
+            mso-table-lspace: 0pt !important;
+            mso-table-rspace: 0pt !important;
+        }
+        
+        /* Fix webkit rendering */
+        table {
+            border-spacing: 0 !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+            margin: 0 auto !important;
+        }
+        
+        /* Force Outlook to provide a "view in browser" link */
+        #MessageViewBody, #MessageWebViewDiv {
+            width: 100% !important;
+        }
+        
+        /* Make images responsive */
+        img {
+            -ms-interpolation-mode: bicubic;
+            max-width: 100%;
+            height: auto;
+            border: 0;
+            display: block;
+        }
+        
+        /* Couleurs du site */
+        .bg-primary { background-color: #FF8100 !important; }
+        .bg-secondary { background-color: #652D90 !important; }
+        .bg-tertiary { background-color: #E6DEF6 !important; }
+        .text-primary { color: #FF8100 !important; }
+        .text-secondary { color: #652D90 !important; }
+        .text-dark { color: #61616F !important; }
+        
+        /* Typography */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #61616F;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0 0 20px 0;
+            color: #FF8100;
+        }
+        
+        p {
+            margin: 0 0 15px 0;
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            display: inline-block;
+            padding: 16px 40px;
+            background-color: #FF8100;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e67400 !important;
+        }
+        
+        /* Social icons */
+        .social-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 0 5px;
+            background-color: #652D90;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        
+        .social-icon:hover {
+            background-color: #FF8100 !important;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+            
+            .stack-column {
+                display: block !important;
+                width: 100% !important;
+            }
+            
+            h1 {
+                font-size: 24px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f5f5;">
+    <!-- Preheader text (invisible in email, but appears in inbox preview) -->
+    <div style="display: none; font-size: 1px; color: #f5f5f5; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+        {% block preheader %}{% endblock %}
+    </div>
+    
+    <!-- Email wrapper -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+        <tr>
+            <td style="padding: 40px 15px;">
+                <!-- Email container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" width="600" class="email-container" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header avec logo -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #652D90 0%, #FF8100 100%); padding: 40px 30px; text-align: center;">
+                            <img src="{{ absolute_url(asset('logos/logo_app.png')) }}" alt="Notre Messe de Mariage" width="120" style="margin: 0 auto; display: block;">
+                        </td>
+                    </tr>
+                    
+                    <!-- Main content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #E6DEF6; padding: 30px; text-align: center;">
+                            <!-- Social icons -->
+                            <div style="margin-bottom: 20px;">
+                                {% block social_links %}
+                                <a href="https://facebook.com" class="social-icon" style="color: #ffffff; text-decoration: none;">
+                                    <span style="font-size: 18px;">f</span>
+                                </a>
+                                <a href="https://instagram.com" class="social-icon" style="color: #ffffff; text-decoration: none;">
+                                    <span style="font-size: 18px;">📷</span>
+                                </a>
+                                <a href="https://twitter.com" class="social-icon" style="color: #ffffff; text-decoration: none;">
+                                    <span style="font-size: 18px;">𝕏</span>
+                                </a>
+                                {% endblock %}
+                            </div>
+                            
+                            <!-- Footer text -->
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #652D90;">
+                                <strong>Notre Messe de Mariage</strong>
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #61616F; line-height: 1.5;">
+                                {% block footer_text %}
+                                Vous recevez cet email car vous êtes inscrit sur notre plateforme.<br>
+                                Pour toute question, contactez-nous à <a href="mailto:contact@notremessedemariage.fr" style="color: #652D90; text-decoration: none;">contact@notremessedemariage.fr</a>
+                                {% endblock %}
+                            </p>
+                            
+                            <!-- Copyright -->
+                            <p style="margin: 15px 0 0 0; font-size: 11px; color: #999999;">
+                                © {{ "now"|date("Y") }} Notre Messe de Mariage. Tous droits réservés.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
