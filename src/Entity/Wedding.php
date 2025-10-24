@@ -99,6 +99,15 @@ private ?User $mariee = null;
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'wedding', orphanRemoval: true)]
     private Collection $comments;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $createdBy = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $createdWithCredit = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $requiresCouplePayment = false;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -452,6 +461,42 @@ private ?User $mariee = null;
                 $comment->setWedding(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function isCreatedWithCredit(): bool
+    {
+        return $this->createdWithCredit;
+    }
+
+    public function setCreatedWithCredit(bool $createdWithCredit): static
+    {
+        $this->createdWithCredit = $createdWithCredit;
+
+        return $this;
+    }
+
+    public function isRequiresCouplePayment(): bool
+    {
+        return $this->requiresCouplePayment;
+    }
+
+    public function setRequiresCouplePayment(bool $requiresCouplePayment): static
+    {
+        $this->requiresCouplePayment = $requiresCouplePayment;
 
         return $this;
     }

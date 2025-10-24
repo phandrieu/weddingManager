@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Entity\Invitation;
 use App\Repository\SongRepository;
 use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Service\InvitationWorkflow;
 
 class RegistrationController extends AbstractController
 {
@@ -22,7 +22,8 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         SongRepository $songRepository,
-        InvitationRepository $invitationRepo
+        InvitationRepository $invitationRepo,
+        InvitationWorkflow $invitationWorkflow
     ): Response {
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
@@ -67,7 +68,17 @@ class RegistrationController extends AbstractController
             if ($token) {
                 $invitation = $invitationRepo->findOneBy(['token' => $token, 'used' => false]);
                 if ($invitation) {
-                    $this->attachUserToWedding($user, $invitation, $em);
+                    if ($invitationWorkflow->requiresPayment($invitation)) {
+                        $request->getSession()->set('pending_invitation_token', $token);
+                        $this->addFlash('info', 'Veuillez finaliser le paiement pour rejoindre ce mariage.');
+
+                        return $this->redirectToRoute(
+                            'app_wedding_invitation_checkout',
+                            ['id' => $invitation->getWedding()->getId()]
+                        );
+                    }
+
+                    $invitationWorkflow->attachUser($user, $invitation);
                     $request->getSession()->remove('invitation_token');
                 }
             }
@@ -98,25 +109,6 @@ class RegistrationController extends AbstractController
         }
 
         return $this->render('registration/register.html.twig');
-    }
-
-    private function attachUserToWedding(User $user, Invitation $invitation, EntityManagerInterface $em): void
-    {
-        $wedding = $invitation->getWedding();
-        $role = $invitation->getRole();
-
-        if ($role === 'musicien') {
-            $wedding->addMusician($user);
-        } elseif ($role === 'marie') {
-            $wedding->setMarie($user);
-        } elseif ($role === 'mariee') {
-            $wedding->setMariee($user);
-        }
-
-        $invitation->setUsed(true);
-        $em->persist($wedding);
-        $em->persist($invitation);
-        $em->flush();
     }
 
     #[Route('/register/success', name: 'app_register_success')]

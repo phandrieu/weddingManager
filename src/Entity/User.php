@@ -95,6 +95,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $comments;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $credits = 0;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -384,6 +387,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->subscription = $subscription;
 
         return $this;
+    }
+
+    public function getCredits(): int
+    {
+        return $this->credits;
+    }
+
+    public function setCredits(int $credits): static
+    {
+        $this->credits = max(0, $credits);
+
+        return $this;
+    }
+
+    public function addCredits(int $amount): static
+    {
+        if ($amount > 0) {
+            $this->credits += $amount;
+        }
+
+        return $this;
+    }
+
+    public function removeCredits(int $amount): static
+    {
+        if ($amount > 0) {
+            $this->credits = max(0, $this->credits - $amount);
+        }
+
+        return $this;
+    }
+
+    public function hasCredits(int $amount = 1): bool
+    {
+        return $this->credits >= $amount;
     }
 
     /**

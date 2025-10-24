@@ -2,9 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Invitation;
 use App\Repository\InvitationRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\InvitationWorkflow;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,51 +16,54 @@ class SecurityController extends AbstractController
     public function login(
         AuthenticationUtils $authenticationUtils,
         Request $request,
-        InvitationRepository $invitationRepo,
-        EntityManagerInterface $em,
-
+    InvitationRepository $invitationRepo,
+    InvitationWorkflow $invitationWorkflow
     ): Response {
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        if ($this->getUser()) {
-    
-    return $this->redirectToRoute('home');
-}
+        $session = $request->getSession();
+        $user = $this->getUser();
+
+        if ($user) {
+            $token = $session->get('invitation_token');
+            if ($token) {
+                $invitation = $invitationRepo->findOneBy(['token' => $token, 'used' => false]);
+
+                if ($invitation) {
+                    if ($invitationWorkflow->requiresPayment($invitation)) {
+                        $session->set('pending_invitation_token', $token);
+                        $this->addFlash('info', 'Veuillez finaliser le paiement pour rejoindre ce mariage.');
+
+                        return $this->redirectToRoute(
+                            'app_wedding_invitation_checkout',
+                            ['id' => $invitation->getWedding()->getId()]
+                        );
+                    }
+
+                    $invitationWorkflow->attachUser($user, $invitation);
+                    $session->remove('invitation_token');
+                    $session->remove('pending_invitation_token');
+
+                    $this->addFlash('success', 'Invitation acceptée.');
+
+                    return $this->redirectToRoute(
+                        'app_wedding_view',
+                        ['id' => $invitation->getWedding()->getId()]
+                    );
+                }
+
+                $session->remove('invitation_token');
+                $this->addFlash('danger', 'Invitation invalide ou expirée.');
+            }
+
+            return $this->redirectToRoute('home');
+        }
 
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
-    }
-
-    private function attachUserToWedding($user, Invitation $invitation, EntityManagerInterface $em): void
-    {
-        $wedding = $invitation->getWedding();
-        $role = $invitation->getRole();
-
-        if ($role === 'musicien') {
-            $wedding->addMusician($user);
-            $user->addRole('ROLE_MUSICIAN');
-        } elseif ($role === 'marie') {
-            $wedding->setMarie($user);
-            $user->addRole('ROLE_USER');
-        } elseif ($role === 'mariee') {
-            $wedding->setMariee($user);
-            $user->addRole('ROLE_USER');
-        }
-        elseif ($role === 'mariee') {
-            $wedding->setParish($user);
-            $user->addRole('ROLE_USER');
-            $user->addRole('ROLE_PARISH');
-        }
-
-        $invitation->setUsed(true);
-
-        $em->persist($wedding);
-        $em->persist($user);
-        $em->persist($invitation);
-        $em->flush();
     }
 
     #[Route(path: '/logout', name: 'app_logout')]

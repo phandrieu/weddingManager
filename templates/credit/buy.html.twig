@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Acheter des crédits{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Acheter des crédits</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Vos crédits actuels :</strong> {{ user.credits }}
+                    </div>
+
+                    <p>
+                        Chaque crédit vous permet de créer un mariage et d'inviter gratuitement 
+                        les mariés et l'autre partenaire (musicien ou paroisse).
+                    </p>
+
+                    <p class="text-muted">
+                        <strong>Prix :</strong> 10€ par crédit
+                    </p>
+
+                    <form method="post" action="{{ path('app_credits_buy') }}">
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Nombre de crédits</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="quantity" 
+                                name="quantity" 
+                                min="1" 
+                                max="100" 
+                                value="1" 
+                                required
+                            >
+                        </div>
+
+                        <div class="mb-3">
+                            <p class="text-muted">
+                                <span id="total-price">Total : 10€</span>
+                            </p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Payer
+                        </button>
+                        <a href="{{ path('home') }}" class="btn btn-secondary">Annuler</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('quantity').addEventListener('input', function() {
+        const quantity = parseInt(this.value) || 1;
+        const price = quantity * 10;
+        document.getElementById('total-price').textContent = 'Total : ' + price + '€';
+    });
+</script>
+{% endblock %}
