@@ -2,199 +2,435 @@
 
 {% block title %}Inscription{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .register-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: clamp(2rem, 4vw, 3.5rem);
+            align-items: flex-start;
+            margin-top: clamp(1rem, 3vw, 2rem);
+        }
+
+        .register-sidecard {
+            background: linear-gradient(135deg, rgba(101, 45, 144, 0.95), rgba(255, 129, 0, 0.9));
+            border-radius: 1.5rem;
+            color: #fff;
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-sidecard::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('{{ asset('images/login_screens/loginbanner2.png') }}');
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: soft-light;
+            opacity: 0.35;
+        }
+
+        .register-sidecard__content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .register-panel {
+            background: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.12);
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+        }
+
+        .register-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .5rem 1rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-size: .8rem;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .register-title {
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.4rem, 3vw, 1.75rem);
+            color: #fff;
+        }
+
+        .register-list {
+            display: grid;
+            gap: 1.25rem;
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .register-list__item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .register-list__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .register-stepper {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .register-stepper__item {
+            flex: 1;
+            position: relative;
+            text-align: center;
+            padding: .75rem .5rem;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(101, 45, 144, 0.25);
+            font-size: .9rem;
+            color: var(--color-last);
+            font-weight: 500;
+            transition: all .2s ease;
+        }
+
+        .register-stepper__item.active {
+            background: rgba(101, 45, 144, 0.08);
+            border-color: var(--color-secondary);
+            color: var(--color-secondary);
+        }
+
+        .register-step {
+            display: none;
+            animation: fadeIn .35s ease;
+        }
+
+        .register-step.active {
+            display: block;
+        }
+
+        .register-controls {
+            display: flex;
+            gap: .75rem;
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .register-note {
+            background: rgba(101, 45, 144, 0.08);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            font-size: .95rem;
+            color: var(--color-secondary);
+        }
+
+        .form-floating > label {
+            color: var(--color-last);
+        }
+
+        .form-floating > .form-control {
+            border-radius: .85rem;
+            border: 1px solid rgba(101, 45, 144, 0.2);
+            padding-left: 1.25rem;
+        }
+
+        .form-floating > .form-control:focus {
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 .25rem rgba(101, 45, 144, .15);
+        }
+
+        .register-sidecard__invitation {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            font-size: .95rem;
+            margin-top: 1.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
-    <div class="card shadow-lg p-4" style="width: 100%; max-width: 480px; border-radius: 1rem;">
-        <div class="card-body">
-            <h2 class="card-title text-center mb-4">Inscription</h2>
+    <div class="register-wrapper">
+        <aside class="register-sidecard">
+            <div class="register-sidecard__content">
+                <span class="register-badge"><i class="bi bi-stars"></i>Onboarding guidé</span>
+                <h2 class="register-title mt-3">Rejoignez la communauté</h2>
+                <p class="mb-4 fw-light">Couples, paroisses et musiciens co-construisent ici la célébration : un seul espace, une seule voix.</p>
 
-            <!-- Indicateur de progression -->
-            <div class="progress mb-4">
-                <div class="progress-bar" id="progressBar" role="progressbar" style="width: 20%;"></div>
-            </div>
-
-            <form method="POST" id="registrationForm">
-                <!-- Page 1 -->
-                <div class="step active" id="step1">
-                    <div class="mb-3">
-                        <label>Prénom</label>
-                        <input type="text" name="firstName" class="form-control" required>
+                <div class="register-list">
+                    <div class="register-list__item">
+                        <span class="register-list__icon"><i class="bi bi-people"></i></span>
+                        <div>
+                            <h5 class="mb-1">Invitations centralisées</h5>
+                            <p class="mb-0 small">Nous détectons automatiquement les invitations en attente et activons les avantages liés (crédit offert, accès partagé...).</p>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label>Nom</label>
-                        <input type="text" name="name" class="form-control" required>
+                    <div class="register-list__item">
+                        <span class="register-list__icon"><i class="bi bi-music-note-list"></i></span>
+                        <div>
+                            <h5 class="mb-1">Répertoire intelligent</h5>
+                            <p class="mb-0 small">Musiciens : importez votre catalogue pour alimenter directement la sélection des mariés.</p>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-secondary flex-fill prev" style="display:none;">Retour</button>
-                        <button type="button" class="btn btn-primary flex-fill next">Suivant</button>
+                    <div class="register-list__item">
+                        <span class="register-list__icon"><i class="bi bi-calendar-check"></i></span>
+                        <div>
+                            <h5 class="mb-1">Suivi du parcours</h5>
+                            <p class="mb-0 small">Crédits, paiements, validations : tout est tracé pour garantir une collaboration fluide.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Page 2 -->
-                <div class="step" id="step2">
-                    <p><strong>Statut</strong></p>
-                    <div class="form-check">
+                <div class="register-sidecard__invitation">
+                    {% if app.session.get('invitation_token') %}
+                        <i class="bi bi-envelope-open me-2"></i>Invitation détectée : votre inscription associera automatiquement le rôle reçu.
+                    {% else %}
+                        <i class="bi bi-lightbulb me-2"></i>Astuce : si vous n’avez pas encore reçu d’invitation, vous pourrez en générer dès la première connexion.
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <section class="register-panel">
+            <header class="d-flex flex-column gap-2 mb-3">
+                <span class="text-uppercase fw-semibold" style="letter-spacing: .08em; color: var(--color-secondary);">Créer un compte</span>
+                <h2 class="mb-0" style="color: var(--color-primary);">Informations essentielles</h2>
+                <p class="mb-0 text-muted">Nous avons besoin de quelques précisions pour personnaliser votre expérience. Vous pourrez toujours compléter votre profil par la suite.</p>
+            </header>
+
+            <div class="register-stepper" id="stepperNav">
+                <div class="register-stepper__item active" data-stepper-index="0">Identité</div>
+                <div class="register-stepper__item" data-stepper-index="1">Rôle</div>
+                <div class="register-stepper__item" data-stepper-index="2">Coordonnées</div>
+                <div class="register-stepper__item" data-stepper-index="3">Sécurité</div>
+                <div class="register-stepper__item" data-stepper-index="4">Abonnement</div>
+            </div>
+
+            <form method="POST" id="registrationForm" class="d-flex flex-column gap-4">
+                <div class="register-step active" data-step="0">
+                    <div class="form-floating mb-3">
+                        <input type="text" name="firstName" class="form-control" id="firstName" placeholder="Prénom" required>
+                        <label for="firstName">Prénom</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" name="name" class="form-control" id="lastName" placeholder="Nom" required>
+                        <label for="lastName">Nom</label>
+                    </div>
+                    <div class="register-controls">
+                        <button type="button" class="btn btn-primary flex-fill next">Continuer</button>
+                    </div>
+                </div>
+
+                <div class="register-step" data-step="1">
+                    <div class="register-note mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Choisissez le rôle qui correspond à votre contribution principale. Vous pourrez en cumuler plusieurs plus tard.
+                    </div>
+                    <div class="form-check form-check-lg mb-2">
                         <input class="form-check-input" type="radio" name="status" id="statusParoisse" value="paroisse" required>
                         <label class="form-check-label" for="statusParoisse">Paroisse</label>
                     </div>
-                    <div class="form-check">
+                    <div class="form-check form-check-lg mb-2">
                         <input class="form-check-input" type="radio" name="status" id="statusMusicien" value="musicien" required>
                         <label class="form-check-label" for="statusMusicien">Musicien</label>
                     </div>
-                    <div class="form-check">
+                    <div class="form-check form-check-lg">
                         <input class="form-check-input" type="radio" name="status" id="statusMarie" value="marie" required>
                         <label class="form-check-label" for="statusMarie">Futur(e) marié(e)</label>
                     </div>
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="button" class="btn btn-secondary flex-fill prev">Retour</button>
-                        <button type="button" class="btn btn-primary flex-fill next">Suivant</button>
+                    <div class="register-controls">
+                        <button type="button" class="btn btn-outline-secondary flex-fill prev">Retour</button>
+                        <button type="button" class="btn btn-primary flex-fill next">Continuer</button>
                     </div>
                 </div>
 
-                <!-- Page 3 -->
-                <div class="step" id="step3">
-                    <div class="mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" class="form-control" required>
+                <div class="register-step" data-step="2">
+                    <div class="form-floating mb-3">
+                        <input type="email" name="email" class="form-control" id="email" placeholder="Email" required>
+                        <label for="email">Adresse e-mail</label>
                     </div>
-                    <div class="mb-3">
-                        <label>Téléphone</label>
-                        <input type="text" name="telephone" class="form-control" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" name="telephone" class="form-control" id="telephone" placeholder="Téléphone" required>
+                        <label for="telephone">Téléphone</label>
                     </div>
-                    <div class="mb-3">
-                        <label>Adresse</label>
-                        <input type="text" name="addressLine1" class="form-control" required>
+                    <div class="form-floating mb-3">
+                        <input type="text" name="addressLine1" class="form-control" id="addressLine1" placeholder="Adresse" required>
+                        <label for="addressLine1">Adresse</label>
                     </div>
-                    <div class="mb-3">
-                        <label>Complément</label>
-                        <input type="text" name="addressLine2" class="form-control">
+                    <div class="form-floating mb-3">
+                        <input type="text" name="addressLine2" class="form-control" id="addressLine2" placeholder="Complément">
+                        <label for="addressLine2">Complément</label>
                     </div>
-                    <div class="mb-3">
-                        <label>Code postal + Ville</label>
-                        <input type="text" name="addressPostalCodeAndCity" class="form-control" required>
+                    <div class="form-floating">
+                        <input type="text" name="addressPostalCodeAndCity" class="form-control" id="addressPostalCodeAndCity" placeholder="Code postal & ville" required>
+                        <label for="addressPostalCodeAndCity">Code postal & ville</label>
                     </div>
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="button" class="btn btn-secondary flex-fill prev">Retour</button>
-                        <button type="button" class="btn btn-primary flex-fill next">Suivant</button>
-                    </div>
-                </div>
-
-                <!-- Page 4 -->
-                <div class="step" id="step4">
-                    <div class="mb-3">
-                        <label>Mot de passe</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Répéter le mot de passe</label>
-                        <input type="password" name="confirm_password" class="form-control" required>
-                    </div>
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="button" class="btn btn-secondary flex-fill prev">Retour</button>
-                        <button type="button" class="btn btn-primary flex-fill next" id="goToSubscription">Suivant</button>
-                        <button type="submit" class="btn btn-success flex-fill" id="submitFromStep4">S'inscrire</button>
+                    <div class="register-controls">
+                        <button type="button" class="btn btn-outline-secondary flex-fill prev">Retour</button>
+                        <button type="button" class="btn btn-primary flex-fill next">Continuer</button>
                     </div>
                 </div>
 
-                <!-- Page 5 (uniquement musiciens) -->
-                <div class="step" id="step5">
-                    <p><strong>Choisissez votre mode d’accès :</strong></p>
+                <div class="register-step" data-step="3">
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" name="password" class="form-control" id="password" placeholder="Mot de passe" required>
+                        <label for="password">Mot de passe</label>
+                        <button class="btn btn-link text-decoration-none toggle-password" type="button" data-target="password">
+                            <i class="bi bi-eye"></i>
+                            <span class="visually-hidden">Afficher le mot de passe</span>
+                        </button>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" name="confirm_password" class="form-control" id="confirmPassword" placeholder="Confirmer" required>
+                        <label for="confirmPassword">Confirmer le mot de passe</label>
+                    </div>
+                    <div class="register-controls">
+                        <button type="button" class="btn btn-outline-secondary flex-fill prev">Retour</button>
+                        <button type="button" class="btn btn-primary flex-fill next" id="goToSubscription">Continuer</button>
+                        <button type="submit" class="btn btn-success flex-fill" id="submitFromStep4">Créer mon compte</button>
+                    </div>
+                </div>
+
+                <div class="register-step" data-step="4">
+                    <h5 class="mb-3">Musicien, choisissez votre formule</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="subscription" id="subscriptionFree" value="0" checked required>
+                        <label class="form-check-label" for="subscriptionFree">Accès gratuit &ndash; débitez un crédit ou laissez le couple régler l’accès.</label>
+                    </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="subscription" value="0" checked required>
-                        <label class="form-check-label">Accès gratuit (paiement au mariage créé)</label>
+                        <input class="form-check-input" type="radio" name="subscription" id="subscriptionPremium" value="1">
+                        <label class="form-check-label" for="subscriptionPremium">Abonnement 20€ / mois &ndash; créez des mariages sans limite.</label>
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="subscription" value="1">
-                        <label class="form-check-label">Abonnement 20€ / mois</label>
-                    </div>
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="button" class="btn btn-secondary flex-fill prev">Retour</button>
-                        <button type="submit" class="btn btn-success flex-fill">S'inscrire</button>
+                    <div class="register-controls">
+                        <button type="button" class="btn btn-outline-secondary flex-fill prev">Retour</button>
+                        <button type="submit" class="btn btn-success flex-fill">Valider mon inscription</button>
                     </div>
                 </div>
             </form>
-        </div>
+        </section>
     </div>
-</div>
+{% endblock %}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const steps = document.querySelectorAll('.step');
-    let currentStep = 0;
-    const goToSubscriptionBtn = document.getElementById('goToSubscription');
-    const submitFromStep4 = document.getElementById('submitFromStep4');
-    const progressBar = document.getElementById('progressBar');
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            const steps = Array.from(document.querySelectorAll('.register-step'));
+            const stepperItems = Array.from(document.querySelectorAll('.register-stepper__item'));
+            const nextButtons = Array.from(document.querySelectorAll('.next'));
+            const prevButtons = Array.from(document.querySelectorAll('.prev'));
+            const statusRadios = Array.from(document.querySelectorAll('input[name="status"]'));
+            const goToSubscriptionBtn = document.getElementById('goToSubscription');
+            const submitFromStep4 = document.getElementById('submitFromStep4');
+            let currentStep = 0;
 
-    function showStep(index) {
-        steps.forEach((step, i) => step.classList.toggle('active', i === index));
-        currentStep = index;
-        progressBar.style.width = ((index + 1) / steps.length * 100) + '%';
-    }
-
-    function getStatus() {
-        const selected = document.querySelector('input[name="status"]:checked');
-        return selected ? selected.value : null;
-    }
-
-    function validateStep(stepIndex) {
-        const step = steps[stepIndex];
-        const inputs = step.querySelectorAll('input[required]');
-        for (let input of inputs) {
-            if (input.type === 'radio') {
-                const radios = step.querySelectorAll(`input[name="${input.name}"]`);
-                if (![...radios].some(r => r.checked)) return false;
-            } else if (!input.value.trim()) {
-                return false;
+            function updateStepper(index) {
+                stepperItems.forEach((item, i) => item.classList.toggle('active', i === index));
             }
-        }
-        // Pour mot de passe, vérifier correspondance
-        if(stepIndex === 3) {
-            const pw = step.querySelector('input[name="password"]').value;
-            const confirm = step.querySelector('input[name="confirm_password"]').value;
-            if(pw !== confirm) return false;
-        }
-        return true;
-    }
 
-    document.querySelectorAll('.next').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (!validateStep(currentStep)) {
-                alert("Veuillez remplir tous les champs obligatoires correctement avant de continuer.");
-                return;
+            function showStep(index) {
+                if (index < 0 || index >= steps.length) {
+                    return;
+                }
+                steps.forEach((step, i) => step.classList.toggle('active', i === index));
+                updateStepper(index);
+                currentStep = index;
             }
-            if (currentStep === 3 && getStatus() === 'musicien') {
-                showStep(4);
-            } else {
-                showStep(currentStep + 1);
+
+            function getStatusValue() {
+                const checked = statusRadios.find(radio => radio.checked);
+                return checked ? checked.value : null;
             }
-        });
-    });
 
-    document.querySelectorAll('.prev').forEach(btn => {
-        btn.addEventListener('click', () => showStep(currentStep - 1));
-    });
+            function validateStep(index) {
+                const step = steps[index];
+                const requiredInputs = Array.from(step.querySelectorAll('input[required]'));
 
-    // Gérer l’affichage des boutons selon le statut
-    document.querySelectorAll('input[name="status"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'musicien') {
-                goToSubscriptionBtn.style.display = 'inline-block';
-                submitFromStep4.style.display = 'none';
-            } else {
-                goToSubscriptionBtn.style.display = 'none';
-                submitFromStep4.style.display = 'inline-block';
+                for (const input of requiredInputs) {
+                    if (input.type === 'radio') {
+                        const group = step.querySelectorAll('input[name="' + input.name + '"]');
+                        if (!Array.from(group).some(radio => radio.checked)) {
+                            return false;
+                        }
+                    } else if (!input.value.trim()) {
+                        return false;
+                    }
+                }
+
+                if (index === 3) {
+                    const password = step.querySelector('input[name="password"]').value;
+                    const confirm = step.querySelector('input[name="confirm_password"]').value;
+                    return password === confirm && password.length >= 8;
+                }
+
+                return true;
             }
-        });
-    });
 
-    // État initial
-    goToSubscriptionBtn.style.display = 'none';
-    showStep(0);
-});
-</script>
+            nextButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (!validateStep(currentStep)) {
+                        alert('Veuillez compléter correctement les informations demandées.');
+                        return;
+                    }
 
-<style>
-.step { display: none; }
-.step.active { display: block; }
-</style>
+                    if (currentStep === 3 && getStatusValue() === 'musicien') {
+                        showStep(4);
+                        return;
+                    }
+
+                    showStep(currentStep + 1);
+                });
+            });
+
+            prevButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetStep = currentStep - 1;
+                    showStep(targetStep);
+                });
+            });
+
+            statusRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'musicien') {
+                        goToSubscriptionBtn.classList.remove('d-none');
+                        submitFromStep4.classList.add('d-none');
+                    } else {
+                        goToSubscriptionBtn.classList.add('d-none');
+                        submitFromStep4.classList.remove('d-none');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    if (!input) {
+                        return;
+                    }
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    button.querySelector('i').classList.toggle('bi-eye');
+                    button.querySelector('i').classList.toggle('bi-eye-slash');
+                });
+            });
+
+            goToSubscriptionBtn.classList.add('d-none');
+            showStep(0);
+        })();
+    </script>
 {% endblock %}

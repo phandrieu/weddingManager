@@ -1,210 +1,258 @@
-<!DOCTYPE html>
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
-        <title>{% block title %}Notre Messe de Mariage{% endblock %}</title>
-        
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% extends 'base.html.twig' %}
 
-        <style>
-            /* === Intégration des polices locales === */
-            @font-face {
-                font-family: 'Alfarn';
-                src: url('{{ asset("fonts/Alfarn-Regular.ttf") }}') format("truetype");
-                font-weight: 400;
-                font-style: normal;
-            }
+{% block title %}Connexion{% endblock %}
 
-            @font-face {
-                font-family: 'Avenir LT Pro';
-                src: url('{{ asset("fonts/AvenirLTPro.ttf") }}') format("truetype");
-                font-weight: 400;
-                font-style: normal;
-            }
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .auth-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: clamp(2rem, 4vw, 3rem);
+            align-items: stretch;
+            justify-content: center;
+            padding: clamp(1.5rem, 4vw, 3rem) 0;
+        }
 
-            /* Palette de couleurs */
-            :root {
-                --color-bg: #FFFFFF;
-                --color-primary: #FF8100;
-                --color-secondary: #652D90;
-                --color-tertiary: #E6DEF6;
-                --color-last: #61616F;
-            }
+        .auth-panel {
+            background: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.12);
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-            /* Typographie */
-            body {
-                font-family: 'Kanit', Avenir, Helvetica, Arial, sans-serif;
-                background-color: var(--color-bg);
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                color: var(--color-last);
-            }
+        .auth-sidecard {
+            background: linear-gradient(135deg, rgba(101, 45, 144, 0.92), rgba(255, 129, 0, 0.9));
+            border-radius: 1.5rem;
+            color: #fff;
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+            position: relative;
+            overflow: hidden;
+        }
 
-            h1, h2, h3 {
-                font-family: 'Alfarn', serif;
-                font-weight: 400;
-                text-transform: uppercase;
-                color: var(--color-primary);
-            }
+        .auth-sidecard::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('{{ asset('images/login_screens/loginbanner1.png') }}');
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: soft-light;
+            opacity: 0.4;
+        }
 
-            h4, h5, h6 {
-                font-family: 'Alfarn', serif;
-                font-weight: 400;
-                color: var(--color-secondary);
-            }
+        .auth-sidecard__content {
+            position: relative;
+            z-index: 2;
+        }
 
-            p, li, span, label, input, select, textarea {
-                font-family: 'Avenir LT Pro', Avenir, Helvetica, Arial, sans-serif;
-                font-size: 1rem;
-            }
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .5rem 1rem;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            font-size: .85rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
 
-            /* Navbar */
-            .navbar {
-                background-color: #652D90;
-                padding-top: 6px;
-                padding-bottom: 0;
-                /*border-bottom: 2px solid var(--color-primary);*/
-            }
+        .auth-form-title {
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.4rem, 3vw, 1.75rem);
+            color: var(--color-secondary);
+        }
 
-            .navbar-brand {
-                font-weight: 600;
-                font-size: 1.2rem;
-                color: var(--color-primary) !important;
-                font-family: 'Alfarn', serif;
-                text-transform: uppercase;
-            }
+        .form-floating > label {
+            color: var(--color-last);
+        }
 
-            .navbar-nav .nav-link {
-                margin-right: .75rem;
-                color: var(--color-bg) !important;
-                transition: color .2s;
-            }
-            .navbar-nav .nav-link:hover {
-                color: var(--color-primary) !important;
-            }
+        .form-floating > .form-control {
+            border-radius: .85rem;
+            border: 1px solid rgba(101, 45, 144, 0.2);
+            padding-left: 1.25rem;
+        }
 
-            /* Boutons */
-            .btn-primary {
-                background-color: var(--color-primary);
-                border-color: var(--color-primary);
-            }
-            .btn-primary:hover {
-                background-color: #e56f05;
-                border-color: #e56f05;
-            }
+        .form-floating > .form-control:focus {
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 .25rem rgba(101, 45, 144, .15);
+        }
 
-            .btn-secondary {
-                background-color: var(--color-secondary);
-                border-color: var(--color-secondary);
-            }
-            .btn-secondary:hover {
-                background-color: #5823c2;
-                border-color: #5823c2;
-            }
+        .auth-links {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+            margin-top: 1.5rem;
+        }
 
-            .btn-success {
-                background-color: var(--color-tertiary);
-                border-color: var(--color-tertiary);
-                color: #fff;
-            }
-            .btn-success:hover {
-                background-color: #81956c;
-                border-color: #81956c;
-            }
+        .auth-meta {
+            font-size: .925rem;
+            color: rgba(97, 97, 111, .85);
+        }
 
-            /* Conteneur */
-            .container {
-                max-width: 100%;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
+        .auth-steps {
+            margin-top: clamp(1.75rem, 3vw, 2.5rem);
+            display: grid;
+            gap: 1rem;
+        }
 
-            /* Responsive */
-            @media (max-width: 576px) {
-                .container {
-                    padding-left: .75rem;
-                    padding-right: .75rem;
-                }
-                h1, h2, h3 {
-                    font-size: 1.25rem;
-                }
-            }
+        .auth-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
 
-            /* Footer */
-            footer {
-                margin-top: auto;
-                padding: 1rem;
-                text-align: center;
-                background: #fff;
-                border-top: 1px solid #ddd;
-                font-size: 0.9rem;
-            }
-        </style>
+        .auth-step__icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
 
-        {% block stylesheets %}{% endblock %}
-        {{ encore_entry_link_tags('app') }}
-    </head>
-    <body>
-    {% set images = [
-        asset('images/login_screens/loginbanner1.png'),
-        asset('images/login_screens/loginbanner2.png')
-    ] %}
-    {% set bg = random(images) %}
-    <div class="d-flex justify-content-center align-items-center vh-100" style="background-image: url('{{ bg }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-    <div class="card shadow-lg p-4" style="width: 100%; max-width: 420px; border-radius: 1rem;">
-        <div class="card-body">
-            <h2 class="card-title text-center mb-4" style="color: var(--color-secondary);">Connexion</h2>
+        .auth-insight {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            font-size: .95rem;
+            margin-top: 1.75rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .auth-wrapper {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="auth-wrapper">
+        <section class="auth-panel">
+            <div class="auth-header d-flex flex-column gap-2 mb-4">
+                <span class="auth-badge"><i class="bi bi-shield-lock"></i> Espace sécurisé</span>
+                <h2 class="auth-form-title">Connexion</h2>
+                <p class="auth-meta mb-0">
+                    Accédez à votre espace pour suivre votre mariage, gérer vos invitations ou enrichir votre répertoire.
+                </p>
+                {% if app.session.get('invitation_token') %}
+                    <div class="alert alert-warning mt-2 mb-0">
+                        <i class="bi bi-envelope-open me-2"></i>
+                        Une invitation vous attend &ndash; connectez-vous pour la finaliser.
+                    </div>
+                {% endif %}
+            </div>
 
             {% if error %}
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ error.messageKey|trans(error.messageData, 'security') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                 </div>
             {% endif %}
 
             {% if app.user %}
-                <div class="mb-3 text-center">
-                    Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>, 
-                    <a href="{{ path('app_logout') }}">Se déconnecter</a>
+                <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+                    <i class="bi bi-emoji-smile"></i>
+                    <span>Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>. <a class="ms-1" href="{{ path('app_logout') }}">Se déconnecter ?</a></span>
                 </div>
             {% endif %}
 
-            <form method="post">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Email</label>
-                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control form-control-lg" placeholder="Entrez votre email" autocomplete="email" required autofocus>
+            <form method="post" class="d-flex flex-column gap-3">
+                <div class="form-floating">
+                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" placeholder="Email" autocomplete="email" required autofocus>
+                    <label for="username">Adresse e-mail</label>
                 </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Mot de passe</label>
-                    <input type="password" name="_password" id="password" class="form-control form-control-lg" placeholder="Mot de passe" autocomplete="current-password" required>
+                <div class="form-floating position-relative">
+                    <input type="password" name="_password" id="password" class="form-control" placeholder="Mot de passe" autocomplete="current-password" required>
+                    <label for="password">Mot de passe</label>
+                    <button class="btn btn-link text-decoration-none toggle-password" type="button" data-target="password">
+                        <i class="bi bi-eye"></i>
+                        <span class="visually-hidden">Afficher le mot de passe</span>
+                    </button>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <button class="btn btn-primary btn-lg w-100 mt-3" type="submit">
-                    Se connecter
+                <button class="btn btn-primary btn-lg w-100" type="submit">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
                 </button>
             </form>
-            <div class="text-center mt-3">
-                <a href="{{ path('app_register') }}" class="btn btn-outline-success w-100">
-                    Pas encore inscrit ? S'enregistrer
+
+            <div class="auth-links">
+                <a href="{{ path('app_register') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-heart-fill me-2"></i>Créer un compte
                 </a>
-            </div>
-            
-            <div class="text-center mt-3">
-                <a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <a class="link-secondary" href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
+                    <a class="link-secondary" href="{{ path('app_credits_buy') }}">Acheter des crédits</a>
+                </div>
             </div>
 
-            {# Bouton d'inscription #}
+            <p class="auth-meta mt-4 mb-0 text-center">&copy; {{ "now"|date('Y') }} Notre Messe de Mariage</p>
+        </section>
 
-            <div class="text-center mt-4">
-                <small class="text-muted">&copy; {{ "now"|date("Y") }} Notre Messe de Mariage</small>
+        <aside class="auth-sidecard">
+            <div class="auth-sidecard__content">
+                <span class="auth-badge mb-3"><i class="bi bi-stars"></i>Le parcours en 3 étapes</span>
+                <div class="auth-steps">
+                    <div class="auth-step">
+                        <span class="auth-step__icon"><i class="bi bi-person-plus"></i></span>
+                        <div>
+                            <h5 class="mb-1">1. Créez votre espace</h5>
+                            <p class="mb-0 small">Inscrivez-vous en tant que couple, musicien ou paroisse. Les invitations reçues sont reconnues automatiquement.</p>
+                        </div>
+                    </div>
+                    <div class="auth-step">
+                        <span class="auth-step__icon"><i class="bi bi-envelope-heart"></i></span>
+                        <div>
+                            <h5 class="mb-1">2. Invitez vos partenaires</h5>
+                            <p class="mb-0 small">Partagez des accès sécurisés, suivez l’usage des crédits et pilotez les validations de chants.</p>
+                        </div>
+                    </div>
+                    <div class="auth-step">
+                        <span class="auth-step__icon"><i class="bi bi-music-note-beamed"></i></span>
+                        <div>
+                            <h5 class="mb-1">3. Co-construisez la célébration</h5>
+                            <p class="mb-0 small">Centralisez déroulé, répertoire et logistique afin d’arriver sereins le jour J.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-insight">
+                    {% if app.session.get('pending_invitation_token') %}
+                        <i class="bi bi-hourglass-split me-2"></i>Un paiement d’invitation est en cours. Finalisez-le depuis vos notifications après connexion.
+                    {% else %}
+                        <i class="bi bi-lightbulb me-2"></i>Astuce : paroisses et musiciens peuvent débloquer l’accès aux couples grâce aux crédits achetés dans l’espace dédié.
+                    {% endif %}
+                </div>
             </div>
-        </div>
+        </aside>
     </div>
-</div>
-</body>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var targetId = button.getAttribute('data-target');
+                var input = document.getElementById(targetId);
+                if (!input) {
+                    return;
+                }
+                var isPassword = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPassword ? 'text' : 'password');
+                button.querySelector('i').classList.toggle('bi-eye');
+                button.querySelector('i').classList.toggle('bi-eye-slash');
+            });
+        });
+    </script>
+{% endblock %}
