@@ -2,545 +2,938 @@
 
 {% block title %}{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}{% endblock %}
 
-{% block body %}
-<header class="page-header">
-    <div>
-        <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
-        {% if wedding.marie or wedding.mariee %}
-            <div class="badge-pill badge-tertiary mt-2">
-                {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Célébration{% endif %} de mariage de
-                {{ wedding.marie ? (wedding.marie.firstName ~ (wedding.marie.name ? ' ' ~ wedding.marie.name : '')) : '-' }}
-                &amp;
-                {{ wedding.mariee ? (wedding.mariee.firstName ~ (wedding.mariee.name ? ' ' ~ wedding.mariee.name : '')) : '-' }}
-                {% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
-            </div>
-        {% endif %}
-    </div>
-
-    <div class="app-actions">
-        <button type="submit" form="weddingForm" class="btn btn-primary btn-rounded btn-icon">
-            <i class="bi bi-check-lg"></i>
-            Enregistrer
-        </button>
-        {% if wedding.id %}
-            <button type="button" class="btn btn-outline-primary btn-rounded btn-icon" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                <i class="bi bi-envelope-plus"></i>
-                Inviter
-            </button>
-        {% endif %}
-        <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
-    </div>
-</header>
-
-    <!-- Tabs -->
-    <ul class="app-tabs" role="tablist">
-        <li class="nav-item">
-            <button class="app-tab app-tab-primary active" id="tab-info" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" role="tab" aria-selected="true">
-                <i class="bi bi-info-circle"></i>
-                <span>Informations générales</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="app-tab app-tab-secondary" id="tab-deroule" data-bs-toggle="tab" data-bs-target="#pane-deroule" type="button" role="tab" aria-selected="false">
-                <i class="bi bi-list-ul"></i>
-                <span>Déroulé</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="app-tab app-tab-secondary" id="tab-logistique" data-bs-toggle="tab" data-bs-target="#pane-logistique" type="button" role="tab" aria-selected="false">
-                <i class="bi bi-gear"></i>
-                <span>Logistique</span>
-            </button>
-        </li>
-    </ul>
-
-    {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
-
-    <div class="tab-content">
-        <!-- Informations générales -->
-        <div class="tab-pane fade show active" id="pane-info">
-            <div class="row g-3 mb-4">
-                <!-- Card Informations Mariage -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div class="wedding-info-card">
-                        <div class="wedding-info-card__header">
-                            Informations mariage
-                        </div>
-
-                        <div class="wedding-info-card__body">
-                            {{ form_row(form.messe, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.date, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.time, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.parish, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.church, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.archive, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Futur marié -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div class="wedding-info-card">
-                        <div class="wedding-info-card__header">
-                            Informations futur marié
-                        </div>
-
-                        <div class="wedding-info-card__body text-center">
-                            <div class="app-avatar app-avatar-lg mx-auto mb-3" style="background: var(--color-primary);">
-                                {{ wedding.marie and wedding.marie.firstName ? wedding.marie.firstName|slice(0,1)|upper : 'A' }}
-                            </div>
-
-                            <div class="mb-2">
-                                {{ form_label(form.marie, null, {'label_attr': {'class': 'form-label-sm'}}) }}
-                                {{ form_widget(form.marie, {'attr': {'class': 'form-select form-select-sm'}}) }}
-                                {{ form_errors(form.marie) }}
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Prénom</label>
-                                <input type="text" name="marie[firstName]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.firstName : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Nom</label>
-                                <input type="text" name="marie[name]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.name : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Email</label>
-                                <input type="email" name="marie[email]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.email : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Téléphone</label>
-                                <input type="text" name="marie[telephone]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.telephone : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Adresse</label>
-                                <input type="text" name="marie[addressLine1]" class="form-control form-control-sm" value="{{ wedding.marie ? wedding.marie.addressLine1 : '' }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Futur mariée -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div class="wedding-info-card">
-                        <div class="wedding-info-card__header">
-                            Informations future mariée
-                        </div>
-
-                        <div class="wedding-info-card__body text-center">
-                            <div class="app-avatar app-avatar-lg mx-auto mb-3" style="background: var(--color-primary);">
-                                {{ wedding.mariee and wedding.mariee.firstName ? wedding.mariee.firstName|slice(0,1)|upper : 'A' }}
-                            </div>
-
-                            <div class="mb-2">
-                                {{ form_label(form.mariee, null, {'label_attr': {'class': 'form-label-sm'}}) }}
-                                {{ form_widget(form.mariee, {'attr': {'class': 'form-select form-select-sm'}}) }}
-                                {{ form_errors(form.mariee) }}
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Prénom</label>
-                                <input type="text" name="mariee[firstName]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.firstName : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Nom</label>
-                                <input type="text" name="mariee[name]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.name : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Email</label>
-                                <input type="email" name="mariee[email]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.email : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Téléphone</label>
-                                <input type="text" name="mariee[telephone]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.telephone : '' }}">
-                            </div>
-
-                            <div class="form-group-sm">
-                                <label class="form-label-sm">Adresse</label>
-                                <input type="text" name="mariee[addressLine1]" class="form-control form-control-sm" value="{{ wedding.mariee ? wedding.mariee.addressLine1 : '' }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Paroisse -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div class="wedding-info-card">
-                        <div class="wedding-info-card__header">
-                            Informations paroisse
-                        </div>
-
-                        <div class="wedding-info-card__body">
-                            {{ form_row(form.priestFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.priestLastName, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.priestPhoneNumber, {'label_attr': {'class': 'form-label-sm'}}) }}
-                            {{ form_row(form.priestEMail, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bloc financier -->
-            <div class="wedding-finance-panel">
-                <div class="wedding-finance-grid">
-                    <div class="wedding-finance-item">
-                        <label class="wedding-finance-label">Montant de la prestation</label>
-                        {{ form_widget(form.montantTotal, {'attr': {'class':'form-control text-center'}}) }}
-                    </div>
-
-                    <div class="wedding-finance-item">
-                        <label class="wedding-finance-label">Montant déjà versé</label>
-                        {{ form_widget(form.montantPaye, {'attr': {'class':'form-control text-center'}}) }}
-                    </div>
-
-                    <div class="wedding-finance-item">
-                        <div class="wedding-finance-label">Pourcentage de l'acompte</div>
-                        <div class="wedding-finance-value">
-                            {% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
-                                {{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
-                            {% else %}
-                                -
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="wedding-finance-item">
-                        <div class="wedding-finance-label">Montant restant dû</div>
-                        <div class="wedding-finance-value">
-                            {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
-                                {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Déroulé -->
-        <div class="tab-pane fade" id="pane-deroule">
-            <div class="deroule-container">
-                {# regroupement des songTypes par celebrationPeriod #}
-                {% set types = songTypes is defined ? songTypes : [] %}
-                {% set groups = {} %}
-                {% for t in types %}
-                    {% set label = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
-                    {% if groups[label] is defined %}
-                        {% set groups = groups|merge({ (label) : groups[label]|merge([t]) }) %}
-                    {% else %}
-                        {% set groups = groups|merge({ (label) : [t] }) %}
-                    {% endif %}
-                {% endfor %}
-
-                {# ordre souhaité basé sur l'enum #}
-                {% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
-
-                {% if groups is empty %}
-                    <div class="app-card">
-                        <p class="text-muted mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</p>
-                    </div>
-                {% else %}
-                    <!-- En-têtes des colonnes (masqué sur mobile) -->
-                    <div class="deroule-header d-none d-lg-flex">
-                        <div class="deroule-col-type">TYPE</div>
-                        <div class="deroule-col-choice">VOTRE CHOIX</div>
-                        <div class="deroule-col-check">VALIDATION CÉLÉBRANT</div>
-                        <div class="deroule-col-check">VALIDATION MUSICIEN</div>
-                        <div class="deroule-col-comments">COMMENTAIRES</div>
-                    </div>
-
-                    <div class="deroule-groups">
-                        {% for label in order %}
-                            {% if groups[label] is defined %}
-                                <div class="deroule-group">
-                                    <div class="deroule-group-header">
-                                        {{ label }}
-                                    </div>
-
-                                    <div class="deroule-group-body">
-                                        {% for type in groups[label] %}
-                                            {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
-                                            <div class="deroule-row">
-                                                <div class="deroule-col deroule-col-type">
-                                                    <span class="deroule-label d-lg-none">Type</span>
-                                                    <span class="deroule-type-badge">{{ type.name }}</span>
-                                                </div>
-
-                                                <div class="deroule-col deroule-col-choice">
-                                                    <label class="deroule-label d-lg-none">Votre choix</label>
-                                                    <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]"
-                                                            class="form-select deroule-select js-deroule-select"
-                                                            data-placeholder="Rechercher un chant">
-                                                        <option value="">Aucun chant sélectionné</option>
-                                                        {% if songsForType|length > 0 %}
-                                                            {% for song in songsForType %}
-                                                                <option value="{{ song.id }}">{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
-                                                            {% endfor %}
-                                                        {% else %}
-                                                            <option disabled>Pas de chants disponibles</option>
-                                                        {% endif %}
-                                                    </select>
-                                                </div>
-
-                                                <div class="deroule-col deroule-col-check">
-                                                    <label class="deroule-label d-lg-none">Validation célébrant</label>
-                                                    <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
-                                                </div>
-
-                                                <div class="deroule-col deroule-col-check">
-                                                    <label class="deroule-label d-lg-none">Validation musicien</label>
-                                                    <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
-                                                </div>
-
-                                                <div class="deroule-col deroule-col-comments">
-                                                    <label class="deroule-label d-lg-none">Commentaires</label>
-                                                    {% if wedding.id %}
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-outline-secondary open-comments"
-                                                                data-wedding="{{ wedding.id }}"
-                                                                data-songtype="{{ type.id }}"
-                                                                aria-haspopup="dialog"
-                                                                aria-controls="commentsModal">
-                                                            <i class="bi bi-chat-dots"></i>
-                                                            <span class="d-none d-md-inline">Commentaires</span>
-                                                        </button>
-                                                    {% else %}
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
-                                                            <i class="bi bi-chat-dots"></i>
-                                                            <span class="d-none d-md-inline">Commentaires</span>
-                                                        </button>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Logistique -->
-        <div class="tab-pane fade" id="pane-logistique">
-            <div class="app-card">
-                <h5>Informations logistiques</h5>
-                <p class="text-muted mb-0">Section désactivée pour l'instant.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions du formulaire (boutons visibles sur tous les onglets) -->
-    <div class="form-actions-bar">
-        <button type="submit" class="btn btn-primary btn-rounded">
-            <i class="bi bi-check-circle"></i> Enregistrer
-        </button>
-        {% if wedding.id %}
-            <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-secondary btn-rounded">
-                Annuler
-            </a>
-            <button type="button" class="btn btn-outline-primary btn-rounded" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                <i class="bi bi-envelope-plus"></i> Inviter
-            </button>
-        {% else %}
-            <a href="{{ path('app_wedding_index') }}" class="btn btn-secondary btn-rounded">
-                Annuler
-            </a>
-        {% endif %}
-    </div>
-
-    {{ form_end(form) }}
-
-    {# Modal d'invitation : ne pas afficher lors de la création tant que wedding.id n'existe pas #}
-    {% if wedding.id %}
-        <!-- Modal d'invitation -->
-        <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="role" class="form-label">Rôle</label>
-                                <select class="form-select" id="role" name="role" required>
-                                    <option value="paroisse">Paroisse</option>
-                                    <option value="musicien">Musicien</option>
-                                    <option value="marie">Marié</option>
-                                    <option value="mariee">Mariée</option>
-                                </select>
-                            </div>
-                        </div>
-                        {% if generatedInvitationLink is defined %}
-                            <div class="alert alert-info mt-3 mx-3">
-                                <p>Lien d'invitation généré :</p>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="copyInvitationLink()">Copier</button>
-                                </div>
-                            </div>
-                            <script>
-                                function copyInvitationLink() {
-                                    var copyText = document.getElementById('invitation-link');
-                                    copyText.select();
-                                    copyText.setSelectionRange(0, 99999);
-                                    navigator.clipboard.writeText(copyText.value).then(function () {
-                                        alert('Lien copié dans le presse-papiers !');
-                                    });
-                                }
-                            </script>
-                        {% endif %}
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-
-    {# Modal générique pour afficher la conversation de commentaires en popup #}
-    <div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Commentaires</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center py-4" id="commentsModalSpinner">
-                        <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <!-- le formulaire de commentaire sera injecté ici -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.TomSelect) {
-            document.querySelectorAll('.js-deroule-select').forEach((select) => {
-                if (!select.tomselect) {
-                    new TomSelect(select, {
-                        placeholder: select.dataset.placeholder || 'Rechercher un chant',
-                        allowEmptyOption: true,
-                        create: false,
-                        maxOptions: 500,
-                    });
-                }
-            });
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .wedding-wizard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: clamp(2rem, 4vw, 3.5rem);
+            align-items: flex-start;
+            margin-top: clamp(1rem, 3vw, 2rem);
         }
 
-        const modalEl = document.getElementById('commentsModal');
-        const bsModal = new bootstrap.Modal(modalEl);
+        .wizard-panel {
+            background: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.12);
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1.75rem, 3vw, 2.25rem);
+        }
 
-        // ouverture : charger la conversation (HTML complet) et en extraire les parties utiles
-        document.querySelectorAll('.open-comments').forEach(btn => {
-            btn.addEventListener('click', async function () {
-                const weddingId = this.dataset.wedding;
-                const songTypeId = this.dataset.songtype;
-                const url = `/comments/${weddingId}/${songTypeId}`;
+        .wizard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
 
-                const body = modalEl.querySelector('.modal-body');
-                const footer = modalEl.querySelector('.modal-footer');
-                body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
-                footer.innerHTML = '';
-                bsModal.show();
+        .wizard-header h1 {
+            margin-bottom: .35rem;
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.6rem, 3vw, 2rem);
+            color: var(--color-primary);
+        }
 
-                try {
-                    const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                    const text = await res.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
+        .wizard-header__meta {
+            color: rgba(97, 97, 111, .85);
+            font-size: .95rem;
+        }
 
-                    // extraire titre, boîte de commentaires et formulaire
-                    const header = doc.querySelector('h2');
-                    const commentsBox = doc.querySelector('#comments-box');
-                    // formulaire de commentaire (dans .card-footer ou premier form présent)
-                    const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
+        .wizard-header__actions {
+            display: flex;
+            gap: .75rem;
+            align-items: center;
+        }
 
-                    body.innerHTML = '';
-                    if (header) body.appendChild(header.cloneNode(true));
-                    if (commentsBox) body.appendChild(commentsBox.cloneNode(true));
-                    else body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
+        .wizard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .45rem 1rem;
+            border-radius: 999px;
+            font-size: .8rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            background: rgba(101, 45, 144, 0.08);
+            color: var(--color-secondary);
+        }
 
-                    footer.innerHTML = '';
-                    if (form) {
-                        // injecter le form dans le footer et intercepter son envoi pour mise à jour ajax
-                        const injectedForm = form.cloneNode(true);
-                        footer.appendChild(injectedForm);
+        .wizard-stepper {
+            display: grid;
+            gap: .75rem;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
 
-                        injectedForm.addEventListener('submit', async function (evt) {
-                            evt.preventDefault();
-                            const fd = new FormData(injectedForm);
-                            const action = injectedForm.getAttribute('action') || url;
-                            const method = (injectedForm.getAttribute('method') || 'POST').toUpperCase();
+        .wizard-stepper__item {
+            border: 1px solid rgba(101, 45, 144, 0.2);
+            border-radius: .9rem;
+            padding: .85rem .75rem;
+            background: #fff;
+            color: var(--color-last);
+            text-align: left;
+            font-size: .85rem;
+            font-weight: 500;
+            transition: all .2s ease;
+        }
 
-                            try {
-                                const response = await fetch(action, { method: method, body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                                if (!response.ok) {
-                                    throw new Error('Requête invalide');
-                                }
+        .wizard-stepper__item.active {
+            border-color: var(--color-secondary);
+            background: rgba(101, 45, 144, 0.08);
+            color: var(--color-secondary);
+        }
 
-                                // après soumission, recharger la conversation pour afficher le nouveau message
-                                const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                                const refreshedText = await refreshed.text();
-                                const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
-                                const newComments = refreshedDoc.querySelector('#comments-box');
-                                const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
+        .wizard-step {
+            display: none;
+            animation: fadeIn .35s ease;
+        }
 
-                                body.querySelector('h2')?.remove();
-                                if (newComments) {
-                                    const old = body.querySelector('#comments-box');
-                                    if (old) {
-                                        old.replaceWith(newComments.cloneNode(true));
-                                    } else {
-                                        body.appendChild(newComments.cloneNode(true));
-                                    }
-                                }
+        .wizard-step.active {
+            display: block;
+        }
 
-                                if (newForm) {
-                                    footer.innerHTML = '';
-                                    footer.appendChild(newForm.cloneNode(true));
-                                }
-                            } catch (err) {
-                                console.error(err);
-                                alert('Erreur lors de l\'envoi du commentaire.');
-                            }
-                        });
-                    } else {
-                        footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
-                    }
-                } catch (err) {
-                    console.error(err);
-                    body.innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
-                    modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
-                }
+        .form-grid {
+            display: grid;
+            gap: clamp(1.25rem, 2.5vw, 1.75rem);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .form-card {
+            border: 1px solid rgba(101, 45, 144, 0.12);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-card__title {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+        }
+
+        .form-card__title span {
+            font-size: .8rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(97, 97, 111, .7);
+        }
+
+        .participant-grid {
+            display: grid;
+            gap: clamp(1.25rem, 2vw, 1.75rem);
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .participant-card {
+            border-radius: 1rem;
+            border: 1px solid rgba(101, 45, 144, 0.12);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .participant-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .participant-empty {
+            border: 1px dashed rgba(101, 45, 144, 0.35);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: .85rem;
+            align-items: flex-start;
+        }
+
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .wizard-actions__nav {
+            display: flex;
+            gap: .75rem;
+        }
+
+        .wizard-sidecard {
+            background: linear-gradient(135deg, rgba(101, 45, 144, 0.95), rgba(255, 129, 0, 0.9));
+            border-radius: 1.5rem;
+            color: #fff;
+            padding: clamp(1.75rem, 3vw, 2.75rem);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wizard-sidecard::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('{{ asset('images/login_screens/loginbanner1.png') }}');
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: soft-light;
+            opacity: 0.35;
+        }
+
+        .wizard-sidecard__inner {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        .wizard-sidecard__slide {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .wizard-sidecard__slide.active {
+            display: flex;
+        }
+
+        .wizard-sidecard__title {
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.4rem, 3vw, 1.8rem);
+        }
+
+        .wizard-tip {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            font-size: .95rem;
+        }
+
+        .deroule-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .deroule-header {
+            font-size: .78rem;
+            letter-spacing: .1em;
+            color: rgba(97, 97, 111, .78);
+            text-transform: uppercase;
+            padding: .75rem 1rem;
+            border-radius: .75rem;
+            background: rgba(101, 45, 144, 0.08);
+            font-weight: 600;
+        }
+
+        .deroule-group {
+            border: 1px solid rgba(101, 45, 144, 0.12);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .deroule-group-header {
+            background: rgba(101, 45, 144, 0.08);
+            padding: .85rem 1rem;
+            font-weight: 600;
+        }
+
+        .deroule-group-body {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+            padding: 1rem;
+        }
+
+        .deroule-row {
+            display: grid;
+            gap: .75rem;
+            grid-template-columns: minmax(120px, 200px) 1fr repeat(2, minmax(110px, 140px)) minmax(140px, 200px);
+            align-items: center;
+        }
+
+        .deroule-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            border-radius: 999px;
+            padding: .45rem .9rem;
+            font-size: .85rem;
+            background: rgba(101, 45, 144, 0.08);
+            color: var(--color-secondary);
+            font-weight: 600;
+        }
+
+        .wizard-finance-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .wizard-finance-item {
+            border: 1px solid rgba(101, 45, 144, 0.12);
+            border-radius: 1rem;
+            padding: 1rem 1.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+            text-align: center;
+        }
+
+        .wizard-finance-label {
+            font-size: .85rem;
+            color: rgba(97, 97, 111, .75);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .wizard-finance-value {
+            font-size: 1.3rem;
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 991.98px) {
+            .wizard-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .wizard-actions__nav {
+                justify-content: space-between;
+            }
+
+            .deroule-row {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="wedding-wizard">
+    <section class="wizard-panel">
+        {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
+
+        <header class="wizard-header">
+            <div>
+                <span class="wizard-badge">
+                    <i class="bi bi-stars"></i>
+                    {% if wedding.messe is same as(true) %}Messe de mariage{% elseif wedding.messe is same as(false) %}Célébration{% else %}Mariage{% endif %}
+                </span>
+                <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
+                <p class="wizard-header__meta mb-0">
+                    {% if wedding.marie or wedding.mariee %}
+                        {{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
+                    {% else %}
+                        Identifiez le couple pour personnaliser la collaboration.
+                    {% endif %}
+                    {% if wedding.date %}
+                        &mdash; {{ wedding.date|date('d/m/Y') }}
+                    {% endif %}
+                    {% if wedding.church %}
+                        &mdash; {{ wedding.church }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="wizard-header__actions">
+                <button type="submit" class="btn btn-primary btn-rounded btn-icon">
+                    <i class="bi bi-check-lg"></i>
+                    Enregistrer
+                </button>
+                {% if wedding.id %}
+                    <button type="button" class="btn btn-outline-primary btn-rounded btn-icon" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="bi bi-envelope-plus"></i>
+                        Inviter
+                    </button>
+                {% endif %}
+                <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+            </div>
+        </header>
+
+        {{ form_errors(form) }}
+
+        <div class="wizard-stepper" id="weddingStepper">
+            <button type="button" class="wizard-stepper__item active" data-step="0">
+                Essentiels<br><small>Date &amp; lieu</small>
+            </button>
+            <button type="button" class="wizard-stepper__item" data-step="1">
+                Couple<br><small>Coordonnées</small>
+            </button>
+            <button type="button" class="wizard-stepper__item" data-step="2">
+                Répertoire<br><small>Déroulé &amp; validations</small>
+            </button>
+            <button type="button" class="wizard-stepper__item" data-step="3">
+                Suivi<br><small>Finances &amp; archive</small>
+            </button>
+        </div>
+
+        <div class="wizard-steps">
+            <div class="wizard-step active" data-step="0">
+                <div class="form-grid">
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Calendrier</span>
+                            <h3 class="mb-0">Renseignements essentiels</h3>
+                        </div>
+                        {{ form_row(form.messe, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                {{ form_row(form.date, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ form_row(form.time, {'label_attr': {'class': 'form-label-sm'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Localisation</span>
+                            <h3 class="mb-0">Lieu de la célébration</h3>
+                        </div>
+                        {{ form_row(form.parish, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.church, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" data-step="1">
+                <div class="participant-grid">
+                    <div>
+                        {% if form.marie is defined %}
+                            <div class="participant-card">
+                                <div class="participant-card__header">
+                                    <h3 class="mb-0">Futur marié</h3>
+                                    {% if wedding.marie %}
+                                        <span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">{{ form_row(form.marie.firstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marie.name, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marie.email, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marie.telephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marie.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marie.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marie.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                </div>
+                                {{ form_rest(form.marie) }}
+                            </div>
+                        {% else %}
+                            <div class="participant-empty">
+                                <h3 class="mb-1">Inviter le futur marié</h3>
+                                <p class="mb-0">Associez-le pour qu'il accède au déroulé et aux commentaires.</p>
+                                {% if wedding.id %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-outline-light invite-trigger" data-invite-role="marie" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                            <i class="bi bi-envelope-heart"></i> Envoyer une invitation
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-light mb-0">Sauvegardez le mariage pour envoyer des invitations.</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if form.mariee is defined %}
+                            <div class="participant-card">
+                                <div class="participant-card__header">
+                                    <h3 class="mb-0">Future mariée</h3>
+                                    {% if wedding.mariee %}
+                                        <span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">{{ form_row(form.mariee.firstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.mariee.name, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.mariee.email, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.mariee.telephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.mariee.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.mariee.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.mariee.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                </div>
+                                {{ form_rest(form.mariee) }}
+                            </div>
+                        {% else %}
+                            <div class="participant-empty">
+                                <h3 class="mb-1">Inviter la future mariée</h3>
+                                <p class="mb-0">Son profil est nécessaire pour partager le déroulé et les documents.</p>
+                                {% if wedding.id %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-outline-light invite-trigger" data-invite-role="mariee" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                            <i class="bi bi-envelope-heart"></i> Envoyer une invitation
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-light mb-0">Sauvegardez le mariage pour envoyer des invitations.</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" data-step="2">
+                <div class="deroule-container">
+                    {% set types = songTypes is defined ? songTypes : [] %}
+                    {% set groups = {} %}
+                    {% for t in types %}
+                        {% set label = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
+                        {% if groups[label] is defined %}
+                            {% set groups = groups|merge({ (label): groups[label]|merge([t]) }) %}
+                        {% else %}
+                            {% set groups = groups|merge({ (label): [t] }) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
+
+                    {% if groups is empty %}
+                        <div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
+                    {% else %}
+                        <div class="deroule-header d-none d-lg-flex">
+                            <div class="deroule-col-type">TYPE</div>
+                            <div class="deroule-col-choice">VOTRE CHOIX</div>
+                            <div class="deroule-col-check">VALIDATION CÉLÉBRANT</div>
+                            <div class="deroule-col-check">VALIDATION MUSICIEN</div>
+                            <div class="deroule-col-comments">COMMENTAIRES</div>
+                        </div>
+
+                        <div class="deroule-groups">
+                            {% for label in order %}
+                                {% if groups[label] is defined %}
+                                    <div class="deroule-group">
+                                        <div class="deroule-group-header">{{ label }}</div>
+                                        <div class="deroule-group-body">
+                                            {% for type in groups[label] %}
+                                                {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
+                                                <div class="deroule-row">
+                                                    <div>
+                                                        <span class="deroule-type-badge">{{ type.name }}</span>
+                                                    </div>
+                                                    <div>
+                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select js-deroule-select" data-placeholder="Rechercher un chant">
+                                                            <option value="">Aucun chant sélectionné</option>
+                                                            {% if songsForType|length > 0 %}
+                                                                {% for song in songsForType %}
+                                                                    <option value="{{ song.id }}">{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                <option disabled>Pas de chants disponibles</option>
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                    </div>
+                                                    <div>
+                                                        {% if wedding.id %}
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+                                                                <i class="bi bi-chat-dots"></i>
+                                                                <span class="d-none d-md-inline">Commentaires</span>
+                                                            </button>
+                                                        {% else %}
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
+                                                                <i class="bi bi-chat-dots"></i>
+                                                                <span class="d-none d-md-inline">Commentaires</span>
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {{ form_widget(form.songs, {'attr': {'class': 'd-none'}}) }}
+            </div>
+
+            <div class="wizard-step" data-step="3">
+                <div class="form-grid">
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Finances</span>
+                            <h3 class="mb-0">Suivi des montants</h3>
+                        </div>
+                        <div class="wizard-finance-grid">
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Montant de la prestation</div>
+                                <div class="wizard-finance-value">{{ wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
+                            </div>
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Montant déjà versé</div>
+                                <div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
+                            </div>
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Acompte</div>
+                                <div class="wizard-finance-value">
+                                    {% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
+                                        {{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Reste dû</div>
+                                <div class="wizard-finance-value">
+                                    {% if wedding.montantTotal is not null and wedding.montantPaye is not null %}
+                                        {{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }} €
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {{ form_row(form.montantTotal, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.montantPaye, {'label_attr': {'class': 'form-label-sm'}}) }}
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Paroisse</span>
+                            <h3 class="mb-0">Contact célébrant</h3>
+                        </div>
+                        {{ form_row(form.priestFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestLastName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestPhoneNumber, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestEMail, {'label_attr': {'class': 'form-label-sm'}}) }}
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Clôture</span>
+                            <h3 class="mb-0">Archive &amp; options</h3>
+                        </div>
+                        {{ form_row(form.archive, {'label_attr': {'class': 'form-check-label'}}) }}
+                        <p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-actions">
+            <div class="wizard-actions__nav">
+                <button type="button" class="btn btn-outline-secondary wizard-prev d-none" data-action="prev-step">
+                    <i class="bi bi-arrow-left"></i>
+                    Retour
+                </button>
+                <button type="button" class="btn btn-primary wizard-next" data-action="next-step">
+                    Continuer
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+            <button type="submit" class="btn btn-success wizard-submit d-none" data-action="submit-step">
+                <i class="bi bi-check-circle"></i>
+                Valider le mariage
+            </button>
+        </div>
+
+        {{ form_rest(form) }}
+        {{ form_end(form, {'render_rest': false}) }}
+    </section>
+
+    <aside class="wizard-sidecard">
+        <div class="wizard-sidecard__inner" id="wizardSideContent">
+            <div class="wizard-sidecard__slide active" data-step="0">
+                <span class="wizard-badge"><i class="bi bi-geo-alt"></i> Étape 1</span>
+                <h2 class="wizard-sidecard__title">Cadrez la célébration</h2>
+                <p class="mb-0">Précisez le format, la date et le lieu pour déclencher les rappels automatiques auprès des partenaires.</p>
+                <div class="wizard-tip"><i class="bi bi-lightbulb me-2"></i>Plus les informations sont complètes, plus le calendrier partagé est pertinent.</div>
+            </div>
+            <div class="wizard-sidecard__slide" data-step="1">
+                <span class="wizard-badge"><i class="bi bi-people"></i> Étape 2</span>
+                <h2 class="wizard-sidecard__title">Pilotez le couple</h2>
+                <p class="mb-0">Actualisez les coordonnées des mariés sans quitter le parcours. Invitez-les instantanément s’ils ne sont pas encore connectés.</p>
+                <div class="wizard-tip"><i class="bi bi-envelope-heart me-2"></i>Les invitations envoyées depuis ici héritent automatiquement des crédits disponibles.</div>
+            </div>
+            <div class="wizard-sidecard__slide" data-step="2">
+                <span class="wizard-badge"><i class="bi bi-music-note-beamed"></i> Étape 3</span>
+                <h2 class="wizard-sidecard__title">Construisez le déroulé</h2>
+                <p class="mb-0">Associez des chants à chaque moment clé et suivez les validations du célébrant et des musiciens en direct.</p>
+                <div class="wizard-tip"><i class="bi bi-chat-dots me-2"></i>Les commentaires contextualisés restent accessibles depuis chaque type de chant.</div>
+            </div>
+            <div class="wizard-sidecard__slide" data-step="3">
+                <span class="wizard-badge"><i class="bi bi-coin"></i> Étape 4</span>
+                <h2 class="wizard-sidecard__title">Clôturez le dossier</h2>
+                <p class="mb-0">Suivez les montants versés, archivez si nécessaire et centralisez le contact avec la paroisse.</p>
+                <div class="wizard-tip"><i class="bi bi-clipboard-check me-2"></i>Pensez à archiver le mariage une fois la célébration passée pour conserver un historique propre.</div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+{% if wedding.id %}
+    <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rôle</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="paroisse">Paroisse</option>
+                                <option value="musicien">Musicien</option>
+                                <option value="marie">Marié</option>
+                                <option value="mariee">Mariée</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% if generatedInvitationLink is defined %}
+                        <div class="alert alert-info mt-3 mx-3">
+                            <p class="mb-2">Lien d'invitation généré :</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="invitation-link" value="{{ generatedInvitationLink }}" readonly>
+                                <button type="button" class="btn btn-outline-secondary" onclick="window.copyInvitationLink()">Copier</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Commentaires</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4" id="commentsModalSpinner">
+                    <div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.copyInvitationLink = function () {
+            const copyText = document.getElementById('invitation-link');
+            if (!copyText) {
+                return;
+            }
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value).then(function () {
+                alert('Lien copié dans le presse-papiers !');
             });
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const steps = Array.from(document.querySelectorAll('.wizard-step'));
+            const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+            const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));
+            const prevBtn = document.querySelector('.wizard-prev');
+            const nextBtn = document.querySelector('.wizard-next');
+            const submitBtn = document.querySelector('.wizard-submit');
+            let currentStep = 0;
+
+            function syncUI() {
+                steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
+                stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
+                sideSlides.forEach((slide, index) => slide.classList.toggle('active', index === currentStep));
+                if (prevBtn) {
+                    prevBtn.classList.toggle('d-none', currentStep === 0);
+                }
+                if (nextBtn) {
+                    nextBtn.classList.toggle('d-none', currentStep >= steps.length - 1);
+                }
+                if (submitBtn) {
+                    submitBtn.classList.toggle('d-none', currentStep < steps.length - 1);
+                }
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function () {
+                    if (currentStep > 0) {
+                        currentStep -= 1;
+                        syncUI();
+                    }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function () {
+                    if (currentStep < steps.length - 1) {
+                        currentStep += 1;
+                        syncUI();
+                    }
+                });
+            }
+
+            stepperItems.forEach((item) => {
+                item.addEventListener('click', function () {
+                    const target = parseInt(item.dataset.step, 10);
+                    if (!Number.isNaN(target)) {
+                        currentStep = target;
+                        syncUI();
+                    }
+                });
+            });
+
+            syncUI();
+
+            if (window.TomSelect) {
+                document.querySelectorAll('.js-deroule-select').forEach((select) => {
+                    if (!select.tomselect) {
+                        new TomSelect(select, {
+                            placeholder: select.dataset.placeholder || 'Rechercher un chant',
+                            allowEmptyOption: true,
+                            create: false,
+                            maxOptions: 500,
+                        });
+                    }
+                });
+            }
+
+            document.querySelectorAll('.invite-trigger').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const roleInput = document.getElementById('role');
+                    if (roleInput) {
+                        roleInput.value = btn.getAttribute('data-invite-role') || '';
+                    }
+                });
+            });
+
+            const modalEl = document.getElementById('commentsModal');
+            if (modalEl) {
+                const bsModal = new bootstrap.Modal(modalEl);
+                document.querySelectorAll('.open-comments').forEach((btn) => {
+                    btn.addEventListener('click', async function () {
+                        const weddingId = this.dataset.wedding;
+                        const songTypeId = this.dataset.songtype;
+                        const url = `/comments/${weddingId}/${songTypeId}`;
+
+                        const body = modalEl.querySelector('.modal-body');
+                        const footer = modalEl.querySelector('.modal-footer');
+                        body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                        footer.innerHTML = '';
+                        bsModal.show();
+
+                        try {
+                            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            const text = await res.text();
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(text, 'text/html');
+
+                            const header = doc.querySelector('h2');
+                            const commentsBox = doc.querySelector('#comments-box');
+                            const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
+
+                            body.innerHTML = '';
+                            if (header) {
+                                body.appendChild(header.cloneNode(true));
+                            }
+                            if (commentsBox) {
+                                body.appendChild(commentsBox.cloneNode(true));
+                            } else {
+                                body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
+                            }
+
+                            footer.innerHTML = '';
+                            if (form) {
+                                const injectedForm = form.cloneNode(true);
+                                footer.appendChild(injectedForm);
+
+                                injectedForm.addEventListener('submit', async function (evt) {
+                                    evt.preventDefault();
+                                    const fd = new FormData(injectedForm);
+                                    const action = injectedForm.getAttribute('action') || url;
+                                    const method = (injectedForm.getAttribute('method') || 'POST').toUpperCase();
+
+                                    try {
+                                        const response = await fetch(action, {
+                                            method: method,
+                                            body: fd,
+                                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                        });
+                                        if (!response.ok) {
+                                            throw new Error('Requête invalide');
+                                        }
+
+                                        const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                        const refreshedText = await refreshed.text();
+                                        const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
+                                        const newComments = refreshedDoc.querySelector('#comments-box');
+                                        const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
+
+                                        body.querySelector('h2')?.remove();
+                                        if (newComments) {
+                                            const old = body.querySelector('#comments-box');
+                                            if (old) {
+                                                old.replaceWith(newComments.cloneNode(true));
+                                            } else {
+                                                body.appendChild(newComments.cloneNode(true));
+                                            }
+                                        }
+
+                                        if (newForm) {
+                                            footer.innerHTML = '';
+                                            footer.appendChild(newForm.cloneNode(true));
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert('Erreur lors de l\'envoi du commentaire.');
+                                    }
+                                });
+                            } else {
+                                footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            const bodyEl = modalEl.querySelector('.modal-body');
+                            bodyEl.innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
+                            modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+                        }
+                    });
+                });
+            }
         });
-    });
     </script>
- </div>
- {% endblock %}
+{% endblock %}

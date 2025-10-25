@@ -2,7 +2,6 @@
 
 namespace App\Form;
 
-use App\Entity\User;
 use App\Entity\Wedding;
 use App\Entity\Song;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -14,25 +13,14 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class WeddingFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('marie', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'fullName',
-                'label' => 'Marié',
-                'attr' => ['class' => 'form-select']
-            ])
-            ->add('mariee', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'fullName',
-                'label' => 'Mariée',
-                'attr' => ['class' => 'form-select']
-            ])
             ->add('date', DateType::class, [
                 'widget' => 'single_text',
                 'label' => 'Date du mariage',
@@ -127,9 +115,32 @@ class WeddingFormType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
         ;
+
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
+            $data = $event->getData();
+            if (!$data instanceof Wedding) {
+                return;
+            }
+
+            $form = $event->getForm();
+
+            if ($data->getMarie()) {
+                $form->add('marie', WeddingParticipantType::class, [
+                    'label' => false,
+                    'required' => false,
+                ]);
+            }
+
+            if ($data->getMariee()) {
+                $form->add('mariee', WeddingParticipantType::class, [
+                    'label' => false,
+                    'required' => false,
+                ]);
+            }
+        });
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    public function configureOptions(\Symfony\Component\OptionsResolver\OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Wedding::class,
