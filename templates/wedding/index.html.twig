@@ -17,217 +17,137 @@
     </a>
 </header>
 
-<!-- Nav pills personnalisées -->
-<ul class="app-tabs" role="tablist">
-    <li class="nav-item">
-        <button class="app-tab app-tab-primary active" id="tab-upcoming" data-bs-toggle="tab" data-bs-target="#pane-upcoming" type="button" role="tab" aria-controls="pane-upcoming" aria-selected="true">
-            <i class="bi bi-clock-fill" style="font-size:1.15rem;"></i>
-            <span>Mariages à venir</span>
-        </button>
-    </li>
-    <li class="nav-item">
-        <button class="app-tab app-tab-secondary" id="tab-archived" data-bs-toggle="tab" data-bs-target="#pane-archived" type="button" role="tab" aria-controls="pane-archived" aria-selected="false">
-            <i class="bi bi-folder-fill" style="font-size:1.15rem;"></i>
-            <span>Mariages archivés</span>
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content w-100">
-    <!-- À venir -->
-    <div class="tab-pane fade show active" id="pane-upcoming" role="tabpanel" aria-labelledby="tab-upcoming">
-        {% set found = false %}
-        {% if is_granted('ROLE_MUSICIAN') and not is_granted('ROLE_ADMIN')%}
-        {% set weddings = app.user.weddingsAsMusicians%}
-        {% endif %}
-        {% for wedding in weddings %}
-            {% if wedding.archive is not defined or not wedding.archive %}
-                {% set found = true %}
-                <div class="app-card-light mb-3">
-                    <!-- grid responsive : avatar/info | Type célébration | Total | Restant | Actions -->
-                    <div class="wedding-grid">
-                         <!-- avatar + info -->
-                         <div class="wedding-grid__main">
-                             <div class="app-avatar">
-                                 {% if wedding.mariee and wedding.marie %}
-                                     {{ (wedding.mariee.firstName|default('')|slice(0,1)|upper) }}&{{ (wedding.marie.firstName|default('')|slice(0,1)|upper) }}
-                                 {% else %}
-                                     -
-                                 {% endif %}
-                             </div>
-                             <div>
-                                 <div class="fw-bold">
-                                     Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}
-                                 </div>
-                                 <div class="small text-muted">
-                                     {{ wedding.church|default('') }}{% if wedding.addressPostalCodeAndCity is not null %} — {{ wedding.addressPostalCodeAndCity }}{% endif %}{% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
-                                 </div>
-                             </div>
-                         </div>
- 
-                        <!-- Type de célébration -->
-                        <div class="wedding-grid__item">
-                            <div class="info-label text-center">
-                                <div class="info-label-value">
-                                    {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Sans Eucharistie{% endif %}
-                                </div>
-                                <div class="info-label-caption">Célébration</div>
-                            </div>
-                        </div>
- 
-                         <!-- Total -->
-                         <div class="wedding-grid__item">
-                             <div class="info-label text-end">
-                                 <div class="info-label-value">{{ wedding.montantTotal is defined ? (wedding.montantTotal ~ ' €') : '-' }}</div>
-                                 <div class="info-label-caption">Total</div>
-                             </div>
-                         </div>
- 
-                         <!-- Restant -->
-                         <div class="wedding-grid__item">
-                             <div class="info-label text-end">
-                                 <div class="info-label-value">
-                                     {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
-                                         {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
-                                     {% else %}
-                                         -
-                                     {% endif %}
-                                 </div>
-                                 <div class="info-label-caption">Restant</div>
-                             </div>
-                         </div>
- 
-                         <!-- Actions -->
-                         <div class="wedding-grid__actions">
-                            <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
-                            {% if wedding.archive is defined and wedding.archive %}
-                                <form method="post" action="{{ path('app_wedding_unarchive', {'id': wedding.id}) }}" style="display:inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('unarchive' ~ wedding.id) }}">
-                                    <button class="btn btn-sm btn-light" title="Désarchiver"><i class="bi bi-folder-check"></i></button>
-                                </form>
-                            {% else %}
-                                <form method="post" action="{{ path('app_wedding_archive', {'id': wedding.id}) }}" style="display:inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ wedding.id) }}">
-                                    <button class="btn btn-sm btn-light" title="Archiver"><i class="bi bi-archive"></i></button>
-                                </form>
-                            {% endif %}
-
-                            {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
-                                <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-                            {% else %}
-                                <span class="invisible"><i class="bi bi-pencil"></i></span>
-                            {% endif %}
-
-                            {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
-                                <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ? Cette action est irréversible !');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
-                                    <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
-                                </form>
-                            {% else %}
-                                <span class="invisible"><i class="bi bi-trash"></i></span>
-                            {% endif %}
-                        </div>
-                     </div>
-                 </div>
-            {% endif %}
-        {% endfor %}
-
-        {% if not found %}
-            <div class="text-muted">Aucun mariage à venir.</div>
-        {% endif %}
+<form method="get" class="wedding-filters mb-4" role="search">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Rechercher un mariage (noms du couple)">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="filter" class="form-select">
+                <option value="upcoming" {{ filter == 'upcoming' ? 'selected' }}>À venir</option>
+                <option value="archived" {{ filter == 'archived' ? 'selected' }}>Archivés</option>
+                <option value="all" {{ filter == 'all' ? 'selected' }}>Tous les mariages</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">Appliquer</button>
+            <a href="{{ path('app_wedding_index') }}" class="btn btn-outline-secondary flex-fill">Réinitialiser</a>
+        </div>
     </div>
+</form>
 
-    <!-- Archivés -->
-    <div class="tab-pane fade" id="pane-archived" role="tabpanel" aria-labelledby="tab-archived">
-        {% set foundArchived = false %}
-        {% for wedding in weddings %}
-            {% if wedding.archive is defined and wedding.archive %}
-                {% set foundArchived = true %}
-                <div class="app-card-light mb-3">
-                    <div class="wedding-grid">
-                        <!-- avatar + info -->
-                        <div class="wedding-grid__main">
-                            <div class="app-avatar">
-                                {% if wedding.mariee and wedding.marie %}
-                                    {{ (wedding.mariee.firstName|default('')|slice(0,1)|upper) }}&{{ (wedding.marie.firstName|default('')|slice(0,1)|upper) }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </div>
-                            <div>
-                                <div class="fw-bold">
-                                    Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}
-                                </div>
-                                <div class="small text-muted">
-                                    {{ wedding.church|default('') }}{% if wedding.addressPostalCodeAndCity is defined and wedding.addressPostalCodeAndCity %} — {{ wedding.addressPostalCodeAndCity }}{% endif %}{% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Type de célébration -->
-                        <div class="wedding-grid__item">
-                            <div class="info-label text-center">
-                                <div class="info-label-value">
-                                    {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Sans Eucharistie{% endif %}
-                                </div>
-                                <div class="info-label-caption">Célébration</div>
-                            </div>
-                        </div>
-
-                        <!-- Total -->
-                        <div class="wedding-grid__item">
-                            <div class="info-label text-end">
-                                <div class="info-label-value">{{ wedding.montantTotal is defined ? (wedding.montantTotal ~ ' €') : '-' }}</div>
-                                <div class="info-label-caption">Total</div>
-                            </div>
-                        </div>
-
-                        <!-- Restant -->
-                        <div class="wedding-grid__item">
-                            <div class="info-label text-end">
-                                <div class="info-label-value">
-                                    {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
-                                        {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </div>
-                                <div class="info-label-caption">Restant</div>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="wedding-grid__actions">
-                            <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
-                            {% if 'ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians) %}
-                                <form method="post" action="{{ path('app_wedding_unarchive', {'id': wedding.id}) }}" style="display:inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('unarchive' ~ wedding.id) }}">
-                                    <button class="btn btn-sm btn-light" title="Désarchiver"><i class="bi bi-folder-check"></i></button>
-                                </form>
-
-                                <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-
-                                <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
-                                    <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
-                                </form>
-                            {% else %}
-                                <span class="invisible"><i class="bi bi-folder-check"></i></span>
-                                <span class="invisible"><i class="bi bi-pencil"></i></span>
-                                <span class="invisible"><i class="bi bi-trash"></i></span>
+{% if weddings is empty %}
+    <div class="text-muted">Aucun mariage ne correspond à vos critères.</div>
+{% else %}
+    {% for wedding in weddings %}
+        <div class="app-card-light mb-3">
+            <div class="wedding-grid">
+                <div class="wedding-grid__main">
+                    <div class="app-avatar">
+                        {% if wedding.mariee and wedding.marie %}
+                            {{ (wedding.mariee.firstName|default('')|slice(0,1)|upper) }}&{{ (wedding.marie.firstName|default('')|slice(0,1)|upper) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="fw-bold d-flex align-items-center gap-2 flex-wrap">
+                            <span>Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</span>
+                            {% if wedding.archive %}
+                                <span class="badge bg-secondary">Archivé</span>
                             {% endif %}
+                        </div>
+                        <div class="small text-muted">
+                            {{ wedding.church|default('') }}{% if wedding.addressPostalCodeAndCity is not null %} — {{ wedding.addressPostalCodeAndCity }}{% endif %}{% if wedding.date is defined and wedding.date %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
                         </div>
                     </div>
                 </div>
-            {% endif %}
-        {% endfor %}
 
-        {% if not foundArchived %}
-            <div class="text-muted">Aucun mariage archivé.</div>
-        {% endif %}
-    </div>
-</div>
+                <div class="wedding-grid__item">
+                    <div class="info-label text-center">
+                        <div class="info-label-value">
+                            {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Sans Eucharistie{% endif %}
+                        </div>
+                        <div class="info-label-caption">Célébration</div>
+                    </div>
+                </div>
+
+                <div class="wedding-grid__item">
+                    <div class="info-label text-end">
+                        <div class="info-label-value">{{ wedding.montantTotal is defined and wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
+                        <div class="info-label-caption">Total</div>
+                    </div>
+                </div>
+
+                <div class="wedding-grid__item">
+                    <div class="info-label text-end">
+                        <div class="info-label-value">
+                            {% if wedding.montantTotal is defined and wedding.montantPaye is defined and wedding.montantTotal is not null and wedding.montantPaye is not null %}
+                                {{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }} €
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="info-label-caption">Restant</div>
+                    </div>
+                </div>
+
+                <div class="wedding-grid__actions">
+                    <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
+
+                    {% if wedding.archive %}
+                        <form method="post" action="{{ path('app_wedding_unarchive', {'id': wedding.id}) }}" style="display:inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('unarchive' ~ wedding.id) }}">
+                            <button class="btn btn-sm btn-light" title="Désarchiver"><i class="bi bi-folder-check"></i></button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{{ path('app_wedding_archive', {'id': wedding.id}) }}" style="display:inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ wedding.id) }}">
+                            <button class="btn btn-sm btn-light" title="Archiver"><i class="bi bi-archive"></i></button>
+                        </form>
+                    {% endif %}
+
+                    {% if app.user and ('ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians)) %}
+                        <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
+                    {% else %}
+                        <span class="invisible"><i class="bi bi-pencil"></i></span>
+                    {% endif %}
+
+                    {% if app.user and ('ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians)) %}
+                        <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ? Cette action est irréversible !');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wedding.id) }}">
+                            <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
+                        </form>
+                    {% else %}
+                        <span class="invisible"><i class="bi bi-trash"></i></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if pagination.pages > 1 %}
+        {% set prevPage = pagination.page > 1 ? pagination.page - 1 : 1 %}
+        {% set nextPage = pagination.page < pagination.pages ? pagination.page + 1 : pagination.pages %}
+        <nav aria-label="Pagination des mariages" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ pagination.page == 1 ? 'disabled' }}">
+                    <a class="page-link" href="{{ pagination.page == 1 ? '#' : path('app_wedding_index', {page: prevPage, filter: filter, q: search}) }}" tabindex="-1" aria-disabled="{{ pagination.page == 1 ? 'true' : 'false' }}">Précédent</a>
+                </li>
+                {% for pageNumber in 1..pagination.pages %}
+                    <li class="page-item {{ pageNumber == pagination.page ? 'active' : '' }}">
+                        <a class="page-link" href="{{ path('app_wedding_index', {page: pageNumber, filter: filter, q: search}) }}">{{ pageNumber }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {{ pagination.page == pagination.pages ? 'disabled' }}">
+                    <a class="page-link" href="{{ pagination.page == pagination.pages ? '#' : path('app_wedding_index', {page: nextPage, filter: filter, q: search}) }}" aria-disabled="{{ pagination.page == pagination.pages ? 'true' : 'false' }}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+{% endif %}
 
 {% endblock %}

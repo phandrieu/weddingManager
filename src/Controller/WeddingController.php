@@ -12,6 +12,7 @@ use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
 use App\Service\InvitationWorkflow;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,10 +28,91 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class WeddingController extends AbstractController
 {
     #[Route('/', name: 'app_wedding_index')]
-    public function index(WeddingRepository $repo): Response
+    public function index(Request $request, WeddingRepository $repo): Response
     {
+        $filter = $request->query->get('filter', 'upcoming');
+        if (!in_array($filter, ['upcoming', 'archived', 'all'], true)) {
+            $filter = 'upcoming';
+        }
+
+        $search = trim((string) $request->query->get('q', ''));
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 10;
+
+        $qb = $repo->createQueryBuilder('w')
+            ->leftJoin('w.marie', 'marie')
+            ->leftJoin('w.mariee', 'mariee')
+            ->leftJoin('w.musicians', 'musician')
+            ->addSelect('marie', 'mariee')
+            ->distinct();
+
+        if ($filter === 'archived') {
+            $qb->andWhere('w.archive = true');
+        } elseif ($filter === 'upcoming') {
+            $qb->andWhere('(w.archive = false OR w.archive IS NULL)');
+        }
+
+        if ($search !== '') {
+            $normalizedSearch = mb_strtolower($search);
+            $qb->andWhere(<<<'DQL'
+                LOWER(CONCAT(COALESCE(marie.firstName, ''), CONCAT(' ', COALESCE(marie.name, '')))) LIKE :search
+                OR LOWER(CONCAT(COALESCE(mariee.firstName, ''), CONCAT(' ', COALESCE(mariee.name, '')))) LIKE :search
+                OR LOWER(CONCAT(COALESCE(marie.firstName, ''), CONCAT(' & ', COALESCE(mariee.firstName, '')))) LIKE :search
+                OR LOWER(
+                    CONCAT(
+                        CONCAT(
+                            CONCAT('Mariage de ', COALESCE(marie.firstName, '')),
+                            CONCAT(' ', COALESCE(marie.name, ''))
+                        ),
+                        CONCAT(
+                            ' & ',
+                            CONCAT(COALESCE(mariee.firstName, ''), CONCAT(' ', COALESCE(mariee.name, '')))
+                        )
+                    )
+                ) LIKE :search
+            DQL);
+            $qb->setParameter('search', '%' . $normalizedSearch . '%');
+        }
+
+        $currentUser = $this->getUser();
+        if (!$this->isGranted('ROLE_ADMIN') && $currentUser) {
+            if ($this->isGranted('ROLE_MUSICIAN')) {
+                $qb->andWhere(':currentUser MEMBER OF w.musicians');
+                $qb->setParameter('currentUser', $currentUser);
+            } else {
+                $qb->leftJoin('w.parishUsers', 'parishUser');
+                $qb->addSelect('parishUser');
+                $qb->andWhere('w.createdBy = :currentUser OR w.marie = :currentUser OR w.mariee = :currentUser OR parishUser = :currentUser');
+                $qb->setParameter('currentUser', $currentUser);
+            }
+        }
+
+        $qb->orderBy('w.date', 'DESC');
+
+        $countQb = clone $qb;
+        $paginatorForCount = new Paginator($countQb, true);
+        $total = count($paginatorForCount);
+        $pages = max(1, (int) ceil($total / $perPage));
+        if ($page > $pages) {
+            $page = $pages;
+        }
+
+        $qb->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $paginator = new Paginator($qb, true);
+        $weddings = iterator_to_array($paginator);
+
         return $this->render('wedding/index.html.twig', [
-            'weddings' => $repo->findAll(),
+            'weddings' => $weddings,
+            'filter' => $filter,
+            'search' => $search,
+            'pagination' => [
+                'total' => $total,
+                'pages' => $pages,
+                'page' => $page,
+                'perPage' => $perPage,
+            ],
         ]);
     }
 
