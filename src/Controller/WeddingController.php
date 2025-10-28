@@ -230,7 +230,7 @@ class WeddingController extends AbstractController
         $viewUrl = $this->generateUrl('app_wedding_view', ['id' => $wedding->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = (new Email())
-            ->from(new Address($currentUser->getEmail() ?? 'noreply@notremessedemariage.fr', $requesterName))
+            ->from(new Address('noreply@notremessedemariage.fr', $requesterName." via Notre Messe de Mariage"))
             ->subject('Demande d’ajout au mariage ' . $requesterName)
             ->html($this->renderView('emails/wedding/request_access.html.twig', [
                 'wedding' => $wedding,
