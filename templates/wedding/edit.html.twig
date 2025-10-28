@@ -4,461 +4,17 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <style>
-        .wedding-wizard {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, clamp(280px, 32%, 75%));
-            gap: clamp(2rem, 4vw, 3.5rem);
-            align-items: flex-start;
-            margin-top: clamp(1rem, 3vw, 2rem);
-        }
-
-        .wizard-page-title {
-            font-family: 'Alfarn', serif;
-            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
-            color: var(--color-primary);
-            margin-bottom: clamp(1rem, 3vw, 1.75rem);
-        }
-
-        .wizard-panel__title {
-            font-family: 'Alfarn', serif;
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            color: var(--color-primary);
-            margin: 0;
-        }
-
-        .wizard-panel {
-            background: #fff;
-            border-radius: 1.5rem;
-            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.12);
-            padding: clamp(1.75rem, 3vw, 2.75rem);
-            display: flex;
-            flex-direction: column;
-            gap: clamp(1.75rem, 3vw, 2.25rem);
-        }
-
-        .wizard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .wizard-header__intro {
-            display: flex;
-            flex-direction: column;
-            gap: .75rem;
-        }
-
-        .wizard-header__meta {
-            color: rgba(97, 97, 111, .85);
-            font-size: .95rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: .35rem;
-        }
-
-        .wizard-header__meta span {
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .wizard-header__actions {
-            display: flex;
-            gap: .75rem;
-            align-items: center;
-        }
-
-        .wizard-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            padding: .45rem 1rem;
-            border-radius: 999px;
-            font-size: .8rem;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            background: rgba(101, 45, 144, 0.08);
-            color: var(--color-secondary);
-        }
-
-        .wizard-stepper {
-            display: grid;
-            gap: .75rem;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        }
-
-        .wizard-stepper__item {
-            border: 1px solid rgba(101, 45, 144, 0.2);
-            border-radius: .9rem;
-            padding: .85rem .75rem;
-            background: #fff;
-            color: var(--color-last);
-            text-align: left;
-            font-size: .85rem;
-            font-weight: 500;
-            transition: all .2s ease;
-        }
-
-        .wizard-stepper__item.active {
-            border-color: var(--color-secondary);
-            background: rgba(101, 45, 144, 0.08);
-            color: var(--color-secondary);
-        }
-
-        .wizard-step {
-            display: none;
-            animation: fadeIn .35s ease;
-        }
-
-        .wizard-step.active {
-            display: block;
-        }
-
-        .form-grid {
-            display: grid;
-            gap: clamp(1.25rem, 2.5vw, 1.75rem);
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        }
-
-        .form-card {
-            border: 1px solid rgba(101, 45, 144, 0.12);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-card__title {
-            display: flex;
-            flex-direction: column;
-            gap: .35rem;
-        }
-
-        .form-card__title span {
-            font-size: .8rem;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: rgba(97, 97, 111, .7);
-        }
-
-        .participant-grid {
-            display: grid;
-            gap: clamp(1.25rem, 2vw, 1.75rem);
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        }
-
-        .participant-card {
-            border-radius: 1rem;
-            border: 1px solid rgba(101, 45, 144, 0.12);
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .participant-card__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: .75rem;
-        }
-
-        .participant-empty {
-            border: 1px dashed rgba(101, 45, 144, 0.35);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: .85rem;
-            align-items: flex-start;
-        }
-
-        .wizard-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: .75rem;
-            flex-wrap: wrap;
-        }
-
-        .wizard-actions__nav {
-            display: flex;
-            gap: .75rem;
-        }
-
-        .wizard-sidecard {
-            background: linear-gradient(135deg, rgba(101, 45, 144, 0.95), rgba(255, 129, 0, 0.9));
-            border-radius: 1.5rem;
-            color: #fff;
-            padding: clamp(1.75rem, 3vw, 2.75rem);
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            max-width: 75vw;
-        }
-
-        .duplicate-modal .modal-content {
-            border: none;
-            border-radius: 1.5rem;
-            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.2);
-            overflow: hidden;
-        }
-
-        .duplicate-modal__header {
-            background: linear-gradient(135deg, rgba(101, 45, 144, 0.95), rgba(255, 129, 0, 0.9));
-            color: #fff;
-        }
-
-        .duplicate-modal__intro {
-            font-size: .95rem;
-            color: rgba(97, 97, 111, .85);
-        }
-
-        .duplicate-results {
-            display: grid;
-            gap: 1.25rem;
-            margin-top: 1.5rem;
-        }
-
-        .duplicate-card {
-            border: 1px solid rgba(101, 45, 144, 0.12);
-            border-radius: 1.25rem;
-            padding: 1.5rem;
-            background: #fff;
-            box-shadow: 0 12px 24px rgba(101, 45, 144, 0.08);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .duplicate-card__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: .75rem;
-        }
-
-        .duplicate-card__badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            padding: .4rem .9rem;
-            border-radius: 999px;
-            font-size: .78rem;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            background: rgba(101, 45, 144, 0.1);
-            color: var(--color-secondary);
-        }
-
-        .duplicate-card__participants {
-            display: flex;
-            flex-direction: column;
-            gap: .35rem;
-            font-size: .9rem;
-            color: rgba(97, 97, 111, .9);
-        }
-
-        .duplicate-card__footer {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .75rem;
-            justify-content: flex-end;
-        }
-
-        .duplicate-feedback {
-            min-height: 1.5rem;
-            display: flex;
-            align-items: center;
-            font-size: .85rem;
-        }
-
-        .wizard-sidecard::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: url('{{ asset('images/login_screens/loginbanner1.png') }}');
-            background-size: cover;
-            background-position: center;
-            mix-blend-mode: soft-light;
-            opacity: 0.35;
-        }
-
-        .wizard-sidecard__inner {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 1.75rem;
-        }
-
-        .wizard-sidecard__slide {
-            display: none;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .wizard-sidecard__slide.active {
-            display: flex;
-        }
-
-        .wizard-sidecard__title {
-            font-family: 'Alfarn', serif;
-            font-size: clamp(1.4rem, 3vw, 1.8rem);
-        }
-
-        .wizard-tip {
-            background: rgba(255, 255, 255, 0.18);
-            border-radius: 1rem;
-            padding: 1rem 1.25rem;
-            font-size: .95rem;
-        }
-
-        .deroule-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .deroule-header {
-            font-size: .78rem;
-            letter-spacing: .1em;
-            color: rgba(97, 97, 111, .78);
-            text-transform: uppercase;
-            padding: .75rem 1rem;
-            border-radius: .75rem;
-            background: rgba(101, 45, 144, 0.08);
-            font-weight: 600;
-        }
-
-        .deroule-group {
-            border: 1px solid rgba(101, 45, 144, 0.12);
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-
-        .deroule-group-header {
-            background: rgba(101, 45, 144, 0.08);
-            padding: .85rem 1rem;
-            font-weight: 600;
-        }
-
-        .deroule-group-body {
-            display: flex;
-            flex-direction: column;
-            gap: .75rem;
-            padding: 1rem;
-        }
-
-        .deroule-row {
-            display: grid;
-            gap: .75rem;
-            grid-template-columns: minmax(120px, 200px) 1fr repeat(2, minmax(110px, 140px)) minmax(140px, 200px);
-            align-items: center;
-        }
-
-        .deroule-type-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            border-radius: 999px;
-            padding: .45rem .9rem;
-            font-size: .85rem;
-            background: rgba(101, 45, 144, 0.08);
-            color: var(--color-secondary);
-            font-weight: 600;
-        }
-
-        .wizard-finance-grid {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        }
-
-        .wizard-finance-item {
-            border: 1px solid rgba(101, 45, 144, 0.12);
-            border-radius: 1rem;
-            padding: 1rem 1.1rem;
-            display: flex;
-            flex-direction: column;
-            gap: .35rem;
-            text-align: center;
-        }
-
-        .wizard-finance-label {
-            font-size: .85rem;
-            color: rgba(97, 97, 111, .75);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-        }
-
-        .wizard-finance-value {
-            font-size: 1.3rem;
-            color: var(--color-primary);
-            font-weight: 600;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 991.98px) {
-            .wedding-wizard {
-                grid-template-columns: 1fr;
-            }
-
-            .wizard-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .wizard-actions__nav {
-                justify-content: space-between;
-            }
-
-            .deroule-row {
-                grid-template-columns: 1fr;
-                align-items: stretch;
-            }
-
-            .wizard-sidecard {
-                justify-self: center;
-                margin-inline: auto;
-                max-width: clamp(0px, 75vw, 420px);
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 575.98px) {
-            .wizard-stepper {
-                grid-template-columns: 1fr;
-                gap: .5rem;
-            }
-
-            .wizard-stepper__item {
-                padding: .75rem .5rem;
-                font-size: .8rem;
-            }
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
-<h1 class="wizard-page-title">{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
-<div class="wedding-wizard">
+<div class="container-xl py-5">
+    <div class="wizard-layout" id="weddingWizard">
     <section class="wizard-panel">
         {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
+        {% set currentPaymentOption = selectedPaymentOption ?: '' %}
 
         <header class="wizard-header">
             <div class="wizard-header__intro">
-                <span class="wizard-badge">
-                    <i class="bi bi-stars"></i>
-                    {% if wedding.messe is same as(true) %}Messe de mariage{% elseif wedding.messe is same as(false) %}Célébration{% else %}Mariage{% endif %}
-                </span>
                 <h2 class="wizard-panel__title">{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h2>
                 <p class="wizard-header__meta mb-0">
                     <span>
@@ -485,12 +41,18 @@
                         <i class="bi bi-envelope-plus"></i>
                         Inviter
                     </button>
+                    <a href="{{ path('app_wedding_intervenants', {'id': wedding.id}) }}" class="btn btn-outline-secondary btn-rounded btn-icon">
+                        <i class="bi bi-people"></i>
+                        Intervenants
+                    </a>
                 {% endif %}
                 <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
             </div>
         </header>
 
         {{ form_errors(form) }}
+
+        <input type="hidden" name="payment_option" id="payment_option_input" value="{{ currentPaymentOption }}">
 
         <div class="wizard-stepper" id="weddingStepper">
             <button type="button" class="wizard-stepper__item active" data-step="0">
@@ -705,6 +267,43 @@
                             <span>Finances</span>
                             <h3 class="mb-0">Suivi des montants</h3>
                         </div>
+                        {% set paymentStatus = {
+                            'label': 'Statut non défini',
+                            'badge': 'secondary'
+                        } %}
+                        {% if wedding.isPaid %}
+                            {% set paymentStatus = {
+                                'label': 'Mariage réglé',
+                                'badge': 'success'
+                            } %}
+                        {% else %}
+                            {% if wedding.paymentOption == 'delegated' %}
+                                {% set paymentStatus = {
+                                    'label': 'En attente du paiement des mariés',
+                                    'badge': 'warning'
+                                } %}
+                            {% elseif wedding.paymentOption == 'card_pending_partner' %}
+                                {% set paymentStatus = {
+                                    'label': 'Paiement partenaire en cours',
+                                    'badge': 'warning'
+                                } %}
+                            {% elseif wedding.paymentOption == 'card_partner' %}
+                                {% set paymentStatus = {
+                                    'label': 'Paiement CB partenaire confirmé',
+                                    'badge': 'success'
+                                } %}
+                            {% elseif wedding.paymentOption == 'card_user' %}
+                                {% set paymentStatus = {
+                                    'label': 'Paiement en ligne à finaliser',
+                                    'badge': 'info'
+                                } %}
+                            {% elseif wedding.paymentOption == 'credit' %}
+                                {% set paymentStatus = {
+                                    'label': 'Réglé via crédits',
+                                    'badge': 'success'
+                                } %}
+                            {% endif %}
+                        {% endif %}
                         <div class="wizard-finance-grid">
                             <div class="wizard-finance-item">
                                 <div class="wizard-finance-label">Montant de la prestation</div>
@@ -713,6 +312,12 @@
                             <div class="wizard-finance-item">
                                 <div class="wizard-finance-label">Montant déjà versé</div>
                                 <div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
+                            </div>
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Statut du paiement</div>
+                                <div class="wizard-finance-value">
+                                    <span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
+                                </div>
                             </div>
                             <div class="wizard-finance-item">
                                 <div class="wizard-finance-label">Acompte</div>
@@ -811,6 +416,51 @@
             </div>
         </div>
     </aside>
+    </div>
+</div>
+
+<div class="modal fade payment-option-modal" id="paymentOptionModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ shouldOpenPaymentModal ? '1' : '0' }}" data-intercept="{{ shouldPromptPaymentOption ? '1' : '0' }}">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Choisir l'option de paiement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                {% if paymentOptionError %}
+                    <div class="alert alert-danger mb-4">{{ paymentOptionError }}</div>
+                {% endif %}
+                <p class="text-muted mb-4">Sélectionnez comment régler la création du mariage. Vous pourrez modifier ce choix tant que le paiement n'est pas confirmé.</p>
+                <div class="payment-option-grid">
+                    <button type="button" class="payment-option-card js-payment-option {{ currentPaymentOption == 'credit' ? 'is-selected' }}" data-option="credit" {% if userCredits < 1 %}disabled{% endif %}>
+                        <span class="payment-option-card__title"><i class="bi bi-gem"></i> Utiliser 1 crédit</span>
+                        <span class="payment-option-card__subtitle">Déduisez un crédit de votre solde et ouvrez instantanément les invitations.</span>
+                        <span class="payment-option-card__meta">
+                            {% if userCredits > 0 %}
+                                {{ userCredits }} crédit{{ userCredits > 1 ? 's' : '' }} disponible{{ userCredits > 1 ? 's' : '' }}
+                            {% else %}
+                                Solde insuffisant
+                            {% endif %}
+                        </span>
+                    </button>
+                    <button type="button" class="payment-option-card js-payment-option {{ currentPaymentOption == 'card' ? 'is-selected' }}" data-option="card">
+                        <span class="payment-option-card__title"><i class="bi bi-credit-card"></i> Payer 39,90 €</span>
+                        <span class="payment-option-card__subtitle">Réglez maintenant par carte bancaire à tarif préférentiel partenaire.</span>
+                        <span class="payment-option-card__meta">Redirection sécurisée vers Stripe</span>
+                    </button>
+                    <button type="button" class="payment-option-card js-payment-option {{ currentPaymentOption == 'later' ? 'is-selected' }}" data-option="later">
+                        <span class="payment-option-card__title"><i class="bi bi-people"></i> Laisser les mariés payer</span>
+                        <span class="payment-option-card__subtitle">Créez le dossier et envoyez une demande de paiement aux mariés.</span>
+                        <span class="payment-option-card__meta">Ils recevront une notification dédiée</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <small class="text-muted">Le choix du paiement conditionne l'accès aux invitations.</small>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade duplicate-modal" id="duplicateCheckModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ wedding.id ? '0' : '1' }}">
@@ -935,6 +585,63 @@
         };
 
         document.addEventListener('DOMContentLoaded', function () {
+            const weddingForm = document.getElementById('weddingForm');
+            const paymentHiddenInput = document.getElementById('payment_option_input');
+            const paymentModalEl = document.getElementById('paymentOptionModal');
+
+            if (paymentModalEl && typeof bootstrap !== 'undefined') {
+                const paymentModal = new bootstrap.Modal(paymentModalEl, {
+                    backdrop: 'static',
+                    keyboard: false,
+                });
+                const autoShowPaymentModal = paymentModalEl.dataset.autoshow === '1';
+                const shouldInterceptPayment = paymentModalEl.dataset.intercept === '1';
+                const paymentButtons = paymentModalEl.querySelectorAll('.js-payment-option');
+
+                const highlightPaymentOption = (value) => {
+                    paymentButtons.forEach((btn) => {
+                        btn.classList.toggle('is-selected', btn.dataset.option === value);
+                    });
+                };
+
+                if (paymentHiddenInput && paymentHiddenInput.value) {
+                    highlightPaymentOption(paymentHiddenInput.value);
+                }
+
+                paymentButtons.forEach((btn) => {
+                    if (btn.disabled) {
+                        return;
+                    }
+                    btn.addEventListener('click', function () {
+                        const option = this.dataset.option || '';
+                        if (!option || !paymentHiddenInput || !weddingForm) {
+                            return;
+                        }
+
+                        paymentHiddenInput.value = option;
+                        highlightPaymentOption(option);
+                        paymentModal.hide();
+                        weddingForm.requestSubmit();
+                    });
+                });
+
+                if (shouldInterceptPayment && weddingForm) {
+                    weddingForm.addEventListener('submit', function (event) {
+                        if (!paymentHiddenInput || paymentHiddenInput.value !== '') {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        highlightPaymentOption('');
+                        paymentModal.show();
+                    });
+                }
+
+                if (autoShowPaymentModal) {
+                    paymentModal.show();
+                }
+            }
+
             const duplicateModalEl = document.getElementById('duplicateCheckModal');
             if (duplicateModalEl && typeof bootstrap !== 'undefined') {
                 const autoshow = duplicateModalEl.dataset.autoshow === '1';

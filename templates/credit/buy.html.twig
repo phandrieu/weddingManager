@@ -3,64 +3,119 @@
 {% block title %}Acheter des crédits{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Acheter des crédits</h3>
+<div class="wizard-layout">
+    <section class="wizard-panel">
+        <header class="wizard-header">
+            <div class="wizard-header__intro">
+                <span class="wizard-badge">
+                    <i class="bi bi-coin"></i>
+                    Achat de crédits
+                </span>
+                <h2 class="wizard-panel__title">Gérez vos crédits</h2>
+                <p class="wizard-header__meta mb-0">
+                    <span>Vos crédits actuels : <strong>{{ user.credits }}</strong></span>
+                </p>
+            </div>
+        </header>
+
+        <div class="wizard-note">
+            <i class="bi bi-info-circle me-2"></i>
+            Chaque crédit vous permet de créer un mariage et d'inviter gratuitement 
+            les mariés et l'autre partenaire (musicien ou paroisse).
+        </div>
+
+        <form method="post" action="{{ path('app_credits_buy') }}" class="form-grid">
+            <div class="form-card">
+                <div class="form-card__title">
+                    <span>Quantité</span>
+                    <h3 class="mb-0">Nombre de crédits</h3>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <strong>Vos crédits actuels :</strong> {{ user.credits }}
+                <div class="mb-3">
+                    <label for="quantity" class="form-label-sm">Combien de crédits souhaitez-vous ?</label>
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="quantity" 
+                        name="quantity" 
+                        min="1" 
+                        max="100" 
+                        value="1" 
+                        required
+                    >
+                    <div class="text-muted mt-2 small">
+                        <i class="bi bi-tag"></i> Prix unitaire : 10€ / crédit
                     </div>
+                </div>
+            </div>
 
-                    <p>
-                        Chaque crédit vous permet de créer un mariage et d'inviter gratuitement 
-                        les mariés et l'autre partenaire (musicien ou paroisse).
-                    </p>
+            <div class="form-card">
+                <div class="form-card__title">
+                    <span>Récapitulatif</span>
+                    <h3 class="mb-0">Votre commande</h3>
+                </div>
+                <div class="wizard-finance-grid">
+                    <div class="wizard-finance-item">
+                        <div class="wizard-finance-label">Total à payer</div>
+                        <div class="wizard-finance-value" id="total-price">10€</div>
+                    </div>
+                </div>
+            </div>
 
-                    <p class="text-muted">
-                        <strong>Prix :</strong> 10€ par crédit
-                    </p>
+            <div class="wizard-actions">
+                <div class="wizard-actions__nav">
+                    <a href="{{ path('home') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+                    <button type="submit" class="btn btn-primary btn-rounded btn-icon">
+                        <i class="bi bi-credit-card"></i>
+                        Payer avec Stripe
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
 
-                    <form method="post" action="{{ path('app_credits_buy') }}">
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Nombre de crédits</label>
-                            <input 
-                                type="number" 
-                                class="form-control" 
-                                id="quantity" 
-                                name="quantity" 
-                                min="1" 
-                                max="100" 
-                                value="1" 
-                                required
-                            >
-                        </div>
+    <aside class="wizard-sidecard wizard-sidecard--image-1">
+        <div class="wizard-sidecard__inner">
+            <span class="wizard-badge wizard-badge--light"><i class="bi bi-stars"></i>Système de crédits</span>
+            <h2 class="wizard-sidecard__title">Comment ça marche ?</h2>
+            <p class="mb-0">Les crédits vous permettent de créer des mariages sans frais supplémentaires pour les couples. C'est l'idéal pour les musiciens et paroisses qui organisent régulièrement des cérémonies.</p>
+            
+            <div class="wizard-tip">
+                <i class="bi bi-lightbulb me-2"></i>
+                Un crédit = un mariage complet avec invitations gratuites pour tous les participants.
+            </div>
 
-                        <div class="mb-3">
-                            <p class="text-muted">
-                                <span id="total-price">Total : 10€</span>
-                            </p>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            Payer
-                        </button>
-                        <a href="{{ path('home') }}" class="btn btn-secondary">Annuler</a>
-                    </form>
+            <div class="wizard-list">
+                <div class="wizard-list__item">
+                    <span class="wizard-list__icon"><i class="bi bi-check-circle"></i></span>
+                    <div>
+                        <h5 class="mb-1">Invitations illimitées</h5>
+                        <p class="mb-0 small">Invitez autant de personnes que nécessaire sans frais supplémentaires.</p>
+                    </div>
+                </div>
+                <div class="wizard-list__item">
+                    <span class="wizard-list__icon"><i class="bi bi-shield-check"></i></span>
+                    <div>
+                        <h5 class="mb-1">Paiement sécurisé</h5>
+                        <p class="mb-0 small">Transactions protégées par Stripe, leader mondial du paiement en ligne.</p>
+                    </div>
+                </div>
+                <div class="wizard-list__item">
+                    <span class="wizard-list__icon"><i class="bi bi-infinity"></i></span>
+                    <div>
+                        <h5 class="mb-1">Sans expiration</h5>
+                        <p class="mb-0 small">Vos crédits restent valables indéfiniment, utilisez-les quand vous voulez.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </aside>
 </div>
 
 <script>
     document.getElementById('quantity').addEventListener('input', function() {
         const quantity = parseInt(this.value) || 1;
         const price = quantity * 10;
-        document.getElementById('total-price').textContent = 'Total : ' + price + '€';
+        document.getElementById('total-price').textContent = price + '€';
     });
 </script>
 {% endblock %}

@@ -108,6 +108,12 @@ private ?User $mariee = null;
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $requiresCouplePayment = false;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isPaid = false;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $paymentOption = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -497,6 +503,30 @@ private ?User $mariee = null;
     public function setRequiresCouplePayment(bool $requiresCouplePayment): static
     {
         $this->requiresCouplePayment = $requiresCouplePayment;
+
+        return $this;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->isPaid;
+    }
+
+    public function setIsPaid(bool $isPaid): static
+    {
+        $this->isPaid = $isPaid;
+
+        return $this;
+    }
+
+    public function getPaymentOption(): ?string
+    {
+        return $this->paymentOption;
+    }
+
+    public function setPaymentOption(?string $paymentOption): static
+    {
+        $this->paymentOption = $paymentOption;
 
         return $this;
     }

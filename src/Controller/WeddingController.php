@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Entity\Wedding;
 use App\Form\WeddingFormType;
 use App\Repository\InvitationRepository;
+use App\Repository\UserRepository;
 use App\Repository\WeddingRepository;
 use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
@@ -317,10 +318,19 @@ class WeddingController extends AbstractController
             $wedding->setCreatedBy($currentUser);
         }
 
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $isParishOrMusician = $this->isGranted('ROLE_PARISH') || $this->isGranted('ROLE_MUSICIAN');
+
         $form = $this->createForm(WeddingFormType::class, $wedding);
         $form->handleRequest($request);
 
+        $selectedPaymentOption = (string) $request->request->get('payment_option', '');
+        $shouldOpenPaymentModal = false;
+        $paymentOptionError = null;
+
         if ($form->isSubmitted() && $form->isValid()) {
+            $canPersist = true;
+
             foreach ($wedding->getSongs() as $song) {
                 $wedding->removeSong($song);
             }
@@ -339,63 +349,117 @@ class WeddingController extends AbstractController
                 }
             }
 
-            $isAdmin = $this->isGranted('ROLE_ADMIN');
-            $isParishOrMusician = $this->isGranted('ROLE_PARISH') || $this->isGranted('ROLE_MUSICIAN');
-
             if ($isNewWedding && !$isAdmin) {
                 if ($isParishOrMusician) {
-                    $wedding->setCreatedWithCredit(false);
-                    $wedding->setRequiresCouplePayment(true);
-
-                    if ($currentUser instanceof User && $currentUser->hasCredits()) {
-                        $currentUser->removeCredits(1);
-                        $wedding->setCreatedWithCredit(true);
-                        $wedding->setRequiresCouplePayment(false);
-                        $this->addFlash('success', 'Un crédit a été débité pour créer ce mariage. Les partenaires peuvent être invités gratuitement.');
+                    if ($selectedPaymentOption === '') {
+                        $shouldOpenPaymentModal = true;
+                        $paymentOptionError = 'Veuillez sélectionner une option de paiement pour finaliser la création du mariage.';
+                        $canPersist = false;
                     } else {
-                        $this->addFlash('warning', 'Aucun crédit disponible : les mariés devront régler leur participation lors de l’acceptation de l’invitation.');
+                        switch ($selectedPaymentOption) {
+                            case 'credit':
+                                if ($currentUser instanceof User && $currentUser->hasCredits()) {
+                                    $currentUser->removeCredits(1);
+                                    $wedding->setCreatedWithCredit(true);
+                                    $wedding->setRequiresCouplePayment(false);
+                                    $wedding->setIsPaid(true);
+                                    $wedding->setPaymentOption('credit');
+
+                                    $repo->save($wedding, true);
+                                    $this->addFlash('success', 'Un crédit a été débité pour créer ce mariage. Les invitations sont désormais gratuites.');
+
+                                    return $this->redirectToRoute('app_wedding_index');
+                                }
+
+                                $shouldOpenPaymentModal = true;
+                                $paymentOptionError = 'Vous ne disposez pas de crédit suffisant pour cette option.';
+                                $this->addFlash('danger', $paymentOptionError);
+                                $canPersist = false;
+                                break;
+
+                            case 'card':
+                                $wedding->setCreatedWithCredit(false);
+                                $wedding->setRequiresCouplePayment(false);
+                                $wedding->setIsPaid(false);
+                                $wedding->setPaymentOption('card_pending_partner');
+
+                                $session = $request->getSession();
+                                $session->set('wedding_data', $wedding);
+                                $session->set('wedding_payment_option', 'card_partner');
+
+                                $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
+                                $checkoutSession = $stripe->checkout->sessions->create([
+                                    'payment_method_types' => ['card'],
+                                    'line_items' => [[
+                                        'price_data' => [
+                                            'currency' => 'eur',
+                                            'product_data' => ['name' => 'Création de mariage (partenaire)'],
+                                            'unit_amount' => 3990,
+                                        ],
+                                        'quantity' => 1,
+                                    ]],
+                                    'mode' => 'payment',
+                                    'success_url' => $this->generateUrl('app_wedding_payment_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                                    'cancel_url' => $this->generateUrl('app_wedding_edit', ['id' => 0], UrlGeneratorInterface::ABSOLUTE_URL),
+                                ]);
+
+                                return $this->redirect($checkoutSession->url);
+
+                            case 'later':
+                                $wedding->setCreatedWithCredit(false);
+                                $wedding->setRequiresCouplePayment(true);
+                                $wedding->setIsPaid(false);
+                                $wedding->setPaymentOption('delegated');
+
+                                $repo->save($wedding, true);
+                                $this->addFlash('success', 'Mariage créé. Les mariés recevront une demande de paiement.');
+
+                                return $this->redirectToRoute('app_wedding_index');
+
+                            default:
+                                $shouldOpenPaymentModal = true;
+                                $paymentOptionError = 'Option de paiement inconnue.';
+                                $this->addFlash('warning', $paymentOptionError);
+                                $canPersist = false;
+                                break;
+                        }
                     }
+                } else {
+                    $wedding->setCreatedWithCredit(false);
+                    $wedding->setRequiresCouplePayment(false);
+                    $wedding->setIsPaid(false);
+                    $wedding->setPaymentOption('card_user');
 
-                    $repo->save($wedding, true);
+                    $session = $request->getSession();
+                    $session->set('wedding_data', $wedding);
+                    $session->set('wedding_payment_option', 'card_user');
 
-                    return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId()]);
+                    $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
+                    $checkoutSession = $stripe->checkout->sessions->create([
+                        'payment_method_types' => ['card'],
+                        'line_items' => [[
+                            'price_data' => [
+                                'currency' => 'eur',
+                                'product_data' => ['name' => 'Création de mariage'],
+                                'unit_amount' => 4990,
+                            ],
+                            'quantity' => 1,
+                        ]],
+                        'mode' => 'payment',
+                        'success_url' => $this->generateUrl('app_wedding_payment_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
+                        'cancel_url' => $this->generateUrl('app_wedding_edit', ['id' => 0], UrlGeneratorInterface::ABSOLUTE_URL),
+                    ]);
+
+                    return $this->redirect($checkoutSession->url);
                 }
-
-                $wedding->setRequiresCouplePayment(false);
-
-                $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
-                $session = $stripe->checkout->sessions->create([
-                    'payment_method_types' => ['card'],
-                    'line_items' => [[
-                        'price_data' => [
-                            'currency' => 'eur',
-                            'product_data' => ['name' => 'Création de mariage'],
-                            'unit_amount' => 5000,
-                        ],
-                        'quantity' => 1,
-                    ]],
-                    'mode' => 'payment',
-                    'success_url' => $this->generateUrl(
-                        'app_wedding_payment_success',
-                        [],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    ),
-                    'cancel_url' => $this->generateUrl(
-                        'app_wedding_edit',
-                        ['id' => 0],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    ),
-                ]);
-
-                $request->getSession()->set('wedding_data', $wedding);
-
-                return $this->redirect($session->url);
             }
 
-            $repo->save($wedding, true);
-            $this->addFlash('success', 'Mariage sauvegardé avec succès.');
+            if ($canPersist) {
+                $repo->save($wedding, true);
+                $this->addFlash('success', 'Mariage sauvegardé avec succès.');
 
-            return $this->redirectToRoute('app_wedding_index');
+                return $this->redirectToRoute('app_wedding_index');
+            }
         }
 
         $songTypes = $songTypeRepo->findAll();
@@ -438,6 +502,11 @@ class WeddingController extends AbstractController
             'availableSongs' => $availableSongs,
             'availableSongsByType' => $availableSongsByType,
             'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'shouldOpenPaymentModal' => $shouldOpenPaymentModal,
+            'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
+            'selectedPaymentOption' => $selectedPaymentOption,
+            'paymentOptionError' => $paymentOptionError,
+            'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
         ]);
     }
 
@@ -455,7 +524,9 @@ class WeddingController extends AbstractController
     #[Route('/payment/success', name: 'app_wedding_payment_success')]
     public function paymentSuccess(Request $request, WeddingRepository $repo): Response
     {
-        $weddingSession = $request->getSession()->get('wedding_data');
+        $session = $request->getSession();
+        $weddingSession = $session->get('wedding_data');
+        $paymentOption = (string) $session->get('wedding_payment_option', '');
 
         if ($weddingSession) {
             $em = $repo->getEntityManager();
@@ -489,13 +560,89 @@ class WeddingController extends AbstractController
 
             $wedding->setCreatedWithCredit(false);
             $wedding->setRequiresCouplePayment(false);
+            $wedding->setIsPaid(true);
+
+            // Met à jour l'option de paiement une fois le règlement confirmé
+            if ($paymentOption !== '') {
+                $wedding->setPaymentOption($paymentOption);
+            } elseif ($wedding->getPaymentOption() === 'card_pending_partner') {
+                $wedding->setPaymentOption('card_partner');
+            }
 
             $repo->save($wedding, true);
-            $request->getSession()->remove('wedding_data');
+            $session->remove('wedding_data');
+            $session->remove('wedding_payment_option');
             $this->addFlash('success', 'Paiement réussi et mariage créé !');
         }
 
         return $this->redirectToRoute('app_wedding_index');
+    }
+
+    #[Route('/{id}/intervenants', name: 'app_wedding_intervenants', methods: ['GET'])]
+    public function intervenants(Wedding $wedding): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        return $this->render('wedding/intervenants.html.twig', [
+            'wedding' => $wedding,
+        ]);
+    }
+
+    #[Route('/{id}/intervenants/remove/{type}/{userId}', name: 'app_wedding_intervenants_remove', methods: ['POST'])]
+    public function removeIntervenant(
+        Request $request,
+        Wedding $wedding,
+        string $type,
+        int $userId,
+        UserRepository $userRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $tokenId = sprintf('remove_intervenant_%s_%d_%d', $type, $wedding->getId(), $userId);
+        if (!$this->isCsrfTokenValid($tokenId, (string) $request->request->get('_token'))) {
+            $this->addFlash('danger', 'La suppression a été refusée. Rafraîchissez la page puis réessayez.');
+
+            return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+        }
+
+        $user = $userRepository->find($userId);
+        if (!$user) {
+            $this->addFlash('warning', 'Intervenant introuvable.');
+
+            return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+        }
+
+        $updated = false;
+
+        switch ($type) {
+            case 'musician':
+                if ($wedding->getMusicians()->contains($user)) {
+                    $wedding->removeMusician($user);
+                    $updated = true;
+                }
+                break;
+            case 'parish':
+                if ($wedding->getParishUsers()->contains($user)) {
+                    $wedding->removeParishUser($user);
+                    $updated = true;
+                }
+                break;
+            default:
+                $this->addFlash('danger', 'Type d\'intervenant inconnu.');
+
+                return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+        }
+
+        if ($updated) {
+            $em->persist($wedding);
+            $em->flush();
+            $this->addFlash('success', 'Intervenant retiré du mariage.');
+        } else {
+            $this->addFlash('info', 'Cet intervenant n\'est plus associé au mariage.');
+        }
+
+        return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
     }
    #[Route('/{id}/invite', name: 'app_wedding_invite')]
 public function invite(
