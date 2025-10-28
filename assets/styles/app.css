@@ -157,6 +157,10 @@
     margin-top: clamp(1rem, 3vw, 2rem);
 }
 
+.wizard-layout--full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 /* Wizard Actions */
 .wizard-actions {
     display: flex;
@@ -1314,23 +1318,81 @@
 @media (max-width: 575.98px) {
     .wedding-grid {
         grid-template-columns: 1fr;
-        grid-template-areas: 
+        grid-template-areas:
             "main"
             "type"
             "total"
             "restant"
             "actions";
+        gap: 0.65rem;
     }
 
-    .wedding-grid__main {
-        flex-direction: column;
-        align-items: flex-start;
+    .wedding-card {
+        padding: 0.9rem;
+        margin-bottom: 0.85rem !important;
     }
 
-    .wedding-grid__actions {
-        justify-self: stretch;
-        justify-content: space-around;
+    .wedding-card .wedding-grid {
+        gap: 0.65rem;
+    }
+
+    .wedding-card .wedding-grid__main {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .wedding-card .app-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+
+    .wedding-card .wedding-grid__item {
+        display: flex;
+        align-items: center;
+        padding: 0.3rem 0.5rem;
+        border-radius: 0.65rem;
+        background: rgba(101, 45, 144, 0.08);
+    }
+
+    .wedding-card .wedding-grid__item + .wedding-grid__item {
+        margin-top: 0.25rem;
+    }
+
+    .wedding-card .wedding-grid__item .info-label {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
         width: 100%;
+        text-align: left !important;
+        margin: 0;
+    }
+
+    .wedding-card .wedding-grid__item .info-label-caption {
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(97, 97, 111, 0.75);
+    }
+
+    .wedding-card .wedding-grid__item .info-label-value {
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .wedding-card .wedding-grid__actions {
+        justify-self: flex-start;
+        justify-content: flex-start;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .wedding-card .wedding-grid__actions .btn {
+        padding: 0.3rem 0.45rem;
+        min-width: 44px;
     }
 }
 

@@ -8,7 +8,7 @@
 
 {% block body %}
 <div class="container-xl py-5">
-    <div class="wizard-layout" id="weddingWizard" data-default-step="{{ initialWizardStep|default(0) }}">
+    <div class="wizard-layout {{ wedding.id ? 'wizard-layout--full' : '' }}" id="weddingWizard" data-default-step="{{ initialWizardStep|default(0) }}">
     <section class="wizard-panel">
         {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
         {% set currentPaymentOption = selectedPaymentOption ?: '' %}
@@ -48,7 +48,8 @@
 
         {{ form_errors(form) }}
 
-        <input type="hidden" name="payment_option" id="payment_option_input" value="{{ currentPaymentOption }}">
+        <input type="hidden" name="payment_option" id="payment_option_input" value="{{ selectedPaymentOption }}">
+        <input type="hidden" name="user_role" id="user_role_input" value="">
 
         <div class="wizard-stepper" id="weddingStepper">
             <button type="button" class="wizard-stepper__item active" data-step="0">
@@ -102,10 +103,26 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-sm-6">
-                                {{ form_row(form.date, {'label_attr': {'class': 'form-label-sm'}}) }}
+                                {{ form_row(form.date, {
+                                    'label_attr': {'class': 'form-label-sm'},
+                                    'attr': {
+                                        'class': (form.date.vars.attr.class|default('') ~ ' js-date')|trim,
+                                        'placeholder': 'jj/mm/aaaa',
+                                        'inputmode': 'numeric',
+                                        'autocomplete': 'off'
+                                    }
+                                }) }}
                             </div>
                             <div class="col-sm-6">
-                                {{ form_row(form.time, {'label_attr': {'class': 'form-label-sm'}}) }}
+                                {{ form_row(form.time, {
+                                    'label_attr': {'class': 'form-label-sm'},
+                                    'attr': {
+                                        'class': (form.time.vars.attr.class|default('') ~ ' js-time')|trim,
+                                        'placeholder': 'HH:MM',
+                                        'inputmode': 'numeric',
+                                        'autocomplete': 'off'
+                                    }
+                                }) }}
                             </div>
                         </div>
                     </div>
@@ -555,7 +572,7 @@
             {% endfor %}
         </div>
     {% endif %}
-
+    {% if not wedding.id %}
     <aside class="wizard-sidecard">
         <div class="wizard-sidecard__inner" id="wizardSideContent">
             <div class="wizard-sidecard__slide active" data-step="0">
@@ -590,6 +607,28 @@
             </div>
         </div>
     </aside>
+    {% endif %}
+    </div>
+</div>
+
+<div class="modal fade" id="userRoleModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ shouldOpenRoleModal ? '1' : '0' }}" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Votre rôle dans ce mariage</h5>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4">Vous créez un nouveau mariage. Êtes-vous le marié ou la mariée ?</p>
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-outline-primary btn-lg js-user-role-option" data-role="marie">
+                        <i class="bi bi-person me-2"></i> Je suis le marié
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-lg js-user-role-option" data-role="mariee">
+                        <i class="bi bi-person me-2"></i> Je suis la mariée
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -646,17 +685,17 @@
             </div>
             <div class="modal-body">
                 <p class="duplicate-modal__intro mb-4">
-                    Pour éviter la création de doublons, indiquez les adresses e-mail des deux mariés. Nous vous proposerons les mariages déjà associés à ces contacts.
+                    Pour éviter la création de doublons, indiquez l'adresse e-mail d'au moins un des mariés. Nous vous proposerons les mariages déjà associés à ces contacts.
                 </p>
                 <form id="duplicateCheckForm" class="duplicate-form" data-check-url="{{ path('app_wedding_check_duplicates') }}" data-request-url-template="{{ path('app_wedding_request_access', {'id': 999999}) }}">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="duplicate-email-marie" class="form-label">Email du futur marié</label>
-                            <input type="email" class="form-control" id="duplicate-email-marie" name="email_marie" placeholder="nom@exemple.fr" required>
+                            <input type="email" class="form-control" id="duplicate-email-marie" name="email_marie" placeholder="nom@exemple.fr">
                         </div>
                         <div class="col-md-6">
                             <label for="duplicate-email-mariee" class="form-label">Email de la future mariée</label>
-                            <input type="email" class="form-control" id="duplicate-email-mariee" name="email_mariee" placeholder="prenom@exemple.fr" required>
+                            <input type="email" class="form-control" id="duplicate-email-mariee" name="email_mariee" placeholder="prenom@exemple.fr">
                         </div>
                         <div class="col-12">
                             <label for="duplicate-message" class="form-label">Message pour les mariés (facultatif)</label>
@@ -871,6 +910,49 @@
                 });
             });
 
+            // Gestion de la modal de sélection du rôle utilisateur (marié/mariée)
+            const userRoleModalEl = document.getElementById('userRoleModal');
+            const userRoleInput = document.getElementById('user_role_input');
+            if (userRoleModalEl && typeof bootstrap !== 'undefined') {
+                const userRoleModal = new bootstrap.Modal(userRoleModalEl, {
+                    backdrop: 'static',
+                    keyboard: false,
+                });
+                const autoShowRoleModal = userRoleModalEl.dataset.autoshow === '1';
+                const roleButtons = userRoleModalEl.querySelectorAll('.js-user-role-option');
+
+                roleButtons.forEach((btn) => {
+                    btn.addEventListener('click', function () {
+                        const role = this.dataset.role || '';
+                        if (!role || !userRoleInput || !weddingForm) {
+                            return;
+                        }
+
+                        userRoleInput.value = role;
+                        userRoleModal.hide();
+                        weddingForm.requestSubmit();
+                    });
+                });
+
+                if (autoShowRoleModal) {
+                    userRoleModal.show();
+                }
+
+                // Intercepter la soumission si l'utilisateur est ROLE_USER uniquement et n'a pas choisi son rôle
+                const isOnlyUser = {{ isOnlyUser|default(false) ? 'true' : 'false' }};
+                const isNewWedding = {{ wedding.id ? 'false' : 'true' }};
+                if (isOnlyUser && isNewWedding && weddingForm) {
+                    weddingForm.addEventListener('submit', function (event) {
+                        if (!userRoleInput || userRoleInput.value !== '') {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        userRoleModal.show();
+                    });
+                }
+            }
+
             if (paymentModalEl && typeof bootstrap !== 'undefined') {
                 const paymentModal = new bootstrap.Modal(paymentModalEl, {
                     backdrop: 'static',
@@ -1015,12 +1097,12 @@
                         const emailMarie = (formData.get('email_marie') || '').toString().trim();
                         const emailMariee = (formData.get('email_mariee') || '').toString().trim();
 
-                        if (!emailMarie || !emailMariee) {
-                            setFeedback('Veuillez renseigner les deux adresses e-mail.', 'danger');
+                        if (!emailMarie && !emailMariee) {
+                            setFeedback('Veuillez renseigner au moins une adresse e-mail.', 'danger');
                             return;
                         }
 
-                        lastEmails = [emailMarie, emailMariee];
+                        lastEmails = [emailMarie, emailMariee].filter(Boolean);
                         setFeedback('Recherche en cours...', 'info');
                         resultsContainer.innerHTML = '';
                         if (submitBtn) {
@@ -1035,8 +1117,8 @@
                                     'X-Requested-With': 'XMLHttpRequest',
                                 },
                                 body: JSON.stringify({
-                                    email_marie: emailMarie,
-                                    email_mariee: emailMariee,
+                                    ...(emailMarie ? { email_marie: emailMarie } : {}),
+                                    ...(emailMariee ? { email_mariee: emailMariee } : {}),
                                 }),
                             });
 

@@ -43,7 +43,7 @@
     <div class="text-muted">Aucun mariage ne correspond à vos critères.</div>
 {% else %}
     {% for wedding in weddings %}
-        <div class="app-card-light mb-3">
+    <div class="app-card-light mb-3 wedding-card">
             <div class="wedding-grid">
                 <div class="wedding-grid__main">
                     <div class="app-avatar">
@@ -68,22 +68,23 @@
 
                 <div class="wedding-grid__item">
                     <div class="info-label text-center">
+                        <div class="info-label-caption">Célébration</div>
                         <div class="info-label-value">
                             {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Sans Eucharistie{% endif %}
                         </div>
-                        <div class="info-label-caption">Célébration</div>
                     </div>
                 </div>
 
                 <div class="wedding-grid__item">
                     <div class="info-label text-end">
-                        <div class="info-label-value">{{ wedding.montantTotal is defined and wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
                         <div class="info-label-caption">Total</div>
+                        <div class="info-label-value">{{ wedding.montantTotal is defined and wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
                     </div>
                 </div>
 
                 <div class="wedding-grid__item">
                     <div class="info-label text-end">
+                        <div class="info-label-caption">Restant</div>
                         <div class="info-label-value">
                             {% if wedding.montantTotal is defined and wedding.montantPaye is defined and wedding.montantTotal is not null and wedding.montantPaye is not null %}
                                 {{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }} €
@@ -91,7 +92,6 @@
                                 -
                             {% endif %}
                         </div>
-                        <div class="info-label-caption">Restant</div>
                     </div>
                 </div>
 

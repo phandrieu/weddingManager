@@ -323,16 +323,28 @@ class WeddingController extends AbstractController
         $currentUser = $this->getUser();
         if ($isNewWedding && $currentUser instanceof User && !$wedding->getCreatedBy()) {
             $wedding->setCreatedBy($currentUser);
+            
+            // Assignation automatique selon le rôle
+            if ($this->isGranted('ROLE_MUSICIAN')) {
+                $wedding->addMusician($currentUser);
+            }
+            if ($this->isGranted('ROLE_PARISH')) {
+                $wedding->addParishUser($currentUser);
+            }
+            // Pour ROLE_USER uniquement (ni musicien ni paroisse), on demandera marié/mariée via modal
         }
 
         $isAdmin = $this->isGranted('ROLE_ADMIN');
         $isParishOrMusician = $this->isGranted('ROLE_PARISH') || $this->isGranted('ROLE_MUSICIAN');
+        $isOnlyUser = !$this->isGranted('ROLE_MUSICIAN') && !$this->isGranted('ROLE_PARISH') && !$this->isGranted('ROLE_ADMIN');
 
         $form = $this->createForm(WeddingFormType::class, $wedding);
         $form->handleRequest($request);
 
         $selectedPaymentOption = (string) $request->request->get('payment_option', '');
+        $selectedUserRole = (string) $request->request->get('user_role', ''); // marie ou mariee
         $shouldOpenPaymentModal = false;
+        $shouldOpenRoleModal = false;
         $paymentOptionError = null;
 
         $includeMesseTypes = true === $wedding->isMesse();
@@ -350,6 +362,23 @@ class WeddingController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $canPersist = true;
+            
+            // Gérer le rôle de l'utilisateur simple (marié/mariée)
+            if ($isNewWedding && $isOnlyUser && $currentUser instanceof User) {
+                if ($selectedUserRole === '') {
+                    $shouldOpenRoleModal = true;
+                    $canPersist = false;
+                    $this->addFlash('warning', 'Veuillez sélectionner si vous êtes le marié ou la mariée.');
+                } elseif ($selectedUserRole === 'marie') {
+                    $wedding->setMarie($currentUser);
+                } elseif ($selectedUserRole === 'mariee') {
+                    $wedding->setMariee($currentUser);
+                } else {
+                    $shouldOpenRoleModal = true;
+                    $canPersist = false;
+                    $this->addFlash('danger', 'Rôle invalide sélectionné.');
+                }
+            }
 
             $selectedSongs = $form->get('songs')->getData();
             $songsToAttach = [];
@@ -447,6 +476,7 @@ class WeddingController extends AbstractController
 
             if ($isNewWedding && !$isAdmin) {
                 if ($isParishOrMusician) {
+                    // Musicien ou Paroisse : choix entre crédit, CB, ou laisser les mariés payer
                     if ($selectedPaymentOption === '') {
                         $shouldOpenPaymentModal = true;
                         $paymentOptionError = 'Veuillez sélectionner une option de paiement pour finaliser la création du mariage.';
@@ -521,6 +551,7 @@ class WeddingController extends AbstractController
                         }
                     }
                 } else {
+                    // Utilisateur simple (ROLE_USER uniquement) : paiement CB obligatoire 49,99€
                     $wedding->setCreatedWithCredit(false);
                     $wedding->setRequiresCouplePayment(false);
                     $wedding->setIsPaid(false);
@@ -529,6 +560,7 @@ class WeddingController extends AbstractController
                     $session = $request->getSession();
                     $session->set('wedding_data', $wedding);
                     $session->set('wedding_payment_option', 'card_user');
+                    $session->set('wedding_user_role', $selectedUserRole);
 
                     $stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
                     $checkoutSession = $stripe->checkout->sessions->create([
@@ -630,10 +662,12 @@ class WeddingController extends AbstractController
             'songSelectionsByType' => $songSelectionsByType,
             'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
             'shouldOpenPaymentModal' => $shouldOpenPaymentModal,
+            'shouldOpenRoleModal' => $shouldOpenRoleModal ?? false,
             'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
             'selectedPaymentOption' => $selectedPaymentOption,
             'paymentOptionError' => $paymentOptionError,
             'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
+            'isOnlyUser' => $isOnlyUser,
             'initialWizardStep' => $requestedStep,
         ]);
     }
@@ -655,6 +689,7 @@ class WeddingController extends AbstractController
         $session = $request->getSession();
         $weddingSession = $session->get('wedding_data');
         $paymentOption = (string) $session->get('wedding_payment_option', '');
+        $userRole = (string) $session->get('wedding_user_role', '');
 
         if ($weddingSession) {
             $em = $repo->getEntityManager();
@@ -685,6 +720,13 @@ class WeddingController extends AbstractController
                     $em->getReference(\App\Entity\User::class, $musician->getId())
                 );
             }
+            
+            foreach ($wedding->getParishUsers() as $i => $parishUser) {
+                $wedding->getParishUsers()->set(
+                    $i,
+                    $em->getReference(\App\Entity\User::class, $parishUser->getId())
+                );
+            }
 
             $wedding->setCreatedWithCredit(false);
             $wedding->setRequiresCouplePayment(false);
@@ -700,6 +742,7 @@ class WeddingController extends AbstractController
             $repo->save($wedding, true);
             $session->remove('wedding_data');
             $session->remove('wedding_payment_option');
+            $session->remove('wedding_user_role');
             $this->addFlash('success', 'Paiement réussi et mariage créé !');
         }
 
