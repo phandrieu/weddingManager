@@ -200,6 +200,82 @@
             max-width: 75vw;
         }
 
+        .duplicate-modal .modal-content {
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: 0 18px 40px rgba(101, 45, 144, 0.2);
+            overflow: hidden;
+        }
+
+        .duplicate-modal__header {
+            background: linear-gradient(135deg, rgba(101, 45, 144, 0.95), rgba(255, 129, 0, 0.9));
+            color: #fff;
+        }
+
+        .duplicate-modal__intro {
+            font-size: .95rem;
+            color: rgba(97, 97, 111, .85);
+        }
+
+        .duplicate-results {
+            display: grid;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .duplicate-card {
+            border: 1px solid rgba(101, 45, 144, 0.12);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            background: #fff;
+            box-shadow: 0 12px 24px rgba(101, 45, 144, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .duplicate-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .duplicate-card__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .4rem .9rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            background: rgba(101, 45, 144, 0.1);
+            color: var(--color-secondary);
+        }
+
+        .duplicate-card__participants {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+            font-size: .9rem;
+            color: rgba(97, 97, 111, .9);
+        }
+
+        .duplicate-card__footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            justify-content: flex-end;
+        }
+
+        .duplicate-feedback {
+            min-height: 1.5rem;
+            display: flex;
+            align-items: center;
+            font-size: .85rem;
+        }
+
         .wizard-sidecard::after {
             content: '';
             position: absolute;
@@ -737,6 +813,51 @@
     </aside>
 </div>
 
+<div class="modal fade duplicate-modal" id="duplicateCheckModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ wedding.id ? '0' : '1' }}">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header duplicate-modal__header">
+                <h5 class="modal-title text-white">Vérifier les mariages existants</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p class="duplicate-modal__intro mb-4">
+                    Pour éviter la création de doublons, indiquez les adresses e-mail des deux mariés. Nous vous proposerons les mariages déjà associés à ces contacts.
+                </p>
+                <form id="duplicateCheckForm" class="duplicate-form" data-check-url="{{ path('app_wedding_check_duplicates') }}" data-request-url-template="{{ path('app_wedding_request_access', {'id': 999999}) }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="duplicate-email-marie" class="form-label">Email du futur marié</label>
+                            <input type="email" class="form-control" id="duplicate-email-marie" name="email_marie" placeholder="nom@exemple.fr" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="duplicate-email-mariee" class="form-label">Email de la future mariée</label>
+                            <input type="email" class="form-control" id="duplicate-email-mariee" name="email_mariee" placeholder="prenom@exemple.fr" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="duplicate-message" class="form-label">Message pour les mariés (facultatif)</label>
+                            <textarea class="form-control" id="duplicate-message" name="request_message" rows="3" placeholder="Expliquez votre demande ou précisez votre rôle."></textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between mt-4">
+                        <div id="duplicateFeedback" class="duplicate-feedback text-muted"></div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i>
+                                Rechercher des mariages
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                Continuer sans doublon
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="duplicateResults" class="duplicate-results"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if wedding.id %}
     <div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -814,6 +935,197 @@
         };
 
         document.addEventListener('DOMContentLoaded', function () {
+            const duplicateModalEl = document.getElementById('duplicateCheckModal');
+            if (duplicateModalEl && typeof bootstrap !== 'undefined') {
+                const autoshow = duplicateModalEl.dataset.autoshow === '1';
+                const duplicateModal = new bootstrap.Modal(duplicateModalEl, {
+                    backdrop: 'static',
+                    keyboard: false,
+                });
+                const duplicateForm = duplicateModalEl.querySelector('#duplicateCheckForm');
+                const feedbackEl = duplicateModalEl.querySelector('#duplicateFeedback');
+                const resultsContainer = duplicateModalEl.querySelector('#duplicateResults');
+                const messageInput = duplicateModalEl.querySelector('#duplicate-message');
+                const submitBtn = duplicateForm?.querySelector('button[type="submit"]');
+                const checkUrl = duplicateForm?.dataset.checkUrl || '';
+                const requestTemplate = duplicateForm?.dataset.requestUrlTemplate || '';
+                let lastEmails = [];
+
+                const setFeedback = (text, tone = 'muted') => {
+                    if (!feedbackEl) {
+                        return;
+                    }
+                    feedbackEl.textContent = text;
+                    feedbackEl.className = `duplicate-feedback text-${tone}`;
+                };
+
+                const buildRequestUrl = (id) => {
+                    if (!requestTemplate) {
+                        return `/mariages/${id}/request-access`;
+                    }
+                    if (requestTemplate.includes('999999')) {
+                        return requestTemplate.replace('999999', String(id));
+                    }
+                    return requestTemplate.replace(/\d+/, String(id));
+                };
+
+                const renderParticipants = (list) => {
+                    if (!Array.isArray(list) || list.length === 0) {
+                        return '<span class="text-muted">Aucun participant renseigné.</span>';
+                    }
+                    return list
+                        .map((item) => `<span><i class="bi bi-person-fill me-2 text-secondary"></i>${item}</span>`)
+                        .join('');
+                };
+
+                const renderResults = (weddings) => {
+                    resultsContainer.innerHTML = '';
+
+                    if (!Array.isArray(weddings) || weddings.length === 0) {
+                        setFeedback('Aucun mariage correspondant n’a été trouvé.', 'warning');
+                        return;
+                    }
+
+                    const fragment = document.createDocumentFragment();
+
+                    weddings.forEach((wedding) => {
+                        const card = document.createElement('article');
+                        card.className = 'duplicate-card';
+                        card.innerHTML = `
+                            <div class="duplicate-card__header">
+                                <span class="duplicate-card__badge"><i class="bi bi-stars"></i> Potentiel doublon</span>
+                                <span class="text-muted small">${wedding.date ?? 'Date inconnue'}</span>
+                            </div>
+                            <h3 class="h5 mb-1">${wedding.title}</h3>
+                            <p class="mb-0 text-muted">${wedding.church ?? 'Lieu non renseigné'}</p>
+                            <div class="duplicate-card__participants">
+                                ${renderParticipants(wedding.participants)}
+                            </div>
+                            <div class="duplicate-card__footer">
+                                <a class="btn btn-light btn-sm" href="${wedding.viewUrl}" target="_blank" rel="noopener">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    Ouvrir
+                                </a>
+                                <button type="button" class="btn btn-outline-primary btn-sm duplicate-request" data-wedding-id="${wedding.id}">
+                                    <i class="bi bi-envelope"></i>
+                                    Demander l’ajout
+                                </button>
+                            </div>
+                        `;
+                        fragment.appendChild(card);
+                    });
+
+                    resultsContainer.appendChild(fragment);
+                    setFeedback('Sélectionnez un mariage existant pour envoyer votre demande.', 'success');
+                };
+
+                if (duplicateForm && checkUrl) {
+                    duplicateForm.addEventListener('submit', async (event) => {
+                        event.preventDefault();
+                        const formData = new FormData(duplicateForm);
+                        const emailMarie = (formData.get('email_marie') || '').toString().trim();
+                        const emailMariee = (formData.get('email_mariee') || '').toString().trim();
+
+                        if (!emailMarie || !emailMariee) {
+                            setFeedback('Veuillez renseigner les deux adresses e-mail.', 'danger');
+                            return;
+                        }
+
+                        lastEmails = [emailMarie, emailMariee];
+                        setFeedback('Recherche en cours...', 'info');
+                        resultsContainer.innerHTML = '';
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                        }
+
+                        try {
+                            const response = await fetch(checkUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify({
+                                    email_marie: emailMarie,
+                                    email_mariee: emailMariee,
+                                }),
+                            });
+
+                            const payload = await response.json();
+
+                            if (!response.ok) {
+                                setFeedback(payload.message || 'La recherche a échoué.', 'danger');
+                                return;
+                            }
+
+                            renderResults(payload.weddings || []);
+                            if (payload.message) {
+                                setFeedback(payload.message, (payload.weddings || []).length ? 'success' : 'warning');
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            setFeedback('Une erreur est survenue lors de la recherche.', 'danger');
+                        } finally {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                            }
+                        }
+                    });
+                }
+
+                if (resultsContainer) {
+                    resultsContainer.addEventListener('click', async (event) => {
+                        const trigger = event.target.closest('.duplicate-request');
+                        if (!trigger) {
+                            return;
+                        }
+
+                        const weddingId = trigger.getAttribute('data-wedding-id');
+                        if (!weddingId) {
+                            return;
+                        }
+
+                        trigger.disabled = true;
+                        trigger.classList.add('disabled');
+
+                        try {
+                            const response = await fetch(buildRequestUrl(weddingId), {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify({
+                                    message: messageInput ? messageInput.value : '',
+                                    emails: lastEmails,
+                                }),
+                            });
+
+                            const payload = await response.json();
+                            if (!response.ok) {
+                                setFeedback(payload.message || 'Impossible d’envoyer la demande.', 'danger');
+                                trigger.disabled = false;
+                                trigger.classList.remove('disabled');
+                                return;
+                            }
+
+                            setFeedback(payload.message || 'Demande envoyée.', 'success');
+                            trigger.innerHTML = '<i class="bi bi-check-lg"></i> Demande envoyée';
+                            trigger.classList.replace('btn-outline-primary', 'btn-success');
+                        } catch (error) {
+                            console.error(error);
+                            setFeedback('Une erreur est survenue lors de l’envoi de la demande.', 'danger');
+                            trigger.disabled = false;
+                            trigger.classList.remove('disabled');
+                        }
+                    });
+                }
+
+                if (autoshow) {
+                    duplicateModal.show();
+                }
+            }
+
             const steps = Array.from(document.querySelectorAll('.wizard-step'));
             const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
             const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));

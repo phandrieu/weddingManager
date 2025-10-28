@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -114,6 +115,169 @@ class WeddingController extends AbstractController
                 'perPage' => $perPage,
             ],
         ]);
+    }
+
+    #[Route('/duplicates/check', name: 'app_wedding_check_duplicates', methods: ['POST'])]
+    public function checkDuplicates(Request $request, WeddingRepository $repo): JsonResponse
+    {
+    $payload = json_decode($request->getContent(), true) ?? [];
+        $emails = [];
+
+        if (is_array($payload)) {
+            $emails = array_filter([
+                $payload['email_marie'] ?? null,
+                $payload['email_mariee'] ?? null,
+            ]);
+        }
+
+        if (empty($emails)) {
+            return new JsonResponse([
+                'weddings' => [],
+                'message' => 'Aucun email fourni.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $weddings = $repo->findPotentialDuplicatesByEmails($emails);
+
+        $results = array_map(function (Wedding $wedding) {
+            $participants = array_filter([
+                $this->formatParticipant($wedding->getMarie(), 'Marié'),
+                $this->formatParticipant($wedding->getMariee(), 'Mariée'),
+            ]);
+
+            foreach ($wedding->getMusicians() as $musician) {
+                $participants[] = $this->formatParticipant($musician, 'Musicien');
+            }
+
+            foreach ($wedding->getParishUsers() as $parishUser) {
+                $participants[] = $this->formatParticipant($parishUser, 'Paroisse');
+            }
+
+            $participants = array_values(array_unique(array_filter($participants)));
+
+            $groomName = $this->resolveDisplayName($wedding->getMarie(), 'Marié inconnu');
+            $brideName = $this->resolveDisplayName($wedding->getMariee(), 'Mariée inconnue');
+
+            return [
+                'id' => $wedding->getId(),
+                'title' => sprintf('Mariage de %s & %s', $groomName, $brideName),
+                'date' => $wedding->getDate()?->format('d/m/Y'),
+                'church' => $wedding->getChurch(),
+                'participants' => $participants,
+                'viewUrl' => $this->generateUrl('app_wedding_view', ['id' => $wedding->getId()]),
+            ];
+        }, $weddings);
+
+        return new JsonResponse([
+            'weddings' => $results,
+            'message' => empty($results)
+                ? 'Aucun mariage correspondant n’a été trouvé.'
+                : sprintf('%d mariage(s) potentiellement correspondant(s) ont été trouvés.', count($results)),
+        ]);
+    }
+
+    #[Route('/{id}/request-access', name: 'app_wedding_request_access', methods: ['POST'])]
+    public function requestAccess(
+        Wedding $wedding,
+        Request $request,
+        MailerInterface $mailer
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+
+        if (!$currentUser instanceof User) {
+            return new JsonResponse([
+                'message' => 'Connectez-vous pour effectuer cette demande.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+    $payload = json_decode($request->getContent(), true) ?? [];
+        $message = isset($payload['message']) ? trim((string) $payload['message']) : '';
+        $searchedEmails = isset($payload['emails']) && is_array($payload['emails']) ? $payload['emails'] : [];
+
+        $recipientEmails = [];
+        if ($wedding->getMarie()?->getEmail()) {
+            $recipientEmails[] = $wedding->getMarie()->getEmail();
+        }
+        if ($wedding->getMariee()?->getEmail()) {
+            $recipientEmails[] = $wedding->getMariee()->getEmail();
+        }
+
+        foreach ($wedding->getMusicians() as $musician) {
+            if ($musician->getEmail()) {
+                $recipientEmails[] = $musician->getEmail();
+            }
+        }
+
+        foreach ($wedding->getParishUsers() as $parishUser) {
+            if ($parishUser->getEmail()) {
+                $recipientEmails[] = $parishUser->getEmail();
+            }
+        }
+
+        $recipientEmails = array_values(array_unique(array_filter($recipientEmails)));
+
+        if (empty($recipientEmails)) {
+            return new JsonResponse([
+                'message' => 'Aucun contact n’est rattaché à ce mariage pour envoyer la demande.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $requesterName = trim(($currentUser->getFirstName() ?? '') . ' ' . ($currentUser->getName() ?? ''));
+        if ($requesterName === '') {
+            $requesterName = $currentUser->getEmail() ?? 'Un utilisateur';
+        }
+
+        $viewUrl = $this->generateUrl('app_wedding_view', ['id' => $wedding->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $email = (new Email())
+            ->from(new Address($currentUser->getEmail() ?? 'noreply@notremessedemariage.fr', $requesterName))
+            ->subject('Demande d’ajout au mariage ' . $requesterName)
+            ->html($this->renderView('emails/wedding/request_access.html.twig', [
+                'wedding' => $wedding,
+                'requester' => $currentUser,
+                'message' => $message,
+                'searchedEmails' => $searchedEmails,
+                'viewUrl' => $viewUrl,
+            ]));
+
+        foreach ($recipientEmails as $recipientEmail) {
+            $email->addTo(new Address($recipientEmail));
+        }
+
+        $mailer->send($email);
+
+        return new JsonResponse([
+            'message' => 'Votre demande a été envoyée aux responsables du mariage.',
+        ]);
+    }
+
+    private function formatParticipant(?User $user, string $role): ?string
+    {
+        if (!$user) {
+            return null;
+        }
+
+        $name = $this->resolveDisplayName($user, 'Identité inconnue');
+
+        return sprintf('%s (%s)', $name, $role);
+    }
+
+    private function resolveDisplayName(?User $user, string $fallback): string
+    {
+        if (!$user) {
+            return $fallback;
+        }
+
+        $name = trim(($user->getFirstName() ?? '') . ' ' . ($user->getName() ?? ''));
+        if ($name !== '') {
+            return $name;
+        }
+
+        if ($user->getEmail()) {
+            return $user->getEmail();
+        }
+
+        return $fallback;
     }
 
     #[Route('/view/{id}', name: 'app_wedding_view')]

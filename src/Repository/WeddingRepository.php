@@ -69,4 +69,54 @@ class WeddingRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Recherche les mariages ayant au moins un participant correspondant aux e-mails fournis.
+     *
+     * @param string[] $emails
+     * @return Wedding[]
+     */
+    public function findPotentialDuplicatesByEmails(array $emails): array
+    {
+        $normalized = array_values(array_unique(array_filter(array_map(
+            static function ($email) {
+                if ($email === null) {
+                    return null;
+                }
+
+                $value = mb_strtolower(trim((string) $email));
+
+                return $value !== '' ? $value : null;
+            },
+            $emails
+        ))));
+
+        if (empty($normalized)) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('w')
+            ->leftJoin('w.marie', 'marie')
+            ->leftJoin('w.mariee', 'mariee')
+            ->leftJoin('w.musicians', 'musician')
+            ->leftJoin('w.parishUsers', 'parishUser')
+            ->addSelect('marie', 'mariee', 'musician', 'parishUser')
+            ->distinct();
+
+        $expr = $qb->expr()->orX();
+
+        foreach ($normalized as $index => $email) {
+            $param = 'email' . $index;
+            $expr->add($qb->expr()->eq('LOWER(marie.email)', ':' . $param));
+            $expr->add($qb->expr()->eq('LOWER(mariee.email)', ':' . $param));
+            $expr->add($qb->expr()->eq('LOWER(musician.email)', ':' . $param));
+            $expr->add($qb->expr()->eq('LOWER(parishUser.email)', ':' . $param));
+            $qb->setParameter($param, $email);
+        }
+
+        $qb->andWhere($expr)
+            ->orderBy('w.date', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

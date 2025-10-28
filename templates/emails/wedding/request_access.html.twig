@@ -1,0 +1,65 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block email_title %}Demande d'ajout à un mariage{% endblock %}
+
+{% block preheader %}
+Un utilisateur souhaite rejoindre le mariage de {{ wedding.marie ? wedding.marie.fullName : 'vos mariés' }}.
+{% endblock %}
+
+{% block content %}
+    <h1 style="margin-top: 0;">Nouvelle demande de collaboration</h1>
+    <p>
+        <strong>{{ requester.firstName ?? requester.name ?? requester.email ?? 'Un utilisateur' }}</strong>
+        souhaite être ajouté au mariage de
+        <strong>{{ wedding.marie ? wedding.marie.fullName : 'vos mariés' }}</strong>
+        &amp;
+        <strong>{{ wedding.mariee ? wedding.mariee.fullName : '' }}</strong>.
+    </p>
+
+    <p style="margin-bottom: 20px;">
+        Voici les informations partagées&nbsp;:
+    </p>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+        <tr>
+            <td style="padding: 10px 0; border-top: 1px solid #f0f0f5;">
+                <strong>Demandeur</strong><br>
+                {{ requester.firstName ?? '' }} {{ requester.name ?? '' }}<br>
+                <a href="mailto:{{ requester.email }}" style="color: #652D90; text-decoration: none;">{{ requester.email }}</a>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 0; border-top: 1px solid #f0f0f5;">
+                <strong>Mariage concerné</strong><br>
+                {{ wedding.date ? wedding.date|date('d/m/Y') : 'Date à confirmer' }} – {{ wedding.church ?? 'Lieu à confirmer' }}
+            </td>
+        </tr>
+        {% if searchedEmails is not empty %}
+            <tr>
+                <td style="padding: 10px 0; border-top: 1px solid #f0f0f5;">
+                    <strong>E-mails renseignés</strong><br>
+                    {{ searchedEmails|join(', ') }}
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+
+    {% if message %}
+        <p><strong>Message laissé par le demandeur :</strong></p>
+        <blockquote style="margin: 0 0 20px; padding: 15px 20px; border-left: 4px solid #FF8100; background: #FDF5EB;">
+            {{ message|nl2br }}
+        </blockquote>
+    {% endif %}
+
+    <p style="margin-bottom: 30px;">
+        Vous pouvez accéder au dossier pour confirmer ou répondre à la demande en suivant le lien ci-dessous :
+    </p>
+
+    <p style="text-align: center; margin-bottom: 40px;">
+        <a href="{{ viewUrl }}" class="btn-primary" target="_blank" rel="noopener">Ouvrir le mariage</a>
+    </p>
+
+    <p style="font-size: 14px; color: #999999;">
+        Si vous n’êtes pas la bonne personne, merci de transférer ce message aux responsables du mariage.
+    </p>
+{% endblock %}
