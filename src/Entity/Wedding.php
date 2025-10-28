@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\WeddingRepository;
+use App\Entity\Song;
+use App\Entity\SongType;
+use App\Entity\WeddingSongSelection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -30,6 +33,9 @@ private ?User $mariee = null;
      */
     #[ORM\ManyToMany(targetEntity: Song::class, inversedBy: 'weddings')]
     private Collection $songs;
+
+    #[ORM\OneToMany(mappedBy: 'wedding', targetEntity: WeddingSongSelection::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $songSelections;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $church = null;
@@ -121,6 +127,7 @@ private ?User $mariee = null;
         $this->invitations = new ArrayCollection();
         $this->parishUsers = new ArrayCollection();
         $this->comments = new ArrayCollection();
+    $this->songSelections = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -193,6 +200,50 @@ private ?User $mariee = null;
         $this->songs->removeElement($song);
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, WeddingSongSelection>
+     */
+    public function getSongSelections(): Collection
+    {
+        return $this->songSelections;
+    }
+
+    public function addSongSelection(WeddingSongSelection $selection): static
+    {
+        if (!$this->songSelections->contains($selection)) {
+            $this->songSelections->add($selection);
+            $selection->setWedding($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSongSelection(WeddingSongSelection $selection): static
+    {
+        if ($this->songSelections->removeElement($selection)) {
+            if ($selection->getWedding() === $this) {
+                $selection->setWedding(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSongSelectionForType(?SongType $songType): ?WeddingSongSelection
+    {
+        if (!$songType) {
+            return null;
+        }
+
+        foreach ($this->songSelections as $selection) {
+            if ($selection->getSongType()?->getId() === $songType->getId()) {
+                return $selection;
+            }
+        }
+
+        return null;
     }
 
     public function getChurch(): ?string

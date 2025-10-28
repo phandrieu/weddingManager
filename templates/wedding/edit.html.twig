@@ -8,7 +8,7 @@
 
 {% block body %}
 <div class="container-xl py-5">
-    <div class="wizard-layout" id="weddingWizard">
+    <div class="wizard-layout" id="weddingWizard" data-default-step="{{ initialWizardStep|default(0) }}">
     <section class="wizard-panel">
         {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
         {% set currentPaymentOption = selectedPaymentOption ?: '' %}
@@ -41,10 +41,6 @@
                         <i class="bi bi-envelope-plus"></i>
                         Inviter
                     </button>
-                    <a href="{{ path('app_wedding_intervenants', {'id': wedding.id}) }}" class="btn btn-outline-secondary btn-rounded btn-icon">
-                        <i class="bi bi-people"></i>
-                        Intervenants
-                    </a>
                 {% endif %}
                 <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
             </div>
@@ -62,9 +58,12 @@
                 Couple<br><small>Coordonnées</small>
             </button>
             <button type="button" class="wizard-stepper__item" data-step="2">
-                Répertoire<br><small>Déroulé &amp; validations</small>
+                Intervenants<br><small>Musiciens &amp; paroisse</small>
             </button>
             <button type="button" class="wizard-stepper__item" data-step="3">
+                Répertoire<br><small>Déroulé &amp; validations</small>
+            </button>
+            <button type="button" class="wizard-stepper__item" data-step="4">
                 Suivi<br><small>Finances &amp; archive</small>
             </button>
         </div>
@@ -180,6 +179,119 @@
             </div>
 
             <div class="wizard-step" data-step="2">
+                <div class="form-grid">
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Musiciens</span>
+                            <h3 class="mb-0">Coordonner les musiciens</h3>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-3">
+                            <span class="badge text-bg-light">{{ wedding.musicians|length }}</span>
+                            <span>Musicien(s)</span>
+                        </div>
+                        {% if wedding.musicians|length > 0 %}
+                            <ul class="list-group list-group-flush">
+                                {% for musician in wedding.musicians %}
+                                    <li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <span class="fw-semibold">{{ musician.fullName ?? musician.email }}</span>
+                                            <div class="text-muted small">{{ musician.email }}</div>
+                                            {% if musician.telephone %}
+                                                <div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ musician.telephone }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% if wedding.id %}
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-danger ms-auto js-remove-intervenant"
+                                                data-form="remove-musician-{{ musician.id }}"
+                                                data-confirm="Retirer ce musicien du mariage ?"
+                                                title="Retirer"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted small mb-0">Aucun musicien n'est encore associé pour le moment.</p>
+                        {% endif %}
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            {% if wedding.id %}
+                                <button type="button" class="btn btn-outline-primary btn-rounded invite-trigger" data-invite-role="musicien" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                    <i class="bi bi-person-plus"></i>
+                                    Inviter un musicien
+                                </button>
+                            {% else %}
+                                <p class="text-muted small mb-0">Sauvegardez le mariage pour inviter un intervenant.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Paroisse</span>
+                            <h3 class="mb-0">Collaborer avec la paroisse</h3>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small mb-3">
+                            <span class="badge text-bg-light">{{ wedding.parishUsers|length }}</span>
+                            <span>Contact(s)</span>
+                        </div>
+                        {% if wedding.parishUsers|length > 0 %}
+                            <ul class="list-group list-group-flush">
+                                {% for parishUser in wedding.parishUsers %}
+                                    <li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <span class="fw-semibold">{{ parishUser.fullName ?? parishUser.email }}</span>
+                                            <div class="text-muted small">{{ parishUser.email }}</div>
+                                            {% if parishUser.telephone %}
+                                                <div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ parishUser.telephone }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% if wedding.id %}
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-danger ms-auto js-remove-intervenant"
+                                                data-form="remove-parish-{{ parishUser.id }}"
+                                                data-confirm="Retirer ce contact paroissial ?"
+                                                title="Retirer"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted small mb-0">Aucun contact paroissial n'est encore associé à ce mariage.</p>
+                        {% endif %}
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            {% if wedding.id %}
+                                <button type="button" class="btn btn-outline-primary btn-rounded invite-trigger" data-invite-role="paroisse" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                    <i class="bi bi-building"></i>
+                                    Inviter la paroisse
+                                </button>
+                            {% else %}
+                                <p class="text-muted small mb-0">Sauvegardez le mariage pour inviter un intervenant.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Célébrant</span>
+                            <h3 class="mb-0">Coordonnées du prêtre</h3>
+                        </div>
+                        {{ form_row(form.priestFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestLastName, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestPhoneNumber, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {{ form_row(form.priestEMail, {'label_attr': {'class': 'form-label-sm'}}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" data-step="3">
                 <div class="deroule-container">
                     {% set types = songTypes is defined ? songTypes : [] %}
                     {% set groups = {} %}
@@ -200,29 +312,33 @@
                         <div class="deroule-header d-none d-lg-flex">
                             <div class="deroule-col-type">TYPE</div>
                             <div class="deroule-col-choice">VOTRE CHOIX</div>
-                            <div class="deroule-col-check">VALIDATION CÉLÉBRANT</div>
                             <div class="deroule-col-check">VALIDATION MUSICIEN</div>
-                            <div class="deroule-col-comments">COMMENTAIRES</div>
+                            <div class="deroule-col-check">VALIDATION PAROISSE</div>
+                            <div class="deroule-col-comments">COM.</div>
                         </div>
 
                         <div class="deroule-groups">
                             {% for label in order %}
                                 {% if groups[label] is defined %}
                                     <div class="deroule-group">
-                                        <div class="deroule-group-header">{{ label }}</div>
+                                        <div class="deroule-group-header">{{ label }}</div> 
                                         <div class="deroule-group-body">
                                             {% for type in groups[label] %}
                                                 {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
+                                                {% set selectionState = songSelectionsByType[type.id]|default({}) %}
+                                                {% set selectedSongId = selectionState.songId ?? null %}
+                                                {% set validatedMusician = selectionState.validatedByMusician ?? false %}
+                                                {% set validatedParish = selectionState.validatedByParish ?? false %}
                                                 <div class="deroule-row">
                                                     <div>
                                                         <span class="deroule-type-badge">{{ type.name }}</span>
                                                     </div>
                                                     <div>
-                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select js-deroule-select" data-placeholder="Rechercher un chant">
-                                                            <option value="">Aucun chant sélectionné</option>
+                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}">
+                                                            <option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
                                                             {% if songsForType|length > 0 %}
                                                                 {% for song in songsForType %}
-                                                                    <option value="{{ song.id }}">{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
+                                                                    <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
                                                                 {% endfor %}
                                                             {% else %}
                                                                 <option disabled>Pas de chants disponibles</option>
@@ -230,21 +346,21 @@
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <input type="checkbox" name="deroule_valid_celebrant[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                        <input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
+                                                        <button type="button" class="btn btn-validation js-validation-toggle {{ validatedMusician ? 'is-active' : '' }}" data-role="musician" data-type="{{ type.id }}">MUS</button>
                                                     </div>
                                                     <div>
-                                                        <input type="checkbox" name="deroule_valid_musicien[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-check-input" />
+                                                        <input type="hidden" name="deroule_validation_parish[{{ type.id }}]" value="{{ validatedParish ? '1' : '0' }}" data-validation-input="parish-{{ type.id }}">
+                                                        <button type="button" class="btn btn-validation js-validation-toggle {{ validatedParish ? 'is-active' : '' }}" data-role="parish" data-type="{{ type.id }}">PAR</button>
                                                     </div>
                                                     <div>
                                                         {% if wedding.id %}
                                                             <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
                                                                 <i class="bi bi-chat-dots"></i>
-                                                                <span class="d-none d-md-inline">Commentaires</span>
                                                             </button>
                                                         {% else %}
                                                             <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
                                                                 <i class="bi bi-chat-dots"></i>
-                                                                <span class="d-none d-md-inline">Commentaires</span>
                                                             </button>
                                                         {% endif %}
                                                     </div>
@@ -260,7 +376,7 @@
                 {{ form_widget(form.songs, {'attr': {'class': 'd-none'}}) }}
             </div>
 
-            <div class="wizard-step" data-step="3">
+            <div class="wizard-step" data-step="4">
                 <div class="form-grid">
                     <div class="form-card">
                         <div class="form-card__title">
@@ -346,17 +462,6 @@
 
                     <div class="form-card">
                         <div class="form-card__title">
-                            <span>Paroisse</span>
-                            <h3 class="mb-0">Contact célébrant</h3>
-                        </div>
-                        {{ form_row(form.priestFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        {{ form_row(form.priestLastName, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        {{ form_row(form.priestPhoneNumber, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        {{ form_row(form.priestEMail, {'label_attr': {'class': 'form-label-sm'}}) }}
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-card__title">
                             <span>Clôture</span>
                             <h3 class="mb-0">Archive &amp; options</h3>
                         </div>
@@ -388,6 +493,21 @@
         {{ form_end(form, {'render_rest': false}) }}
     </section>
 
+    {% if wedding.id %}
+        <div class="d-none">
+            {% for musician in wedding.musicians %}
+                <form id="remove-musician-{{ musician.id }}" method="post" action="{{ path('app_wedding_intervenants_remove', {'id': wedding.id, 'type': 'musician', 'userId': musician.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('remove_intervenant_musician_' ~ wedding.id ~ '_' ~ musician.id) }}">
+                </form>
+            {% endfor %}
+            {% for parishUser in wedding.parishUsers %}
+                <form id="remove-parish-{{ parishUser.id }}" method="post" action="{{ path('app_wedding_intervenants_remove', {'id': wedding.id, 'type': 'parish', 'userId': parishUser.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('remove_intervenant_parish_' ~ wedding.id ~ '_' ~ parishUser.id) }}">
+                </form>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <aside class="wizard-sidecard">
         <div class="wizard-sidecard__inner" id="wizardSideContent">
             <div class="wizard-sidecard__slide active" data-step="0">
@@ -403,15 +523,21 @@
                 <div class="wizard-tip"><i class="bi bi-envelope-heart me-2"></i>Les invitations envoyées depuis ici héritent automatiquement des crédits disponibles.</div>
             </div>
             <div class="wizard-sidecard__slide" data-step="2">
-                <span class="wizard-badge"><i class="bi bi-music-note-beamed"></i> Étape 3</span>
+                <span class="wizard-badge"><i class="bi bi-people"></i> Étape 3</span>
+                <h2 class="wizard-sidecard__title">Activez les intervenants</h2>
+                <p class="mb-0">Invitez les musiciens et la paroisse, centralisez leurs coordonnées et suivez l'état des contacts clés.</p>
+                <div class="wizard-tip"><i class="bi bi-telephone me-2"></i>Ajoutez les détails du célébrant pour fluidifier la collaboration.</div>
+            </div>
+            <div class="wizard-sidecard__slide" data-step="3">
+                <span class="wizard-badge"><i class="bi bi-music-note-beamed"></i> Étape 4</span>
                 <h2 class="wizard-sidecard__title">Construisez le déroulé</h2>
                 <p class="mb-0">Associez des chants à chaque moment clé et suivez les validations du célébrant et des musiciens en direct.</p>
                 <div class="wizard-tip"><i class="bi bi-chat-dots me-2"></i>Les commentaires contextualisés restent accessibles depuis chaque type de chant.</div>
             </div>
-            <div class="wizard-sidecard__slide" data-step="3">
-                <span class="wizard-badge"><i class="bi bi-coin"></i> Étape 4</span>
+            <div class="wizard-sidecard__slide" data-step="4">
+                <span class="wizard-badge"><i class="bi bi-coin"></i> Étape 5</span>
                 <h2 class="wizard-sidecard__title">Clôturez le dossier</h2>
-                <p class="mb-0">Suivez les montants versés, archivez si nécessaire et centralisez le contact avec la paroisse.</p>
+                <p class="mb-0">Suivez les montants versés et finalisez les options avant d'archiver le dossier.</p>
                 <div class="wizard-tip"><i class="bi bi-clipboard-check me-2"></i>Pensez à archiver le mariage une fois la célébration passée pour conserver un historique propre.</div>
             </div>
         </div>
@@ -588,6 +714,72 @@
             const weddingForm = document.getElementById('weddingForm');
             const paymentHiddenInput = document.getElementById('payment_option_input');
             const paymentModalEl = document.getElementById('paymentOptionModal');
+            const hiddenSongsSelect = document.getElementById('{{ form.songs.vars.id|e('js') }}');
+            const derouleSelects = Array.from(document.querySelectorAll('.js-deroule-select'));
+
+            const syncSongsField = () => {
+                if (!hiddenSongsSelect) {
+                    return;
+                }
+
+                const selectedIds = new Set();
+                derouleSelects.forEach((selectEl) => {
+                    const value = selectEl.value;
+                    if (value) {
+                        selectedIds.add(value);
+                    }
+                });
+
+                Array.from(hiddenSongsSelect.options).forEach((option) => {
+                    option.selected = selectedIds.has(option.value);
+                });
+            };
+
+            derouleSelects.forEach((selectEl) => {
+                selectEl.addEventListener('change', syncSongsField);
+            });
+
+            if (weddingForm) {
+                weddingForm.addEventListener('submit', syncSongsField);
+            }
+
+            syncSongsField();
+
+            document.querySelectorAll('.js-validation-toggle').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const typeId = this.dataset.type;
+                    const role = this.dataset.role;
+                    if (!typeId || !role) {
+                        return;
+                    }
+
+                    const input = document.querySelector(`[data-validation-input="${role}-${typeId}"]`);
+                    if (!input) {
+                        return;
+                    }
+
+                    const newValue = input.value === '1' ? '0' : '1';
+                    input.value = newValue;
+                    this.classList.toggle('is-active', newValue === '1');
+                });
+            });
+
+            document.querySelectorAll('.js-remove-intervenant').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const formId = this.dataset.form;
+                    const confirmation = this.dataset.confirm || '';
+                    if (!formId) {
+                        return;
+                    }
+                    if (confirmation && !window.confirm(confirmation)) {
+                        return;
+                    }
+                    const targetForm = document.getElementById(formId);
+                    if (targetForm) {
+                        targetForm.submit();
+                    }
+                });
+            });
 
             if (paymentModalEl && typeof bootstrap !== 'undefined') {
                 const paymentModal = new bootstrap.Modal(paymentModalEl, {
@@ -833,6 +1025,7 @@
                 }
             }
 
+            const wizardLayout = document.getElementById('weddingWizard');
             const steps = Array.from(document.querySelectorAll('.wizard-step'));
             const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
             const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));
@@ -840,6 +1033,13 @@
             const nextBtn = document.querySelector('.wizard-next');
             const submitBtn = document.querySelector('.wizard-submit');
             let currentStep = 0;
+
+            if (wizardLayout) {
+                const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
+                if (!Number.isNaN(defaultStep)) {
+                    currentStep = Math.max(0, Math.min(steps.length - 1, defaultStep));
+                }
+            }
 
             function syncUI() {
                 steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
@@ -887,14 +1087,19 @@
             syncUI();
 
             if (window.TomSelect) {
-                document.querySelectorAll('.js-deroule-select').forEach((select) => {
+                derouleSelects.forEach((select) => {
                     if (!select.tomselect) {
-                        new TomSelect(select, {
+                        const instance = new TomSelect(select, {
                             placeholder: select.dataset.placeholder || 'Rechercher un chant',
                             allowEmptyOption: true,
                             create: false,
                             maxOptions: 500,
+                            onChange: () => {
+                                syncSongsField();
+                            },
                         });
+                        instance.wrapper.classList.add('deroule-select--large');
+                        instance.control.classList.add('deroule-select--large');
                     }
                 });
             }

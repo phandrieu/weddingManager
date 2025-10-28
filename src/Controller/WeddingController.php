@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Invitation;
+use App\Entity\Song;
 use App\Entity\User;
 use App\Entity\Wedding;
+use App\Entity\WeddingSongSelection;
 use App\Form\WeddingFormType;
 use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
@@ -284,7 +286,12 @@ class WeddingController extends AbstractController
     #[Route('/view/{id}', name: 'app_wedding_view')]
     public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Response
     {
-        $songTypes = $songTypeRepo->findAll();
+        $includeMesseTypes = true === $wedding->isMesse();
+        if ($includeMesseTypes) {
+            $songTypes = $songTypeRepo->findAll();
+        } else {
+            $songTypes = $songTypeRepo->findBy(['messe' => false], ['id' => 'ASC']);
+        }
 
         $songs = [];
         foreach ($wedding->getMusicians() as $musician) {
@@ -304,8 +311,8 @@ class WeddingController extends AbstractController
     public function edit(
         Request $request,
         WeddingRepository $repo,
-        SongTypeRepository $songTypeRepo,
         SongRepository $songRepo,
+        SongTypeRepository $songTypeRepo,
         Wedding $wedding = null
     ): Response {
         if (!$wedding) {
@@ -328,24 +335,113 @@ class WeddingController extends AbstractController
         $shouldOpenPaymentModal = false;
         $paymentOptionError = null;
 
+        $includeMesseTypes = true === $wedding->isMesse();
+        if ($includeMesseTypes) {
+            $songTypes = $songTypeRepo->findAll();
+        } else {
+            $songTypes = $songTypeRepo->findBy(['messe' => false], ['id' => 'ASC']);
+        }
+        $songTypesById = [];
+        foreach ($songTypes as $songType) {
+            if ($songType->getId() !== null) {
+                $songTypesById[$songType->getId()] = $songType;
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $canPersist = true;
 
-            foreach ($wedding->getSongs() as $song) {
+            $selectedSongs = $form->get('songs')->getData();
+            $songsToAttach = [];
+
+            if (is_iterable($selectedSongs)) {
+                foreach ($selectedSongs as $selectedSong) {
+                    if ($selectedSong instanceof Song && $selectedSong->getId() !== null) {
+                        $songsToAttach[$selectedSong->getId()] = $selectedSong;
+                    }
+                }
+            }
+
+            foreach ($wedding->getSongs()->toArray() as $song) {
                 $wedding->removeSong($song);
             }
 
-            $songsData = $request->request->all('songs');
-            if (!is_array($songsData)) {
-                $songsData = [];
+            foreach ($songsToAttach as $song) {
+                $wedding->addSong($song);
             }
 
-            foreach ($songsData as $songId) {
-                if ($songId) {
-                    $song = $songRepo->find($songId);
-                    if ($song) {
-                        $wedding->addSong($song);
+            $derouleRaw = $request->request->all('deroule');
+            $musicianValidationRaw = $request->request->all('deroule_validation_musician');
+            $parishValidationRaw = $request->request->all('deroule_validation_parish');
+
+            $selectedSongIdsByType = [];
+            if (is_array($derouleRaw)) {
+                foreach ($derouleRaw as $group) {
+                    if (!is_array($group)) {
+                        continue;
                     }
+                    foreach ($group as $typeId => $songId) {
+                        $typeKey = (int) $typeId;
+                        $trimmed = is_string($songId) ? trim($songId) : $songId;
+                        $selectedSongIdsByType[$typeKey] = $trimmed !== '' ? (int) $trimmed : null;
+                    }
+                }
+            }
+
+            $musicianValidationByType = [];
+            if (is_array($musicianValidationRaw)) {
+                foreach ($musicianValidationRaw as $typeId => $value) {
+                    $musicianValidationByType[(int) $typeId] = (string) $value === '1';
+                }
+            }
+
+            $parishValidationByType = [];
+            if (is_array($parishValidationRaw)) {
+                foreach ($parishValidationRaw as $typeId => $value) {
+                    $parishValidationByType[(int) $typeId] = (string) $value === '1';
+                }
+            }
+
+            $existingSelections = [];
+            foreach ($wedding->getSongSelections() as $selection) {
+                $type = $selection->getSongType();
+                if ($type && $type->getId() !== null) {
+                    $existingSelections[$type->getId()] = $selection;
+                }
+            }
+
+            foreach ($songTypesById as $typeId => $songType) {
+                $selectedSongId = $selectedSongIdsByType[$typeId] ?? null;
+                $musicianApproved = $musicianValidationByType[$typeId] ?? false;
+                $parishApproved = $parishValidationByType[$typeId] ?? false;
+
+                $selection = $existingSelections[$typeId] ?? null;
+
+                if ($selectedSongId === null && !$musicianApproved && !$parishApproved) {
+                    if ($selection) {
+                        $wedding->removeSongSelection($selection);
+                    }
+                    continue;
+                }
+
+                if (!$selection) {
+                    $selection = new WeddingSongSelection();
+                    $selection->setWedding($wedding);
+                    $selection->setSongType($songType);
+                    $wedding->addSongSelection($selection);
+                }
+
+                $song = null;
+                if ($selectedSongId !== null) {
+                    $song = $songsToAttach[$selectedSongId] ?? $songRepo->find($selectedSongId);
+                }
+
+                $selection->setSong($song);
+                $selection->setValidatedByMusician($musicianApproved);
+                $selection->setValidatedByParish($parishApproved);
+
+                if (!$selection->getSong() && !$selection->isValidatedByMusician() && !$selection->isValidatedByParish()) {
+                    $wedding->removeSongSelection($selection);
                 }
             }
 
@@ -462,8 +558,6 @@ class WeddingController extends AbstractController
             }
         }
 
-        $songTypes = $songTypeRepo->findAll();
-
         $availableSongs = [];
         foreach ($wedding->getMusicians() as $musician) {
             foreach ($musician->getRepertoire() as $song) {
@@ -495,18 +589,52 @@ class WeddingController extends AbstractController
             $availableSongsByType[$songType->getId()] = array_values($songsForType);
         }
 
+        $songSelectionsByType = [];
+        foreach ($wedding->getSongSelections() as $selection) {
+            $type = $selection->getSongType();
+            if ($type && $type->getId() !== null) {
+                $songSelectionsByType[$type->getId()] = [
+                    'songId' => $selection->getSong()?->getId(),
+                    'validatedByMusician' => $selection->isValidatedByMusician(),
+                    'validatedByParish' => $selection->isValidatedByParish(),
+                ];
+            }
+        }
+
+        if (empty($songSelectionsByType)) {
+            foreach ($wedding->getSongs() as $song) {
+                if (!$song instanceof Song || $song->getId() === null) {
+                    continue;
+                }
+                foreach ($song->getTypes() as $type) {
+                    if ($type && $type->getId() !== null && !array_key_exists($type->getId(), $songSelectionsByType)) {
+                        $songSelectionsByType[$type->getId()] = [
+                            'songId' => $song->getId(),
+                            'validatedByMusician' => false,
+                            'validatedByParish' => false,
+                        ];
+                    }
+                }
+            }
+        }
+
+        $maxStepIndex = 4;
+        $requestedStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
+
         return $this->render('wedding/edit.html.twig', [
             'form' => $form->createView(),
             'wedding' => $wedding,
             'songTypes' => $songTypes,
             'availableSongs' => $availableSongs,
             'availableSongsByType' => $availableSongsByType,
+            'songSelectionsByType' => $songSelectionsByType,
             'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
             'shouldOpenPaymentModal' => $shouldOpenPaymentModal,
             'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
             'selectedPaymentOption' => $selectedPaymentOption,
             'paymentOptionError' => $paymentOptionError,
             'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
+            'initialWizardStep' => $requestedStep,
         ]);
     }
 
@@ -578,16 +706,6 @@ class WeddingController extends AbstractController
         return $this->redirectToRoute('app_wedding_index');
     }
 
-    #[Route('/{id}/intervenants', name: 'app_wedding_intervenants', methods: ['GET'])]
-    public function intervenants(Wedding $wedding): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-
-        return $this->render('wedding/intervenants.html.twig', [
-            'wedding' => $wedding,
-        ]);
-    }
-
     #[Route('/{id}/intervenants/remove/{type}/{userId}', name: 'app_wedding_intervenants_remove', methods: ['POST'])]
     public function removeIntervenant(
         Request $request,
@@ -603,14 +721,14 @@ class WeddingController extends AbstractController
         if (!$this->isCsrfTokenValid($tokenId, (string) $request->request->get('_token'))) {
             $this->addFlash('danger', 'La suppression a été refusée. Rafraîchissez la page puis réessayez.');
 
-            return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+            return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId(), 'step' => 2]);
         }
 
         $user = $userRepository->find($userId);
         if (!$user) {
             $this->addFlash('warning', 'Intervenant introuvable.');
 
-            return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+            return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId(), 'step' => 2]);
         }
 
         $updated = false;
@@ -631,7 +749,7 @@ class WeddingController extends AbstractController
             default:
                 $this->addFlash('danger', 'Type d\'intervenant inconnu.');
 
-                return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+                return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId(), 'step' => 2]);
         }
 
         if ($updated) {
@@ -642,9 +760,10 @@ class WeddingController extends AbstractController
             $this->addFlash('info', 'Cet intervenant n\'est plus associé au mariage.');
         }
 
-        return $this->redirectToRoute('app_wedding_intervenants', ['id' => $wedding->getId()]);
+        return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId(), 'step' => 2]);
     }
-   #[Route('/{id}/invite', name: 'app_wedding_invite')]
+
+    #[Route('/{id}/invite', name: 'app_wedding_invite')]
 public function invite(
     Wedding $wedding,
     Request $request,
