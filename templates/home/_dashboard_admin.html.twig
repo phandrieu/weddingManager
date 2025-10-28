@@ -1,0 +1,47 @@
+<div class="dashboard-section">
+    <div class="dashboard-section__header">
+        <h2 class="wizard-panel__title mb-0">Vue administrateur</h2>
+        <p class="text-muted mb-0">Accédez en un clin d'œil aux indicateurs clés de la plateforme.</p>
+    </div>
+
+    <div class="form-grid">
+        <article class="form-card">
+            <div class="form-card__title">
+                <span>Statistiques globales</span>
+                <h3 class="mb-0">Utilisateurs &amp; mariages</h3>
+            </div>
+            <div class="wizard-finance-grid">
+                <div class="wizard-finance-item">
+                    <div class="wizard-finance-label">Utilisateurs actifs</div>
+                    <div class="wizard-finance-value">{{ data.userCount }}</div>
+                </div>
+                <div class="wizard-finance-item">
+                    <div class="wizard-finance-label">Mariages gérés</div>
+                    <div class="wizard-finance-value">{{ data.weddingCount }}</div>
+                </div>
+            </div>
+        </article>
+
+        <article class="form-card">
+            <div class="form-card__title">
+                <span>Pipeline</span>
+                <h3 class="mb-0">Prochaines célébrations</h3>
+            </div>
+            {% if data.upcomingGlobal is not empty %}
+                <ul class="list-unstyled mb-0 dashboard-list">
+                    {% for wedding in data.upcomingGlobal %}
+                        <li class="dashboard-list__item">
+                            <div>
+                                <div class="fw-semibold">{{ wedding.title }}</div>
+                                <div class="text-muted small">{{ wedding.date ?? 'Date à définir' }}</div>
+                            </div>
+                            <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm">Ouvrir</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">Aucun mariage à venir pour l'instant.</p>
+            {% endif %}
+        </article>
+    </div>
+</div>

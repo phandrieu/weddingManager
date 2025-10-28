@@ -1,0 +1,56 @@
+<div class="dashboard-section">
+    <div class="dashboard-section__header">
+        <h2 class="wizard-panel__title mb-0">Tableau paroisse</h2>
+        <p class="text-muted mb-0">Visualisez les célébrations à venir et suivez vos validations.</p>
+    </div>
+
+    <div class="form-grid">
+        <article class="form-card">
+            <div class="form-card__title">
+                <span>Calendrier</span>
+                <h3 class="mb-0">Mariages à confirmer</h3>
+            </div>
+            {% if data.upcoming is not empty %}
+                <ul class="list-unstyled mb-0 dashboard-list">
+                    {% for wedding in data.upcoming %}
+                        <li class="dashboard-list__item">
+                            <div>
+                                <div class="fw-semibold">{{ wedding.title }}</div>
+                                <div class="text-muted small">{{ wedding.date ?? 'Date à définir' }}{% if wedding.time %} • {{ wedding.time }}{% endif %}</div>
+                                <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ wedding.church }}</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge text-bg-light text-secondary">{{ wedding.pendingValidations }} / {{ wedding.totalSelections }} validé{{ wedding.totalSelections > 1 ? 's' : '' }}</span>
+                                <div>
+                                    <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm mt-2">Consulter</a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">Aucune célébration n'est prévue pour le moment.</p>
+            {% endif %}
+        </article>
+
+        <article class="form-card">
+            <div class="form-card__title">
+                <span>Vos ressources</span>
+                <h3 class="mb-0">Suivi rapide</h3>
+            </div>
+            <div class="wizard-finance-grid">
+                <div class="wizard-finance-item">
+                    <div class="wizard-finance-label">Mariages suivis</div>
+                    <div class="wizard-finance-value">{{ data.weddingCount }}</div>
+                </div>
+                <div class="wizard-finance-item">
+                    <div class="wizard-finance-label">Crédits disponibles</div>
+                    <div class="wizard-finance-value">{{ data.credits }}</div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <a href="{{ path('app_wedding_index') }}" class="btn btn-outline-secondary btn-sm">Consulter les mariages</a>
+            </div>
+        </article>
+    </div>
+</div>

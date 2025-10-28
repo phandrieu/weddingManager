@@ -1,155 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    {% if is_granted('ROLE_ADMIN') %}
-        <h1 class="mb-4">Dashboard Mariages</h1>
-        <div class="row">
-            {% if weddings is not empty %}
-                {% for wedding in weddings|sort((a, b) => a.date.timestamp <=> b.date.timestamp) %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    {{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}
-                                </h5>
-                                <h6 class="card-subtitle mb-2 text-muted">
-                                    {{ wedding.date|date('d/m/Y') }}
-                                </h6>
-                                <p class="card-text">
-                                    <strong>Chants prévus :</strong>
-                                    <ul>
-                                        {% if wedding.songs is not empty %}
-                                            {% for song in wedding.songs %}
-                                                <li>
-                                                    {% if song.types|length > 0 %}
-                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
-                                                    {% else %}
-                                                        Sans type
-                                                    {% endif %}
-                                                    : {{ song.name }}
-                                                </li>
-                                            {% endfor %}
-                                        {% else %}
-                                            <li>Aucun chant</li>
-                                        {% endif %}
-                                    </ul>
-                                </p>
-                            </div>
-                            <div class="card-footer text-end">
-                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Aucun mariage trouvé.</p>
-            {% endif %}
-        </div>
+<div class="dashboard-wrapper py-4">
+	<h1 class="mb-4">Tableau de bord</h1>
 
-    {% elseif is_granted('ROLE_MUSICIAN') %}
-        <h1 class="mb-4">Mes mariages</h1>
-        {% if app.user.weddingsAsMusicians|length > 0 %}
-            <div class="row">
-                {% for wedding in app.user.weddingsAsMusicians %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    {{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}
-                                </h5>
-                                <p class="card-text">
-                                    <strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}
-                                    <br>
-                                    <strong>Chants prévus :</strong>
-                                    <ul>
-                                        {% if wedding.songs is not empty %}
-                                            {% for song in wedding.songs %}
-                                                <li>
-                                                    {% if song.types|length > 0 %}
-                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
-                                                    {% else %}
-                                                        Sans type
-                                                    {% endif %}
-                                                    : {{ song.name }}
-                                                </li>
-                                            {% endfor %}
-                                        {% else %}
-                                            <li>Aucun chant</li>
-                                        {% endif %}
-                                    </ul>
-                                </p>
-                            </div>
-                            <div class="card-footer text-end">
-                                <a href="{{ path('app_wedding_view', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Voir</a>
-                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>Vous n’êtes associé à aucun mariage en tant que musicien.</p>
-        {% endif %}
+	<div class="d-flex flex-column gap-4">
+		{% if dashboards.couple %}
+			{% include 'home/_dashboard_couple.html.twig' with { data: dashboards.couple } %}
+		{% endif %}
 
-    {% else %}
-        {# Dashboard utilisateur normal #}
-        <h1 class="mb-4">Mes Mariages</h1>
-        {% if app.user.allWeddings|length > 0 %}
-            {% for wedding in app.user.allWeddings %}
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }} & {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}</h5>
-                                <p class="card-text">
-                                    <strong>Date du mariage :</strong> {{ wedding.date|date('d/m/Y') }}
-                                </p>
-                                <p class="card-text">
-                                    <strong>Chants prévus :</strong>
-                                    <ul>
-                                        {% if wedding.songs is not empty %}
-                                            {% for song in wedding.songs %}
-                                                <li>
-                                                    {% if song.types|length > 0 %}
-                                                        {% for type in song.types %}{{ type.name }}{% if not loop.last %}, {% endif %}{% endfor %}
-                                                    {% else %}
-                                                        Sans type
-                                                    {% endif %}
-                                                    : {{ song.name }}
-                                                </li>
-                                            {% endfor %}
-                                        {% else %}
-                                            <li>Aucun chant</li>
-                                        {% endif %}
-                                    </ul>
-                                </p>
-                            </div>
-                            <div class="card-footer text-end">
-                                <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary btn-sm">Modifier mon mariage</a>
-                            </div>
-                        </div>
-                    </div>
+		{% if dashboards.musician %}
+			{% include 'home/_dashboard_musician.html.twig' with { data: dashboards.musician } %}
+		{% endif %}
 
-                    <div class="col-md-6">
-                        <div class="card h-100 text-center">
-                            <div class="card-body">
-                                <h5 class="card-title">Contact</h5>
-                                <p class="card-text">
-                                    Pour toute question, contactez-nous :
-                                    <br><a href="mailto:admin@andrieu.ch">admin@andrieu.ch</a>
-                                    <br><a href="tel:+33643822294">+33 6 43 82 22 94</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>Vous n’avez pas encore renseigné votre mariage.</p>
-        {% endif %}
-    {% endif %}
+		{% if dashboards.parish %}
+			{% include 'home/_dashboard_parish.html.twig' with { data: dashboards.parish } %}
+		{% endif %}
+
+		{% if dashboards.admin %}
+			{% include 'home/_dashboard_admin.html.twig' with { data: dashboards.admin } %}
+		{% endif %}
+	</div>
 </div>
 {% endblock %}

@@ -332,6 +332,57 @@
     align-items: flex-start;
 }
 
+/* Dashboard sections */
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.dashboard-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.dashboard-section__header p {
+    max-width: 620px;
+}
+
+.dashboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.dashboard-list__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(101, 45, 144, 0.12);
+    background: rgba(101, 45, 144, 0.05);
+}
+
+.dashboard-list__item .btn {
+    white-space: nowrap;
+}
+
+.dashboard-missing li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+}
+
 /* Form Labels */
 .form-label-sm {
     font-size: 0.75rem;
