@@ -97,7 +97,7 @@
 
                 <div class="wedding-grid__actions">
                     <a href="{{ path('app_wedding_view', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
+                    <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
                     {% if wedding.archive %}
                         <form method="post" action="{{ path('app_wedding_unarchive', {'id': wedding.id}) }}" style="display:inline;">
                             <input type="hidden" name="_token" value="{{ csrf_token('unarchive' ~ wedding.id) }}">
@@ -110,11 +110,8 @@
                         </form>
                     {% endif %}
 
-                    {% if app.user and ('ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians)) %}
-                        <a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-                    {% else %}
-                        <span class="invisible"><i class="bi bi-pencil"></i></span>
-                    {% endif %}
+                      
+
 
                     {% if app.user and ('ROLE_ADMIN' in app.user.roles or ('ROLE_MUSICIAN' in app.user.roles and wedding in app.user.weddingsAsMusicians)) %}
                         <form method="post" action="{{ path('app_wedding_delete', {'id': wedding.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce mariage ? Cette action est irréversible !');">
