@@ -7,10 +7,24 @@
     <style>
         .wedding-wizard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            grid-template-columns: minmax(0, 1fr) minmax(0, clamp(280px, 32%, 75%));
             gap: clamp(2rem, 4vw, 3.5rem);
             align-items: flex-start;
             margin-top: clamp(1rem, 3vw, 2rem);
+        }
+
+        .wizard-page-title {
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            color: var(--color-primary);
+            margin-bottom: clamp(1rem, 3vw, 1.75rem);
+        }
+
+        .wizard-panel__title {
+            font-family: 'Alfarn', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            color: var(--color-primary);
+            margin: 0;
         }
 
         .wizard-panel {
@@ -31,16 +45,23 @@
             flex-wrap: wrap;
         }
 
-        .wizard-header h1 {
-            margin-bottom: .35rem;
-            font-family: 'Alfarn', serif;
-            font-size: clamp(1.6rem, 3vw, 2rem);
-            color: var(--color-primary);
+        .wizard-header__intro {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
         }
 
         .wizard-header__meta {
             color: rgba(97, 97, 111, .85);
             font-size: .95rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
+
+        .wizard-header__meta span {
+            display: inline-flex;
+            align-items: center;
         }
 
         .wizard-header__actions {
@@ -175,6 +196,8 @@
             padding: clamp(1.75rem, 3vw, 2.75rem);
             position: relative;
             overflow: hidden;
+            width: 100%;
+            max-width: 75vw;
         }
 
         .wizard-sidecard::after {
@@ -308,6 +331,10 @@
         }
 
         @media (max-width: 991.98px) {
+            .wedding-wizard {
+                grid-template-columns: 1fr;
+            }
+
             .wizard-actions {
                 flex-direction: column;
                 align-items: stretch;
@@ -321,39 +348,60 @@
                 grid-template-columns: 1fr;
                 align-items: stretch;
             }
+
+            .wizard-sidecard {
+                justify-self: center;
+                margin-inline: auto;
+                max-width: clamp(0px, 75vw, 420px);
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .wizard-stepper {
+                grid-template-columns: 1fr;
+                gap: .5rem;
+            }
+
+            .wizard-stepper__item {
+                padding: .75rem .5rem;
+                font-size: .8rem;
+            }
         }
     </style>
 {% endblock %}
 
 {% block body %}
+<h1 class="wizard-page-title">{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
 <div class="wedding-wizard">
     <section class="wizard-panel">
         {{ form_start(form, {'attr': {'id': 'weddingForm'}}) }}
 
         <header class="wizard-header">
-            <div>
+            <div class="wizard-header__intro">
                 <span class="wizard-badge">
                     <i class="bi bi-stars"></i>
                     {% if wedding.messe is same as(true) %}Messe de mariage{% elseif wedding.messe is same as(false) %}Célébration{% else %}Mariage{% endif %}
                 </span>
-                <h1>{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h1>
+                <h2 class="wizard-panel__title">{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h2>
                 <p class="wizard-header__meta mb-0">
-                    {% if wedding.marie or wedding.mariee %}
-                        {{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
-                    {% else %}
-                        Identifiez le couple pour personnaliser la collaboration.
-                    {% endif %}
+                    <span>
+                        {% if wedding.marie or wedding.mariee %}
+                            {{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
+                        {% else %}
+                            Identifiez le couple pour personnaliser la collaboration.
+                        {% endif %}
+                    </span>
                     {% if wedding.date %}
-                        &mdash; {{ wedding.date|date('d/m/Y') }}
+                        <span>&mdash; {{ wedding.date|date('d/m/Y') }}</span>
                     {% endif %}
                     {% if wedding.church %}
-                        &mdash; {{ wedding.church }}
+                        <span>&mdash; {{ wedding.church }}</span>
                     {% endif %}
                 </p>
             </div>
             <div class="wizard-header__actions">
                 <button type="submit" class="btn btn-primary btn-rounded btn-icon">
-                    <i class="bi bi-check-lg"></i>
                     Enregistrer
                 </button>
                 {% if wedding.id %}
