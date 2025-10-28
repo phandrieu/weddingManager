@@ -47,7 +47,10 @@ security:
         - { path: ^/home, roles: ROLE_USER }
         - { path: ^/songs, roles: ROLE_USER }
         - { path: ^/songs/view, roles: ROLE_USER }
+        - { path: ^/mariages, roles: ROLE_USER }
         - { path: ^/mariages/view, roles: ROLE_USER }
+        - { path: ^/mariages/edit, roles: ROLE_USER }
+        - { path: ^/mariages/payment, roles: ROLE_USER }
         - { path: ^/suggest-song, roles: ROLE_USER}
         - { path: ^/comments, roles: ROLE_USER}
         

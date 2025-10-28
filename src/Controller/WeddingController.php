@@ -283,9 +283,58 @@ class WeddingController extends AbstractController
         return $fallback;
     }
 
+    /**
+     * Vérifie si l'utilisateur actuel a le droit d'accéder au mariage.
+     * Les administrateurs ont toujours accès.
+     * Les autres utilisateurs doivent être rattachés au mariage (marié/e, musicien ou paroisse).
+     */
+    private function checkWeddingAccess(Wedding $wedding): void
+    {
+        // Les administrateurs ont toujours accès
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return;
+        }
+
+        $currentUser = $this->getUser();
+        
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à ce mariage.');
+        }
+
+        // Vérifier si l'utilisateur est le marié
+        if ($wedding->getMarie() && $wedding->getMarie()->getId() === $currentUser->getId()) {
+            return;
+        }
+
+        // Vérifier si l'utilisateur est la mariée
+        if ($wedding->getMariee() && $wedding->getMariee()->getId() === $currentUser->getId()) {
+            return;
+        }
+
+        // Vérifier si l'utilisateur est un musicien du mariage
+        foreach ($wedding->getMusicians() as $musician) {
+            if ($musician->getId() === $currentUser->getId()) {
+                return;
+            }
+        }
+
+        // Vérifier si l'utilisateur est de la paroisse
+        foreach ($wedding->getParishUsers() as $parishUser) {
+            if ($parishUser->getId() === $currentUser->getId()) {
+                return;
+            }
+        }
+
+        // Si aucune condition n'est remplie, accès refusé
+        throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce mariage.');
+    }
+
     #[Route('/view/{id}', name: 'app_wedding_view')]
     public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Response
     {
+        // Vérifier l'accès au mariage
+        $this->checkWeddingAccess($wedding);
+
         $includeMesseTypes = true === $wedding->isMesse();
         if ($includeMesseTypes) {
             $songTypes = $songTypeRepo->findAll();
@@ -320,6 +369,12 @@ class WeddingController extends AbstractController
         }
 
         $isNewWedding = $wedding->getId() === null;
+        
+        // Vérifier l'accès au mariage (sauf pour les nouveaux mariages)
+        if (!$isNewWedding) {
+            $this->checkWeddingAccess($wedding);
+        }
+        
         $currentUser = $this->getUser();
         if ($isNewWedding && $currentUser instanceof User && !$wedding->getCreatedBy()) {
             $wedding->setCreatedBy($currentUser);
@@ -493,8 +548,10 @@ class WeddingController extends AbstractController
 
                                     $repo->save($wedding, true);
                                     $this->addFlash('success', 'Un crédit a été débité pour créer ce mariage. Les invitations sont désormais gratuites.');
-
-                                    return $this->redirectToRoute('app_wedding_index');
+                                    if($isParishOrMusician){
+                                        return $this->redirectToRoute('app_wedding_index');
+                                    }
+                                    return $this->redirectToRoute('home');
                                 }
 
                                 $shouldOpenPaymentModal = true;
@@ -660,14 +717,14 @@ class WeddingController extends AbstractController
             'availableSongs' => $availableSongs,
             'availableSongsByType' => $availableSongsByType,
             'songSelectionsByType' => $songSelectionsByType,
-            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
-            'shouldOpenPaymentModal' => $shouldOpenPaymentModal,
+            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'] ?? '',
+            'shouldOpenPaymentModal' => $shouldOpenPaymentModal ?? false,
             'shouldOpenRoleModal' => $shouldOpenRoleModal ?? false,
             'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
-            'selectedPaymentOption' => $selectedPaymentOption,
-            'paymentOptionError' => $paymentOptionError,
+            'selectedPaymentOption' => $selectedPaymentOption ?? '',
+            'paymentOptionError' => $paymentOptionError ?? null,
             'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
-            'isOnlyUser' => $isOnlyUser,
+            'isOnlyUser' => $isOnlyUser ?? false,
             'initialWizardStep' => $requestedStep,
         ]);
     }
@@ -675,6 +732,9 @@ class WeddingController extends AbstractController
     #[Route('/delete/{id}', name: 'app_wedding_delete', methods: ['POST'])]
     public function delete(Request $request, Wedding $wedding, WeddingRepository $repo): Response
     {
+        // Vérifier l'accès au mariage
+        $this->checkWeddingAccess($wedding);
+        
         if ($this->isCsrfTokenValid('delete' . $wedding->getId(), $request->request->get('_token'))) {
             $repo->remove($wedding, true);
             $this->addFlash('success', 'Mariage supprimé avec succès.');
@@ -759,6 +819,9 @@ class WeddingController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_USER');
+        
+        // Vérifier l'accès au mariage
+        $this->checkWeddingAccess($wedding);
 
         $tokenId = sprintf('remove_intervenant_%s_%d_%d', $type, $wedding->getId(), $userId);
         if (!$this->isCsrfTokenValid($tokenId, (string) $request->request->get('_token'))) {
@@ -815,6 +878,9 @@ public function invite(
     SongTypeRepository $songTypeRepo,
     SongRepository $songRepo
 ): Response {
+    // Vérifier l'accès au mariage
+    $this->checkWeddingAccess($wedding);
+    
     $generatedInvitationLink = null;
 
     if ($request->isMethod('POST')) {
@@ -887,13 +953,41 @@ public function invite(
             $availableSongsByType[$songType->getId()] = array_values($songsForType);
         }
 
+        // Préparer songSelectionsByType comme dans edit()
+        $songSelectionsByType = [];
+        foreach ($wedding->getSongSelections() as $selection) {
+            $type = $selection->getSongType();
+            if ($type && $type->getId() !== null) {
+                $songSelectionsByType[$type->getId()] = [
+                    'songId' => $selection->getSong()?->getId(),
+                    'validatedByMusician' => $selection->isValidatedByMusician(),
+                    'validatedByParish' => $selection->isValidatedByParish(),
+                ];
+            }
+        }
+
+        $currentUser = $this->getUser();
+        $isNewWedding = false; // Dans invite(), on travaille toujours sur un mariage existant
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $isParishOrMusician = $this->isGranted('ROLE_PARISH') || $this->isGranted('ROLE_MUSICIAN');
+        $isOnlyUser = !$this->isGranted('ROLE_MUSICIAN') && !$this->isGranted('ROLE_PARISH') && !$this->isGranted('ROLE_ADMIN');
+
         return $this->render('wedding/edit.html.twig', [
             'form' => $this->createForm(WeddingFormType::class, $wedding)->createView(),
             'wedding' => $wedding,
             'songTypes' => $songTypes,
             'availableSongs' => $availableSongs,
             'availableSongsByType' => $availableSongsByType,
-            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'],
+            'songSelectionsByType' => $songSelectionsByType,
+            'stripe_public_key' => $_ENV['STRIPE_PUBLIC_KEY'] ?? '',
+            'shouldOpenPaymentModal' => false,
+            'shouldOpenRoleModal' => false,
+            'shouldPromptPaymentOption' => false,
+            'selectedPaymentOption' => '',
+            'paymentOptionError' => null,
+            'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
+            'isOnlyUser' => $isOnlyUser,
+            'initialWizardStep' => 0,
             'generatedInvitationLink' => $generatedInvitationLink,
         ]);
     }
@@ -1076,6 +1170,9 @@ public function invite(
     #[Route('/{id}/archive', name: 'app_wedding_archive', methods: ['POST'])]
     public function archive(Request $request, Wedding $wedding, WeddingRepository $repo): Response
     {
+        // Vérifier l'accès au mariage
+        $this->checkWeddingAccess($wedding);
+        
         if (!$this->isCsrfTokenValid('archive' . $wedding->getId(), $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('app_wedding_index');
@@ -1091,6 +1188,9 @@ public function invite(
     #[Route('/{id}/unarchive', name: 'app_wedding_unarchive', methods: ['POST'])]
     public function unarchive(Request $request, Wedding $wedding, WeddingRepository $repo): Response
     {
+        // Vérifier l'accès au mariage
+        $this->checkWeddingAccess($wedding);
+        
         if (!$this->isCsrfTokenValid('unarchive' . $wedding->getId(), $request->request->get('_token'))) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('app_wedding_index');

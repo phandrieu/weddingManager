@@ -939,7 +939,7 @@
                 }
 
                 // Intercepter la soumission si l'utilisateur est ROLE_USER uniquement et n'a pas choisi son rôle
-                const isOnlyUser = {{ isOnlyUser|default(false) ? 'true' : 'false' }};
+                const isOnlyUser = {{ isOnlyUser ? 'true' : 'false' }};
                 const isNewWedding = {{ wedding.id ? 'false' : 'true' }};
                 if (isOnlyUser && isNewWedding && weddingForm) {
                     weddingForm.addEventListener('submit', function (event) {
