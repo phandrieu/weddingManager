@@ -1,222 +1,725 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail du mariage{% endblock %}
+{% block title %}
+	{% if wedding.marie or wedding.mariee %}
+		Mariage de {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+	{% else %}
+		Détails du mariage
+	{% endif %}
+{% endblock %}
 
 {% block body %}
-<div class="mt-4">
-    <!-- Header compact -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center" style="gap:0.75rem;">
-            <h1 class="mb-0" style="background:var(--color-secondary);color:var(--color-primary);padding:8px 18px;border-radius:6px;font-size:16px;text-transform:uppercase;font-family:'Alfarn', serif;">
-                Détails du mariage
-            </h1>
+	{% set types = [] %}
+	{% for type in songTypes %}
+		{% if wedding.isMesse or not type.isMesse %}
+			{% set types = types|merge([type]) %}
+		{% endif %}
+	{% endfor %}
 
-            <div style="background:var(--color-tertiary);color:var(--color-secondary);padding:8px 14px;border-radius:6px;font-weight:600;font-size:13px;">
-                {% if wedding.messe is defined and wedding.messe %}Messe{% else %}Célébration{% endif %} de mariage de 
-                {{ wedding.marie ? (wedding.marie.firstName ~ (wedding.marie.name ? ' ' ~ wedding.marie.name : '')) : '-' }}
-                &amp;
-                {{ wedding.mariee ? (wedding.mariee.firstName ~ (wedding.mariee.name ? ' ' ~ wedding.mariee.name : '')) : '-' }}
-                {% if wedding.date is defined %} — {{ wedding.date|date('d/m/Y') }}{% endif %}
-            </div>
-        </div>
+	{% set groups = {} %}
+	{% for t in types %}
+		{% set label = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
+		{% if groups[label] is defined %}
+			{% set groups = groups|merge({ (label): groups[label]|merge([t]) }) %}
+		{% else %}
+			{% set groups = groups|merge({ (label): [t] }) %}
+		{% endif %}
+	{% endfor %}
 
-        <div>
-            <a href="{{ path('app_wedding_edit', {id: wedding.id}) }}" class="btn btn-primary"> <i class="bi bi-pencil"></i> Éditer les informations</a>
-        </div>
-    </div>
+	{% set selectionMap = {} %}
+	{% for selection in wedding.songSelections %}
+		{% if selection.songType and selection.songType.id is not null %}
+			{% set selectionMap = selectionMap|merge({ (selection.songType.id): selection }) %}
+		{% endif %}
+	{% endfor %}
 
-    <!-- Tabs -->
-    <ul class="nav mb-4" role="tablist" style="gap:.6rem;">
-        <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center active" id="tab-info" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" role="tab" aria-selected="true"
-                style="background:var(--color-tertiary);color:var(--color-secondary);border-radius:999px;padding:8px 14px;gap:8px;">
-                <i class="bi bi-info-circle"></i>
-                <span style="font-weight:600;">Informations générales</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center" id="tab-deroule" data-bs-toggle="tab" data-bs-target="#pane-deroule" type="button" role="tab" aria-selected="false"
-                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
-                <i class="bi bi-list-ul"></i>
-                <span style="font-weight:600;">Déroulé</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="btn btn-sm d-flex align-items-center" id="tab-logistique" data-bs-toggle="tab" data-bs-target="#pane-logistique" type="button" role="tab" aria-selected="false"
-                style="background:transparent;border-radius:999px;padding:8px 14px;gap:8px;border:1px solid var(--color-tertiary); color:var(--color-secondary);">
-                <i class="bi bi-gear"></i>
-                <span style="font-weight:600;">Informations logistiques</span>
-            </button>
-        </li>
-    </ul>
+	{% if selectionMap is empty %}
+		{% for song in wedding.songs %}
+			{% for type in song.types %}
+				{% if type.id is not null and selectionMap[type.id] is not defined %}
+					{% set selectionMap = selectionMap|merge({ (type.id): {'song': song, 'validatedByMusician': false, 'validatedByParish': false} }) %}
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+	{% endif %}
 
-    <div class="tab-content">
-        <!-- Informations générales (mise en page comme la maquette) -->
-        <div class="tab-pane fade show active" id="pane-info" role="tabpanel" aria-labelledby="tab-info">
-            <div class="row g-3 mb-4">
-                <!-- Card template -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS MARIAGE
-                        </div>
+	{% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
 
-                        <div class="small text-muted">
-                            <div style="margin-top:6px;">
-                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Spécifique à la Messe</div>
-                                <strong style="color:var(--color-last);display:block;margin-bottom:6px;">{{ wedding.messe is defined and wedding.messe ? 'Messe' : 'Célébration' }}</strong>
+	<div class="container-xl py-5">
+		<div class="wizard-layout" id="weddingWizardView" data-default-step="0">
+			<section class="wizard-panel">
+				<header class="wizard-header">
+					<div class="wizard-header__intro">
+						<h2 class="wizard-panel__title">
+							{% if wedding.marie or wedding.mariee %}
+								Mariage de {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+							{% else %}
+								Détails du mariage
+							{% endif %}
+						</h2>
+						<p class="wizard-header__meta mb-0">
+							<span>
+								{% if wedding.marie or wedding.mariee %}
+									{{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
+								{% else %}
+									Couple à compléter pour personnaliser la collaboration.
+								{% endif %}
+							</span>
+							{% if wedding.date %}
+								<span>&mdash; {{ wedding.date|date('d/m/Y') }}</span>
+							{% endif %}
+							{% if wedding.church %}
+								<span>&mdash; {{ wedding.church }}</span>
+							{% endif %}
+						</p>
+					</div>
+					<div class="wizard-header__actions">
+						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta btn-rounded btn-icon">
+							<i class="bi bi-pencil-square"></i>
+							Modifier
+						</a>
+						<a href="{{ path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">
+							Retour aux mariages
+						</a>
+					</div>
+				</header>
 
-                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Date</div>
-                                {% if wedding.date is defined %}<div>{{ wedding.date|date('d/m/Y') }}</div>{% else %}<div>-</div>{% endif %}
-                            </div>
+				<div class="wizard-stepper" id="weddingStepper">
+					<button type="button" class="wizard-stepper__item active" data-step="0">
+						Essentiels<br><small>Date &amp; lieu</small>
+					</button>
+					<button type="button" class="wizard-stepper__item" data-step="1">
+						Couple<br><small>Coordonnées</small>
+					</button>
+					<button type="button" class="wizard-stepper__item" data-step="2">
+						Intervenants<br><small>Musiciens &amp; paroisse</small>
+					</button>
+					<button type="button" class="wizard-stepper__item" data-step="3">
+						Répertoire<br><small>Déroulé &amp; validations</small>
+					</button>
+					<button type="button" class="wizard-stepper__item" data-step="4">
+						Suivi<br><small>Finances &amp; archive</small>
+					</button>
+				</div>
 
-                            <div style="margin-top:10px;">
-                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Église / Lieu</div>
-                                <div>{{ wedding.church ?: '-' }}</div>
+				<div class="wizard-steps">
+					<div class="wizard-step active" data-step="0">
+						<div class="form-grid">
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Calendrier</span>
+									<h3 class="mb-0">Renseignements essentiels</h3>
+								</div>
+								<div class="mb-4">
+									<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Format de la célébration</span>
+									<div class="d-flex flex-wrap gap-2">
+										<span class="btn btn-validation {{ wedding.isMesse ? 'is-active' : '' }} disabled" role="presentation">Messe</span>
+										<span class="btn btn-validation {{ not wedding.isMesse ? 'is-active' : '' }} disabled" role="presentation">Célébration</span>
+									</div>
+								</div>
+								<div class="row g-3">
+									<div class="col-sm-6">
+										<span class="form-label-sm">Date</span>
+										<div class="fs-5 fw-semibold text-primary">{{ wedding.date ? wedding.date|date('d/m/Y') : '-' }}</div>
+									</div>
+									<div class="col-sm-6">
+										<span class="form-label-sm">Heure</span>
+										<div class="fs-5 fw-semibold text-primary">
+											{% if wedding.time %}
+												{{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
+											{% else %}
+												-
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Localisation</span>
+									<h3 class="mb-0">Lieu de la célébration</h3>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Paroisse</span>
+									<div class="fw-semibold">{{ wedding.parish ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Église</span>
+									<div class="fw-semibold">{{ wedding.church ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Adresse</span>
+									<div class="fw-semibold">{{ wedding.addressLine1 ?? '-' }}</div>
+									{% if wedding.addressLine2 %}
+										<div class="text-muted">{{ wedding.addressLine2 }}</div>
+									{% endif %}
+									<div class="text-muted">{{ wedding.addressPostalCodeAndCity ?? '' }}</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
-                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
-                                <div>{{ wedding.addressLine1 ?: '-' }}</div>
-                                {% if wedding.addressLine2 %}<div>{{ wedding.addressLine2 }}</div>{% endif %}
+					<div class="wizard-step" data-step="1">
+						<div class="participant-grid">
+							<div>
+								{% if wedding.marie %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Futur marié</h3>
+											{% if wedding.marie.email %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											<div>
+												<span class="form-label-sm">Nom complet</span>
+												<div class="fw-semibold">{{ wedding.marie.fullName ?? '-' }}</div>
+											</div>
+											{% if wedding.marie.telephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marie.telephone }}</div>
+											{% endif %}
+											{% if wedding.marie.addressLine1 or wedding.marie.addressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{{ wedding.marie.addressLine1 ?? '' }}<br>
+													{{ wedding.marie.addressLine2 ?? '' }}<br>
+													{{ wedding.marie.addressPostalCodeAndCity ?? '' }}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% else %}
+									<div class="participant-empty">
+										<h3 class="mb-1">Futur marié manquant</h3>
+										<p class="mb-0">Aucune information renseignée pour le futur marié.</p>
+									</div>
+								{% endif %}
+							</div>
 
-                                <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Code postal & ville</div>
-                                <div>{{ wedding.addressPostalCodeAndCity ?: '-' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+							<div>
+								{% if wedding.mariee %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Future mariée</h3>
+											{% if wedding.mariee.email %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											<div>
+												<span class="form-label-sm">Nom complet</span>
+												<div class="fw-semibold">{{ wedding.mariee.fullName ?? '-' }}</div>
+											</div>
+											{% if wedding.mariee.telephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.mariee.telephone }}</div>
+											{% endif %}
+											{% if wedding.mariee.addressLine1 or wedding.mariee.addressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{{ wedding.mariee.addressLine1 ?? '' }}<br>
+													{{ wedding.mariee.addressLine2 ?? '' }}<br>
+													{{ wedding.mariee.addressPostalCodeAndCity ?? '' }}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% else %}
+									<div class="participant-empty">
+										<h3 class="mb-1">Future mariée manquante</h3>
+										<p class="mb-0">Aucune information renseignée pour la future mariée.</p>
+									</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
 
-                <!-- Futur marié -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS FUTUR MARIÉ
-                        </div>
+					<div class="wizard-step" data-step="2">
+						<div class="form-grid">
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Musiciens</span>
+									<h3 class="mb-0">Coordonner les musiciens</h3>
+								</div>
+								<div class="d-flex align-items-center gap-2 text-muted small mb-3">
+									<span class="badge text-bg-light">{{ wedding.musicians|length }}</span>
+									<span>Musicien(s)</span>
+								</div>
+								{% if wedding.musicians|length > 0 %}
+									<ul class="list-group list-group-flush">
+										{% for musician in wedding.musicians %}
+											<li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+												<div>
+													<span class="fw-semibold">{{ musician.fullName ?? musician.email }}</span>
+													<div class="text-muted small">{{ musician.email }}</div>
+													{% if musician.telephone %}
+														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ musician.telephone }}</div>
+													{% endif %}
+												</div>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="text-muted small mb-0">Aucun musicien n'est encore associé pour le moment.</p>
+								{% endif %}
+							</div>
 
-                        <div class="text-center">
-                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
-                                {{ wedding.marie and wedding.marie.firstName ? wedding.marie.firstName|slice(0,1)|upper : 'A' }}
-                            </div>
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Paroisse</span>
+									<h3 class="mb-0">Collaborer avec la paroisse</h3>
+								</div>
+								<div class="d-flex align-items-center gap-2 text-muted small mb-3">
+									<span class="badge text-bg-light">{{ wedding.parishUsers|length }}</span>
+									<span>Contact(s)</span>
+								</div>
+								{% if wedding.parishUsers|length > 0 %}
+									<ul class="list-group list-group-flush">
+										{% for parishUser in wedding.parishUsers %}
+											<li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+												<div>
+													<span class="fw-semibold">{{ parishUser.fullName ?? parishUser.email }}</span>
+													<div class="text-muted small">{{ parishUser.email }}</div>
+													{% if parishUser.telephone %}
+														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ parishUser.telephone }}</div>
+													{% endif %}
+												</div>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="text-muted small mb-0">Aucun contact paroissial n'est encore associé à ce mariage.</p>
+								{% endif %}
+							</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
-                            <div style="font-weight:700;">{{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }}</div>
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Célébrant</span>
+									<h3 class="mb-0">Coordonnées du prêtre</h3>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Prénom</span>
+									<div class="fw-semibold">{{ wedding.priestFirstName ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Nom</span>
+									<div class="fw-semibold">{{ wedding.priestLastName ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Téléphone</span>
+									<div class="fw-semibold">{{ wedding.priestPhoneNumber ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Email</span>
+									<div class="fw-semibold">{{ wedding.priestEMail ?? '-' }}</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
-                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.email : '-' }}</div>
+					<div class="wizard-step" data-step="3">
+						<div class="deroule-container">
+							{% if groups is empty %}
+								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
+							{% else %}
+								<div class="deroule-header d-none d-lg-flex">
+									<div class="deroule-col-type">TYPE</div>
+									<div class="deroule-col-choice">CHOIX RETENU</div>
+									<div class="deroule-col-check">VALIDATION MUSICIEN</div>
+									<div class="deroule-col-check">VALIDATION PAROISSE</div>
+									<div class="deroule-col-comments">COM.</div>
+								</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
-                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.telephone : '-' }}</div>
+								<div class="deroule-groups">
+									{% for label in order %}
+										{% if groups[label] is defined %}
+											<div class="deroule-group">
+												<div class="deroule-group-header">{{ label }}</div>
+												<div class="deroule-group-body">
+													{% for type in groups[label] %}
+														{% set selection = selectionMap[type.id]|default(null) %}
+														{% set selectedSong = selection ? (selection.song ?? null) : null %}
+														{% set validatedMusician = selection ? (selection.validatedByMusician ?? false) : false %}
+														{% set validatedParish = selection ? (selection.validatedByParish ?? false) : false %}
+														<div class="deroule-row">
+															<div>
+																<span class="deroule-type-badge">{{ type.name }}</span>
+															</div>
+															<div>
+																<span class="deroule-label">Votre choix</span>
+																{% if selectedSong %}
+																	<div class="fw-semibold">{{ selectedSong.name ?? (selectedSong.title ?? 'Titre inconnu') }}</div>
+																	{% if selectedSong.textRef %}
+																		<div class="text-muted small">{{ selectedSong.textRef }}</div>
+																	{% endif %}
+																{% else %}
+																	<div class="text-muted">Aucun chant sélectionné</div>
+																{% endif %}
+															</div>
+															<div class="text-center">
+																<span class="btn btn-validation {{ validatedMusician ? 'is-active' : '' }} disabled" role="presentation">MUS</span>
+															</div>
+															<div class="text-center">
+																<span class="btn btn-validation {{ validatedParish ? 'is-active' : '' }} disabled" role="presentation">PAR</span>
+															</div>
+															<div>
+																{% if wedding.id %}
+																	<button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+																		<i class="bi bi-chat-dots"></i>
+																	</button>
+																{% endif %}
+															</div>
+														</div>
+													{% endfor %}
+												</div>
+											</div>
+										{% endif %}
+									{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+					</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
-                            <div class="small text-muted mt-1">{{ wedding.marie ? wedding.marie.addressLine1 : '-' }}</div>
-                        </div>
-                    </div>
-                </div>
+					<div class="wizard-step" data-step="4">
+						<div class="form-grid">
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Finances</span>
+									<h3 class="mb-0">Suivi des montants</h3>
+								</div>
+								{% set paymentStatus = {
+									'label': 'Statut non défini',
+									'badge': 'secondary'
+								} %}
+								{% if wedding.isPaid %}
+									{% set paymentStatus = {
+										'label': 'Mariage réglé',
+										'badge': 'success'
+									} %}
+								{% else %}
+									{% if wedding.paymentOption == 'delegated' %}
+										{% set paymentStatus = {
+											'label': 'En attente du paiement des mariés',
+											'badge': 'warning'
+										} %}
+									{% elseif wedding.paymentOption == 'card_pending_partner' %}
+										{% set paymentStatus = {
+											'label': 'Paiement partenaire en cours',
+											'badge': 'warning'
+										} %}
+									{% elseif wedding.paymentOption == 'card_partner' %}
+										{% set paymentStatus = {
+											'label': 'Paiement CB partenaire confirmé',
+											'badge': 'success'
+										} %}
+									{% elseif wedding.paymentOption == 'card_user' %}
+										{% set paymentStatus = {
+											'label': 'Paiement en ligne à finaliser',
+											'badge': 'info'
+										} %}
+									{% elseif wedding.paymentOption == 'credit' %}
+										{% set paymentStatus = {
+											'label': 'Réglé via crédits',
+											'badge': 'success'
+										} %}
+									{% endif %}
+								{% endif %}
 
-                <!-- Futur mariée -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS FUTUR MARIÉE
-                        </div>
+								<div class="wizard-finance-grid">
+									<div class="wizard-finance-item">
+										<div class="wizard-finance-label">Montant de la prestation</div>
+										<div class="wizard-finance-value">{{ wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
+									</div>
+									<div class="wizard-finance-item">
+										<div class="wizard-finance-label">Montant déjà versé</div>
+										<div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
+									</div>
+									<div class="wizard-finance-item">
+										<div class="wizard-finance-label">Statut du paiement</div>
+										<div class="wizard-finance-value">
+											<span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
+										</div>
+									</div>
+									<div class="wizard-finance-item">
+										<div class="wizard-finance-label">Acompte</div>
+										<div class="wizard-finance-value">
+											{% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
+												{{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
+											{% else %}
+												-
+											{% endif %}
+										</div>
+									</div>
+									<div class="wizard-finance-item">
+										<div class="wizard-finance-label">Reste dû</div>
+										<div class="wizard-finance-value">
+											{% if wedding.montantTotal is not null and wedding.montantPaye is not null %}
+												{{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }} €
+											{% else %}
+												-
+											{% endif %}
+										</div>
+									</div>
+								</div>
 
-                        <div class="text-center">
-                            <div style="width:76px;height:76px;border-radius:50%;background:var(--color-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:26px;margin-bottom:12px;">
-                                {{ wedding.mariee and wedding.mariee.firstName ? wedding.mariee.firstName|slice(0,1)|upper : 'A' }}
-                            </div>
+								<div class="wizard-finance-inputs">
+									<div class="wizard-finance-field">
+										<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Créé avec un crédit ?</span>
+										<div class="fw-semibold">{{ wedding.createdWithCredit ? 'Oui' : 'Non' }}</div>
+									</div>
+									<div class="wizard-finance-field">
+										<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Paiement exigé des mariés ?</span>
+										<div class="fw-semibold">{{ wedding.requiresCouplePayment ? 'Oui' : 'Non' }}</div>
+									</div>
+								</div>
+							</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Nom complet</div>
-                            <div style="font-weight:700;">{{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</div>
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Clôture</span>
+									<h3 class="mb-0">Archive &amp; options</h3>
+								</div>
+								<div class="mb-3">
+									<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Statut du dossier</span>
+									<div class="d-flex flex-wrap gap-2">
+										<span class="btn btn-validation {{ not wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Actif</span>
+										<span class="btn btn-validation {{ wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Archivé</span>
+									</div>
+								</div>
+								<p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
+							</div>
+						</div>
+					</div>
+				</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
-                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.email : '-' }}</div>
+				<div class="wizard-actions">
+					<div class="wizard-actions__nav">
+						<button type="button" class="btn btn-outline-secondary wizard-prev d-none" data-action="prev-step">
+							<i class="bi bi-arrow-left"></i>
+							Retour
+						</button>
+						<button type="button" class="btn btn-primary wizard-next" data-action="next-step">
+							Continuer
+							<i class="bi bi-arrow-right ms-2"></i>
+						</button>
+					</div>
+					<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta">
+						<i class="bi bi-pencil"></i>
+						Modifier ce mariage
+					</a>
+				</div>
+			</section>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
-                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.telephone : '-' }}</div>
+			<aside class="wizard-sidecard">
+				<div class="wizard-sidecard__inner" id="wizardSideContent">
+					<div class="wizard-sidecard__slide active" data-step="0">
+						<span class="wizard-badge"><i class="bi bi-geo-alt"></i> Étape 1</span>
+						<h2 class="wizard-sidecard__title">Cadrez la célébration</h2>
+						<p class="mb-0">Récapitulatif du format, de la date et du lieu pour que tous les intervenants disposent des bonnes informations.</p>
+					</div>
+					<div class="wizard-sidecard__slide" data-step="1">
+						<span class="wizard-badge"><i class="bi bi-people"></i> Étape 2</span>
+						<h2 class="wizard-sidecard__title">Pilotez le couple</h2>
+						<p class="mb-0">Coordonnées et contacts des mariés regroupés dans une même section.</p>
+					</div>
+					<div class="wizard-sidecard__slide" data-step="2">
+						<span class="wizard-badge"><i class="bi bi-people"></i> Étape 3</span>
+						<h2 class="wizard-sidecard__title">Activez les intervenants</h2>
+						<p class="mb-0">Visualisez instantanément les musiciens, contacts paroissiaux et le célébrant associés.</p>
+					</div>
+					<div class="wizard-sidecard__slide" data-step="3">
+						<span class="wizard-badge"><i class="bi bi-music-note-beamed"></i> Étape 4</span>
+						<h2 class="wizard-sidecard__title">Construisez le déroulé</h2>
+						<p class="mb-0">Suivi des chants retenus et de leurs validations.</p>
+					</div>
+					<div class="wizard-sidecard__slide" data-step="4">
+						<span class="wizard-badge"><i class="bi bi-coin"></i> Étape 5</span>
+						<h2 class="wizard-sidecard__title">Clôturez le dossier</h2>
+						<p class="mb-0">Un coup d'œil sur l'état financier et le statut d'archivage.</p>
+					</div>
+				</div>
+			</aside>
+		</div>
+	</div>
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Adresse</div>
-                            <div class="small text-muted mt-1">{{ wedding.mariee ? wedding.mariee.addressLine1 : '-' }}</div>
-                        </div>
-                    </div>
-                </div>
+	<div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Commentaires</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body">
+					<div class="text-center py-4" id="commentsModalSpinner">
+						<div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
+					</div>
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
 
-                <!-- Paroisse / informations contact -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;min-height:160px;box-shadow: 0 2px 0 rgba(0,0,0,0.03);">
-                        <div style="background:var(--color-secondary);color:var(--color-bg);padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px;display:inline-block;margin-bottom:12px;">
-                            INFORMATIONS PAROISSE
-                        </div>
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const wizardLayout = document.getElementById('weddingWizardView');
+			const steps = Array.from(document.querySelectorAll('.wizard-step'));
+			const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+			const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));
+			const prevBtn = document.querySelector('.wizard-prev');
+			const nextBtn = document.querySelector('.wizard-next');
+			let currentStep = 0;
 
-                        <div class="small text-muted">
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Prêtre</div>
-                            <div>{{ wedding.priestFirstName ?: '-' }} {{ wedding.priestLastName ?: '' }}</div>
+			if (wizardLayout) {
+				const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
+				if (!Number.isNaN(defaultStep)) {
+					currentStep = Math.max(0, Math.min(steps.length - 1, defaultStep));
+				}
+			}
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Téléphone</div>
-                            <div class="small text-muted mt-2">{{ wedding.priestPhoneNumber ?: '-' }}</div>
+			function syncUI() {
+				steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
+				stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
+				sideSlides.forEach((slide, index) => slide.classList.toggle('active', index === currentStep));
+				if (prevBtn) {
+					prevBtn.classList.toggle('d-none', currentStep === 0);
+				}
+				if (nextBtn) {
+					nextBtn.classList.toggle('d-none', currentStep >= steps.length - 1);
+				}
+			}
 
-                            <div class="small text-muted" style="text-transform:uppercase;font-size:11px;margin-top:8px;">Email</div>
-                            <div class="small text-muted">{{ wedding.priestEmail ?: '-' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+			if (prevBtn) {
+				prevBtn.addEventListener('click', function () {
+					if (currentStep > 0) {
+						currentStep -= 1;
+						syncUI();
+					}
+				});
+			}
 
-            <!-- Bloc financier -->
-            <div style="background:var(--color-tertiary);border-radius:12px;padding:18px;">
-                <div style="display:grid;grid-template-columns: repeat(4, 1fr);gap:1rem;align-items:center;">
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant de la prestation</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
-                            {{ wedding.montantTotal is defined and wedding.montantTotal ? (wedding.montantTotal ~ ' €') : '-' }}
-                        </div>
-                    </div>
+			if (nextBtn) {
+				nextBtn.addEventListener('click', function () {
+					if (currentStep < steps.length - 1) {
+						currentStep += 1;
+						syncUI();
+					}
+				});
+			}
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant déjà versé</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
-                            {{ wedding.montantPaye is defined and wedding.montantPaye ? (wedding.montantPaye ~ ' €') : '-' }}
-                        </div>
-                    </div>
+			stepperItems.forEach((item) => {
+				item.addEventListener('click', function () {
+					const target = parseInt(item.dataset.step, 10);
+					if (!Number.isNaN(target)) {
+						currentStep = target;
+						syncUI();
+					}
+				});
+			});
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Pourcentage de l'acompte</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
-                            {% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
-                                {{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
-                            {% else %}
-                                -
-                            {% endif %}
-                        </div>
-                    </div>
+			syncUI();
 
-                    <div class="text-center">
-                        <div class="small text-muted" style="text-transform:uppercase;font-size:11px;">Montant restant dû</div>
-                        <div style="font-weight:700;font-size:18px;color:var(--color-last);">
-                            {% if wedding.montantTotal is defined and wedding.montantPaye is defined %}
-                                {{ (wedding.montantTotal - wedding.montantPaye) ~ ' €' }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+			const modalEl = document.getElementById('commentsModal');
+			if (modalEl && typeof bootstrap !== 'undefined') {
+				const bsModal = new bootstrap.Modal(modalEl);
+				const bindCommentForm = (formEl, url) => {
+					if (!formEl) {
+						return;
+					}
 
-        <!-- Déroulé (placeholder, structure prête) -->
-        <div class="tab-pane fade" id="pane-deroule" role="tabpanel" aria-labelledby="tab-deroule">
-            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
-                <h5>Déroulé</h5>
-                <p class="text-muted">Ajouter ici le déroulé (entrées, chants, timing...).</p>
-            </div>
-        </div>
+					formEl.addEventListener('submit', async function (evt) {
+						evt.preventDefault();
+						const fd = new FormData(formEl);
+						const action = formEl.getAttribute('action') || url;
+						const method = (formEl.getAttribute('method') || 'POST').toUpperCase();
 
-        <!-- Informations logistiques (placeholder) -->
-        <div class="tab-pane fade" id="pane-logistique" role="tabpanel" aria-labelledby="tab-logistique">
-            <div class="p-3" style="background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.04);">
-                <h5>Informations logistiques</h5>
-                <p class="text-muted">Ajouter ici les informations de transport, hébergement, matériel, contacts.</p>
-            </div>
-        </div>
-    </div>
-</div>
+						try {
+							const response = await fetch(action, {
+								method: method,
+								body: fd,
+								headers: { 'X-Requested-With': 'XMLHttpRequest' },
+							});
+							if (!response.ok) {
+								throw new Error('Requête invalide');
+							}
+
+							const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+							const refreshedText = await refreshed.text();
+							const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
+							const newComments = refreshedDoc.querySelector('#comments-box');
+							const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
+
+							modalEl.querySelector('.modal-body').querySelector('h2')?.remove();
+							if (newComments) {
+								const body = modalEl.querySelector('.modal-body');
+								const old = body.querySelector('#comments-box');
+								if (old) {
+									old.replaceWith(newComments.cloneNode(true));
+								} else {
+									body.appendChild(newComments.cloneNode(true));
+								}
+							}
+
+							const footer = modalEl.querySelector('.modal-footer');
+							if (newForm) {
+								footer.innerHTML = '';
+								const clonedForm = newForm.cloneNode(true);
+								footer.appendChild(clonedForm);
+								bindCommentForm(clonedForm, url);
+							}
+						} catch (err) {
+							console.error(err);
+							alert('Erreur lors de l\'envoi du commentaire.');
+						}
+					}, { once: true });
+				};
+				document.querySelectorAll('.open-comments').forEach((btn) => {
+					btn.addEventListener('click', async function () {
+						const weddingId = this.dataset.wedding;
+						const songTypeId = this.dataset.songtype;
+						const url = `/comments/${weddingId}/${songTypeId}`;
+
+						const body = modalEl.querySelector('.modal-body');
+						const footer = modalEl.querySelector('.modal-footer');
+						body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+						footer.innerHTML = '';
+						bsModal.show();
+
+						try {
+							const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+							const text = await res.text();
+							const parser = new DOMParser();
+							const doc = parser.parseFromString(text, 'text/html');
+
+							const header = doc.querySelector('h2');
+							const commentsBox = doc.querySelector('#comments-box');
+							const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
+
+							body.innerHTML = '';
+							if (header) {
+								body.appendChild(header.cloneNode(true));
+							}
+							if (commentsBox) {
+								body.appendChild(commentsBox.cloneNode(true));
+							} else {
+								body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
+							}
+
+							footer.innerHTML = '';
+							if (form) {
+								const injectedForm = form.cloneNode(true);
+								footer.appendChild(injectedForm);
+								bindCommentForm(injectedForm, url);
+							} else {
+								footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+							}
+						} catch (err) {
+							console.error(err);
+							modalEl.querySelector('.modal-body').innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
+							modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+						}
+					});
+				});
+			}
+		});
+	</script>
 {% endblock %}

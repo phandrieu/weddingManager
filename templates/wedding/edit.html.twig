@@ -76,7 +76,30 @@
                             <span>Calendrier</span>
                             <h3 class="mb-0">Renseignements essentiels</h3>
                         </div>
-                        {{ form_row(form.messe, {'label_attr': {'class': 'form-label-sm'}}) }}
+                        {% set isMesse = form.messe.vars.data ?? false %}
+                        <div class="mb-4">
+                            <span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Format de la célébration</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-validation js-toggle-option {{ isMesse ? 'is-active' : '' }}"
+                                    data-target="#{{ form.messe.vars.id }}"
+                                    data-value="1"
+                                >
+                                    Messe
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-validation js-toggle-option {{ isMesse ? '' : 'is-active' }}"
+                                    data-target="#{{ form.messe.vars.id }}"
+                                    data-value="0"
+                                >
+                                    Célébration
+                                </button>
+                            </div>
+                            {{ form_widget(form.messe, {'attr': {'class': 'd-none js-toggle-input'}}) }}
+                            {{ form_errors(form.messe) }}
+                        </div>
                         <div class="row g-3">
                             <div class="col-sm-6">
                                 {{ form_row(form.date, {'label_attr': {'class': 'form-label-sm'}}) }}
@@ -420,21 +443,19 @@
                                 } %}
                             {% endif %}
                         {% endif %}
+                        <div class="wizard-finance-inputs">
+                            <div class="wizard-finance-field">
+                                <label for="{{ form.montantTotal.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant de la prestation</label>
+                                {{ form_widget(form.montantTotal, {'attr': form.montantTotal.vars.attr|merge({})}) }}
+                                {{ form_errors(form.montantTotal) }}
+                            </div>
+                            <div class="wizard-finance-field">
+                                <label for="{{ form.montantPaye.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant déjà versé</label>
+                                {{ form_widget(form.montantPaye, {'attr': form.montantPaye.vars.attr|merge({})}) }}
+                                {{ form_errors(form.montantPaye) }}
+                            </div>
+                        </div>
                         <div class="wizard-finance-grid">
-                            <div class="wizard-finance-item">
-                                <div class="wizard-finance-label">Montant de la prestation</div>
-                                <div class="wizard-finance-value">{{ wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
-                            </div>
-                            <div class="wizard-finance-item">
-                                <div class="wizard-finance-label">Montant déjà versé</div>
-                                <div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
-                            </div>
-                            <div class="wizard-finance-item">
-                                <div class="wizard-finance-label">Statut du paiement</div>
-                                <div class="wizard-finance-value">
-                                    <span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
-                                </div>
-                            </div>
                             <div class="wizard-finance-item">
                                 <div class="wizard-finance-label">Acompte</div>
                                 <div class="wizard-finance-value">
@@ -455,9 +476,13 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            <div class="wizard-finance-item">
+                                <div class="wizard-finance-label">Statut du paiement NMDM</div>
+                                <div class="wizard-finance-value">
+                                    <span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
+                                </div>
+                            </div>
                         </div>
-                        {{ form_row(form.montantTotal, {'label_attr': {'class': 'form-label-sm'}}) }}
-                        {{ form_row(form.montantPaye, {'label_attr': {'class': 'form-label-sm'}}) }}
                     </div>
 
                     <div class="form-card">
@@ -465,7 +490,30 @@
                             <span>Clôture</span>
                             <h3 class="mb-0">Archive &amp; options</h3>
                         </div>
-                        {{ form_row(form.archive, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {% set isArchived = form.archive.vars.data ?? false %}
+                        <div class="mb-3">
+                            <span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Statut du dossier</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-validation js-toggle-option {{ isArchived ? '' : 'is-active' }}"
+                                    data-target="#{{ form.archive.vars.id }}"
+                                    data-value="0"
+                                >
+                                    Actif
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-validation js-toggle-option {{ isArchived ? 'is-active' : '' }}"
+                                    data-target="#{{ form.archive.vars.id }}"
+                                    data-value="1"
+                                >
+                                    Archivé
+                                </button>
+                            </div>
+                            {{ form_widget(form.archive, {'attr': {'class': 'd-none js-toggle-input'}}) }}
+                            {{ form_errors(form.archive) }}
+                        </div>
                         <p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
                     </div>
                 </div>
@@ -716,6 +764,18 @@
             const paymentModalEl = document.getElementById('paymentOptionModal');
             const hiddenSongsSelect = document.getElementById('{{ form.songs.vars.id|e('js') }}');
             const derouleSelects = Array.from(document.querySelectorAll('.js-deroule-select'));
+            const booleanToggleInputs = Array.from(document.querySelectorAll('.js-toggle-input'));
+
+            const syncBooleanToggle = (input) => {
+                if (!input) {
+                    return;
+                }
+                const isChecked = input.checked;
+                document.querySelectorAll(`.js-toggle-option[data-target="#${input.id}"]`).forEach((btn) => {
+                    const btnValue = btn.dataset.value === '1';
+                    btn.classList.toggle('is-active', btnValue === isChecked);
+                });
+            };
 
             const syncSongsField = () => {
                 if (!hiddenSongsSelect) {
@@ -762,6 +822,36 @@
                     input.value = newValue;
                     this.classList.toggle('is-active', newValue === '1');
                 });
+            });
+
+            document.querySelectorAll('.js-toggle-option').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const targetSelector = this.dataset.target;
+                    if (!targetSelector) {
+                        return;
+                    }
+
+                    const targetInput = document.querySelector(targetSelector);
+                    if (!targetInput) {
+                        return;
+                    }
+
+                    const shouldCheck = this.dataset.value === '1';
+                    targetInput.checked = shouldCheck;
+                    if (shouldCheck) {
+                        targetInput.setAttribute('checked', 'checked');
+                    } else {
+                        targetInput.removeAttribute('checked');
+                    }
+
+                    targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    syncBooleanToggle(targetInput);
+                });
+            });
+
+            booleanToggleInputs.forEach((input) => {
+                input.addEventListener('change', () => syncBooleanToggle(input));
+                syncBooleanToggle(input);
             });
 
             document.querySelectorAll('.js-remove-intervenant').forEach((btn) => {
