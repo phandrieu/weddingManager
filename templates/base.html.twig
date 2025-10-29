@@ -165,6 +165,67 @@
                 filter: invert(100%);
             }
 
+            /* Photo de profil dans la navbar */
+            .navbar-profile {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                text-decoration: none;
+                color: var(--color-bg) !important;
+                transition: opacity 0.2s;
+            }
+
+            .navbar-profile:hover {
+                opacity: 0.8;
+            }
+
+            .navbar-profile-picture {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--color-primary);
+                background-color: var(--color-bg);
+            }
+
+            .navbar-profile-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background-color: var(--color-primary);
+                color: var(--color-secondary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+            }
+
+            .navbar-logout {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                text-decoration: none;
+                color: var(--color-bg) !important;
+                transition: color 0.2s;
+                padding: 0.5rem 0;
+            }
+
+            .navbar-logout:hover {
+                color: var(--color-primary) !important;
+            }
+
+            @media (max-width: 991.98px) {
+                .navbar-profile {
+                    padding: 0.5rem 0;
+                }
+                
+                .navbar-logout {
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                    margin-top: 0.5rem;
+                    padding-top: 1rem;
+                }
+            }
+
             /* Boutons */
             .btn-primary {
                 background-color: var(--color-primary);
@@ -355,12 +416,21 @@
                         {% endif %}
                     </ul>
                     <div class="d-flex align-items-center gap-3">
-                        <a href="{{ path('app_user_profile') }}" class="nav-link" title="Mon compte">
-                            <i class="bi bi-person-circle me-1"></i>
+                        <a href="{{ path('app_user_profile') }}" class="navbar-profile" title="Mon compte">
+                            {% if app.user.profilePictureName %}
+                                <img src="{{ vich_uploader_asset(app.user, 'profilePictureFile') }}" 
+                                     alt="{{ app.user.firstName }}" 
+                                     class="navbar-profile-picture">
+                            {% else %}
+                                <div class="navbar-profile-icon">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            {% endif %}
                             <span>{{ app.user.firstName }}</span>
                         </a>
-                        <a href="{{ path('app_logout') }}" class="nav-link" title="Se déconnecter">
-                            <i style="color: var(--color-bg);" class="bi bi-box-arrow-right"></i>
+                        <a href="{{ path('app_logout') }}" class="navbar-logout" title="Se déconnecter">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="d-lg-none">Déconnexion</span>
                         </a>
                     </div>
                 </div>

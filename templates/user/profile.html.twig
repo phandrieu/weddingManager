@@ -69,6 +69,33 @@
             background-color: #e9ecef;
             color: var(--color-last);
         }
+
+        .credits-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 1rem 0;
+        }
+
+        .subscription-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        .subscription-status.active {
+            background-color: #d1f4e0;
+            color: #0f5132;
+        }
+
+        .subscription-status.inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
     </style>
 {% endblock %}
 
@@ -148,6 +175,66 @@
                 </small>
             </div>
         </div>
+
+        {% if is_granted('ROLE_MUSICIAN') or is_granted('ROLE_PARISH') %}
+        <!-- Crédits -->
+        <div class="app-card">
+            <h2 class="h5 mb-3" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-coin me-2"></i>Mes crédits
+            </h2>
+
+            <div class="text-center">
+                <div class="credits-display">
+                    {{ user.credits }}
+                    <small style="font-size: 1rem; color: var(--color-last);">crédit{{ user.credits > 1 ? 's' : '' }}</small>
+                </div>
+                <p class="text-muted mb-3">
+                    Les crédits vous permettent de créer de nouveaux mariages.
+                </p>
+                <a href="{{ path('app_credits_buy') }}" class="btn btn-primary w-100">
+                    <i class="bi bi-cart-plus me-2"></i>Acheter des crédits
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_granted('ROLE_MUSICIAN') %}
+        <!-- Abonnement -->
+        <div class="app-card">
+            <h2 class="h5 mb-3" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-star-fill me-2"></i>Mon abonnement
+            </h2>
+
+            <div class="text-center">
+                {% if user.subscription %}
+                    <div class="subscription-status active">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Abonnement actif</span>
+                    </div>
+                    <p class="text-muted mb-3">
+                        Vous bénéficiez de tous les avantages de l'abonnement musicien.
+                    </p>
+                    <form method="post" action="{{ path('app_subscription_cancel') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler votre abonnement ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cancel_subscription') }}">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-x-circle me-2"></i>Annuler l'abonnement
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="subscription-status inactive">
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Pas d'abonnement</span>
+                    </div>
+                    <p class="text-muted mb-3">
+                        L'abonnement vous donne accès à des fonctionnalités exclusives pour 20€/mois.
+                    </p>
+                    <a href="{{ path('app_subscription_subscribe') }}" class="btn btn-success w-100">
+                        <i class="bi bi-star-fill me-2"></i>S'abonner maintenant
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Informations personnelles -->
