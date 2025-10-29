@@ -7,6 +7,7 @@ use App\Entity\Wedding;
 use App\Entity\SongType;
 use App\Form\CommentType;
 use App\Repository\CommentRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,7 @@ class CommentController extends AbstractController
         string $songTypeId,
         CommentRepository $commentRepo,
         EntityManagerInterface $em,
+        NotificationService $notificationService,
         Request $request
     ): Response {
         // cast et validation defensive : s'assurer d'avoir des entiers valides
@@ -52,6 +54,9 @@ class CommentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($comment);
             $em->flush();
+
+            // Créer des notifications pour tous les participants du mariage
+            $notificationService->createCommentNotifications($comment);
 
             $this->addFlash('success', 'Commentaire ajouté avec succès.');
             return $this->redirectToRoute('app_comment_conversation', [

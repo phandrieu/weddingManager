@@ -171,47 +171,210 @@
                 align-items: center;
                 gap: 0.5rem;
                 text-decoration: none;
-                color: var(--color-bg) !important;
+                color: white;
                 transition: opacity 0.2s;
             }
 
             .navbar-profile:hover {
-                opacity: 0.8;
+                opacity: 0.85;
+                color: white;
             }
 
             .navbar-profile-picture {
-                width: 36px;
-                height: 36px;
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
                 object-fit: cover;
-                border: 2px solid var(--color-primary);
-                background-color: var(--color-bg);
             }
 
             .navbar-profile-icon {
-                width: 36px;
-                height: 36px;
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
-                background-color: var(--color-primary);
-                color: var(--color-secondary);
+                background-color: rgba(255, 255, 255, 0.2);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.2rem;
+            }
+
+            .navbar-profile-icon i {
+                font-size: 1.25rem;
             }
 
             .navbar-logout {
                 display: flex;
                 align-items: center;
-                gap: 0.25rem;
+                gap: 0.5rem;
                 text-decoration: none;
-                color: var(--color-bg) !important;
-                transition: color 0.2s;
-                padding: 0.5rem 0;
+                color: white;
+                padding: 0.25rem 0.75rem;
+                border-radius: 0.375rem;
+                transition: background-color 0.2s;
             }
 
             .navbar-logout:hover {
-                color: var(--color-primary) !important;
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            
+            /* Notifications */
+            .notification-bell {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: transparent;
+                border: none;
+                color: white;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            
+            .notification-bell:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .notification-bell i {
+                font-size: 1.25rem;
+            }
+            
+            .notification-badge {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 4px;
+                border-radius: 9px;
+                background-color: var(--color-primary);
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
+            }
+            
+            .notification-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 380px;
+                max-width: 90vw;
+                margin-top: 0.5rem;
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+                display: none;
+                z-index: 1050;
+                overflow: hidden;
+            }
+            
+            .notification-dropdown.show {
+                display: block;
+            }
+            
+            .notification-dropdown-header {
+                padding: 1rem 1.25rem;
+                background-color: var(--color-secondary);
+                color: white;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .notification-dropdown-header h3 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+                color: white;
+            }
+            
+            .notification-dropdown-header .mark-all-read {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 0.85rem;
+                text-decoration: underline;
+                cursor: pointer;
+                padding: 0;
+            }
+            
+            .notification-list {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            
+            .notification-item {
+                padding: 1rem 1.25rem;
+                border-bottom: 1px solid #f0f0f0;
+                transition: background-color 0.2s;
+                cursor: pointer;
+            }
+            
+            .notification-item:hover {
+                background-color: #f8f8f8;
+            }
+            
+            .notification-item.unread {
+                background-color: var(--color-tertiary);
+            }
+            
+            .notification-item.unread:hover {
+                background-color: #d8d0f0;
+            }
+            
+            .notification-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            
+            .notification-type {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: var(--color-secondary);
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+            
+            .notification-date {
+                font-size: 0.75rem;
+                color: #999;
+            }
+            
+            .notification-message {
+                font-size: 0.9rem;
+                color: var(--color-last);
+                margin-bottom: 0.75rem;
+            }
+            
+            .notification-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+            
+            .notification-actions .btn {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.75rem;
+            }
+            
+            .notification-empty {
+                padding: 3rem 1.25rem;
+                text-align: center;
+                color: #999;
+            }
+            
+            .notification-empty i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                opacity: 0.3;
             }
 
             @media (max-width: 991.98px) {
@@ -416,6 +579,27 @@
                         {% endif %}
                     </ul>
                     <div class="d-flex align-items-center gap-3">
+                        {# Notifications #}
+                        <div class="position-relative" id="notification-container">
+                            <button class="notification-bell" id="notification-bell" type="button" title="Notifications">
+                                <i class="bi bi-bell-fill"></i>
+                                <span class="notification-badge d-none" id="notification-badge">0</span>
+                            </button>
+                            
+                            <div class="notification-dropdown" id="notification-dropdown">
+                                <div class="notification-dropdown-header">
+                                    <h3>Notifications</h3>
+                                    <button class="mark-all-read" id="mark-all-read">Tout marquer comme lu</button>
+                                </div>
+                                <div class="notification-list" id="notification-list">
+                                    <div class="notification-empty">
+                                        <i class="bi bi-bell"></i>
+                                        <p>Aucune notification</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <a href="{{ path('app_user_profile') }}" class="navbar-profile" title="Mon compte">
                             {% if app.user.profilePictureName %}
                                 <img src="{{ vich_uploader_asset(app.user, 'profilePictureFile') }}" 
