@@ -65,70 +65,81 @@ class NotificationService
      */
     public function createCommentNotifications(Comment $comment): void
     {
-        $wedding = $comment->getWedding();
-        $author = $comment->getUser();
-        $songType = $comment->getSongType();
+        try {
+            $wedding = $comment->getWedding();
+            $author = $comment->getUser();
+            $songType = $comment->getSongType();
 
-        // Récupérer tous les participants du mariage
-        $participants = [];
-        
-        // Le créateur du mariage
-        if ($wedding->getCreatedBy()) {
-            $participants[] = $wedding->getCreatedBy();
-        }
-        
-        // Les deux mariés (s'ils sont différents du créateur)
-        if ($wedding->getMarie()) {
-            $participants[] = $wedding->getMarie();
-        }
-        if ($wedding->getMariee()) {
-            $participants[] = $wedding->getMariee();
-        }
-        
-        // Les musiciens
-        foreach ($wedding->getMusicians() as $musician) {
-            $participants[] = $musician;
-        }
-        
-        // Les utilisateurs de la paroisse
-        foreach ($wedding->getParishUsers() as $parishUser) {
-            $participants[] = $parishUser;
-        }
-
-        // Créer une notification pour chaque participant unique (sauf l'auteur)
-        $uniqueParticipants = [];
-        foreach ($participants as $participant) {
-            $uniqueParticipants[$participant->getId()] = $participant;
-        }
-        
-        foreach ($uniqueParticipants as $participant) {
-            if ($participant->getId() === $author->getId()) {
-                continue; // Ne pas notifier l'auteur du commentaire
+            // Récupérer tous les participants du mariage
+            $participants = [];
+            
+            // Le créateur du mariage
+            if ($wedding->getCreatedBy()) {
+                $participants[] = $wedding->getCreatedBy();
+            }
+            
+            // Les deux mariés (s'ils sont différents du créateur)
+            if ($wedding->getMarie()) {
+                $participants[] = $wedding->getMarie();
+            }
+            if ($wedding->getMariee()) {
+                $participants[] = $wedding->getMariee();
+            }
+            
+            // Les musiciens
+            foreach ($wedding->getMusicians() as $musician) {
+                $participants[] = $musician;
+            }
+            
+            // Les utilisateurs de la paroisse
+            foreach ($wedding->getParishUsers() as $parishUser) {
+                $participants[] = $parishUser;
             }
 
-            $notification = new Notification();
-            $notification->setType('comment');
-            $notification->setUser($participant);
-            $notification->setComment($comment);
-            $notification->setWedding($wedding);
+            // Créer une notification pour chaque participant unique (sauf l'auteur)
+            $uniqueParticipants = [];
+            foreach ($participants as $participant) {
+                if ($participant) {
+                    $uniqueParticipants[$participant->getId()] = $participant;
+                }
+            }
             
-            $weddingName = $this->getWeddingDisplayName($wedding);
-            
-            $notification->setMessage(sprintf(
-                '%s %s a commenté "%s" dans le mariage de %s',
-                $author->getFirstName(),
-                $author->getName(),
-                $songType->getName(),
-                $weddingName
-            ));
-            
-            // Lien vers le mariage avec le hash du type de chant pour ouvrir la modale
-            $notification->setLink('/wedding/' . $wedding->getId() . '#songtype-' . $songType->getId());
+            $notificationsCreated = 0;
+            foreach ($uniqueParticipants as $participant) {
+                if ($participant->getId() === $author->getId()) {
+                    continue; // Ne pas notifier l'auteur du commentaire
+                }
 
-            $this->entityManager->persist($notification);
+                $notification = new Notification();
+                $notification->setType('comment');
+                $notification->setUser($participant);
+                $notification->setComment($comment);
+                $notification->setWedding($wedding);
+                
+                $weddingName = $this->getWeddingDisplayName($wedding);
+                
+                $notification->setMessage(sprintf(
+                    '%s %s a commenté "%s" dans le mariage de %s',
+                    $author->getFirstName(),
+                    $author->getName(),
+                    $songType->getName(),
+                    $weddingName
+                ));
+                
+                // Lien vers le mariage avec le hash du type de chant pour ouvrir la modale
+                $notification->setLink('/wedding/' . $wedding->getId() . '#songtype-' . $songType->getId());
+
+                $this->entityManager->persist($notification);
+                $notificationsCreated++;
+            }
+
+            if ($notificationsCreated > 0) {
+                $this->entityManager->flush();
+            }
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne bloque pas l'ajout du commentaire
+            error_log('Erreur lors de la création des notifications : ' . $e->getMessage());
         }
-
-        $this->entityManager->flush();
     }
 
     /**

@@ -3,21 +3,31 @@
  */
 class NotificationManager {
     constructor() {
+        console.log('NotificationManager: Initialisation...');
         this.bell = document.getElementById('notification-bell');
         this.badge = document.getElementById('notification-badge');
         this.dropdown = document.getElementById('notification-dropdown');
         this.list = document.getElementById('notification-list');
         this.markAllReadBtn = document.getElementById('mark-all-read');
         
+        console.log('NotificationManager: Elements trouvés', {
+            bell: !!this.bell,
+            badge: !!this.badge,
+            dropdown: !!this.dropdown,
+            list: !!this.list
+        });
+        
         if (!this.bell || !this.badge || !this.dropdown || !this.list) {
             console.warn('Notification elements not found');
             return;
         }
         
+        console.log('NotificationManager: Tous les éléments trouvés, initialisation...');
         this.init();
     }
     
     init() {
+        console.log('NotificationManager: init() appelé');
         // Toggle dropdown au clic sur la cloche
         this.bell.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -37,6 +47,7 @@ class NotificationManager {
         });
         
         // Charger les notifications au démarrage
+        console.log('NotificationManager: Chargement des notifications...');
         this.loadNotifications();
         
         // Rafraîchir toutes les 30 secondes
@@ -57,9 +68,13 @@ class NotificationManager {
     }
     
     async loadNotifications() {
+        console.log('NotificationManager: loadNotifications() appelé');
         try {
+            console.log('NotificationManager: Appel API /notification/list');
             const response = await fetch('/notification/list');
+            console.log('NotificationManager: Réponse reçue', response.status);
             const data = await response.json();
+            console.log('NotificationManager: Données reçues', data);
             
             this.updateBadge(data.unreadCount);
             this.renderNotifications(data.notifications);
