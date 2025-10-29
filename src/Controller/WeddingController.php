@@ -908,17 +908,27 @@ public function invite(
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        // Envoi de l'email
+        // Déterminer si le paiement est requis
+        $requiresPayment = in_array($role, ['marie', 'mariee'], true) && $wedding->isRequiresCouplePayment();
+
+        // Envoi de l'email avec template professionnel
         $emailMessage = (new Email())
-            ->from('noreply@monsite.com')
+            ->from(new Address('contact@notremessedemariage.fr', 'Notre Messe de Mariage'))
             ->to($email)
-            ->subject('Invitation à rejoindre un mariage')
-            ->html("Vous avez été invité à rejoindre un mariage.<br>
-                    <a href='$generatedInvitationLink'>Cliquez ici pour accepter l’invitation</a>");
+            ->subject('Invitation à rejoindre un mariage - Notre Messe de Mariage')
+            ->html($this->renderView('emails/wedding/invitation.html.twig', [
+                'wedding' => $wedding,
+                'role' => $role,
+                'invitationLink' => $generatedInvitationLink,
+                'requiresPayment' => $requiresPayment,
+            ]));
 
         $mailer->send($emailMessage);
 
         $this->addFlash('success', 'Invitation envoyée !');
+
+        // 🔑 Reprend les mêmes données que edit()
+        $songTypes = $songTypeRepo->findAll();
 
         // 🔑 Reprend les mêmes données que edit()
         $songTypes = $songTypeRepo->findAll();

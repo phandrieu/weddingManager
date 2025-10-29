@@ -1,0 +1,112 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block email_title %}Invitation à rejoindre un mariage - Notre Messe de Mariage{% endblock %}
+
+{% block preheader %}Vous avez été invité(e) à rejoindre la préparation d'un mariage sur Notre Messe de Mariage{% endblock %}
+
+{% block content %}
+    <h1 style="color: #FF8100; font-size: 28px; font-weight: 700; text-transform: uppercase; margin: 0 0 25px 0;">
+        🎊 Vous êtes invité(e) !
+    </h1>
+    
+    <p style="font-size: 18px; color: #61616F; margin: 0 0 20px 0;">
+        Bonjour,
+    </p>
+    
+    <p style="font-size: 16px; color: #61616F; line-height: 1.6; margin: 0 0 25px 0;">
+        Vous avez été invité(e) à rejoindre la préparation d'un mariage sur <strong style="color: #652D90;">Notre Messe de Mariage</strong>.
+    </p>
+    
+    <!-- Informations du mariage (si disponibles) -->
+    {% if wedding %}
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #E6DEF6; border-radius: 8px; padding: 20px; margin: 0 0 30px 0;">
+        <tr>
+            <td>
+                <p style="margin: 0 0 10px 0; font-size: 14px; color: #652D90; font-weight: 600;">
+                    📅 Détails du mariage
+                </p>
+                {% if wedding.marie and wedding.mariee %}
+                <p style="margin: 0 0 8px 0; font-size: 15px; color: #61616F;">
+                    <strong>Mariés :</strong> {{ wedding.marie.firstName }} {{ wedding.marie.name }} & {{ wedding.mariee.firstName }} {{ wedding.mariee.name }}
+                </p>
+                {% endif %}
+                {% if wedding.date %}
+                <p style="margin: 0 0 8px 0; font-size: 15px; color: #61616F;">
+                    <strong>Date :</strong> {{ wedding.date|date('d/m/Y') }}
+                </p>
+                {% endif %}
+                {% if wedding.church %}
+                <p style="margin: 0; font-size: 15px; color: #61616F;">
+                    <strong>Lieu :</strong> {{ wedding.church }}
+                </p>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    {% if role %}
+    <p style="font-size: 16px; color: #61616F; line-height: 1.6; margin: 0 0 25px 0;">
+        Vous avez été invité(e) en tant que 
+        <strong style="color: #FF8100;">
+            {% if role == 'marie' %}
+                Marié
+            {% elseif role == 'mariee' %}
+                Mariée
+            {% elseif role == 'musician' %}
+                Musicien(ne)
+            {% elseif role == 'parish' %}
+                Membre de la paroisse
+            {% else %}
+                {{ role }}
+            {% endif %}
+        </strong>.
+    </p>
+    {% endif %}
+    
+    <p style="font-size: 16px; color: #61616F; line-height: 1.6; margin: 0 0 30px 0;">
+        Pour accepter cette invitation et rejoindre la préparation du mariage, cliquez sur le bouton ci-dessous :
+    </p>
+    
+    <!-- Call to action button -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 30px auto;">
+        <tr>
+            <td style="border-radius: 50px; background-color: #FF8100; text-align: center;">
+                <a href="{{ invitationLink }}" style="display: inline-block; padding: 16px 40px; background-color: #FF8100; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    ✨ Accepter l'invitation
+                </a>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Lien alternatif -->
+    <p style="font-size: 13px; color: #999999; line-height: 1.5; margin: 0 0 20px 0; text-align: center;">
+        Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
+        <a href="{{ invitationLink }}" style="color: #652D90; word-break: break-all;">{{ invitationLink }}</a>
+    </p>
+    
+    {% if requiresPayment %}
+    <!-- Note sur le paiement -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #FFF4E6; border-left: 4px solid #FF8100; padding: 15px; margin: 0 0 20px 0;">
+        <tr>
+            <td>
+                <p style="margin: 0; font-size: 14px; color: #61616F; line-height: 1.5;">
+                    <strong style="color: #FF8100;">ℹ️ Information :</strong><br>
+                    Cette invitation inclut une participation financière qui vous sera demandée lors de l'acceptation.
+                </p>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <!-- Info supplémentaire -->
+    <p style="font-size: 14px; color: #999999; line-height: 1.5; margin: 0; padding-top: 20px; border-top: 1px solid #E6DEF6;">
+        <strong>Qu'est-ce que Notre Messe de Mariage ?</strong><br>
+        Notre plateforme facilite l'organisation de la cérémonie religieuse de mariage en permettant aux mariés, musiciens et paroisses de collaborer efficacement pour choisir les chants et préparer la liturgie.
+    </p>
+{% endblock %}
+
+{% block footer_text %}
+    Vous recevez cet email car quelqu'un vous a invité à participer à un mariage.<br>
+    Pour toute question, contactez-nous à <a href="mailto:contact@notremessedemariage.fr" style="color: #652D90; text-decoration: none;">contact@notremessedemariage.fr</a>
+{% endblock %}
