@@ -267,10 +267,24 @@
         grid-template-columns: 1fr;
         gap: .5rem;
     }
-
+    
     .wizard-stepper__item {
         padding: .75rem .5rem;
         font-size: .8rem;
+    }
+    
+    .wizard-panel {
+        padding: clamp(1rem, 3vw, 1.5rem);
+        border-radius: 1rem;
+    }
+    
+    .wizard-header {
+        gap: 1rem;
+    }
+    
+    .wizard-header__actions {
+        width: 100%;
+        flex-wrap: wrap;
     }
 }
 
