@@ -3,44 +3,254 @@
 {% block title %}Mon répertoire{% endblock %}
 
 {% block body %}
+
 <header class="page-header">
     <h1>Mon répertoire</h1>
 </header>
 
 <form method="POST" action="{{ path('app_repertoire_update') }}" class="app-card">
-    <p class="text-muted mb-4">
-        Sélectionnez les chants que vous maîtrisez pour qu'ils apparaissent dans votre répertoire personnel.
-    </p>
-
-    <div class="row g-3">
-        {% for song in allSongs %}
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="form-check app-card-light">
-                    <input type="checkbox" name="songs[]" value="{{ song.id }}" 
-                           id="song{{ song.id }}" class="form-check-input"
-                           {% if song in mySongs %}checked{% endif %}>
-                    <label class="form-check-label w-100" for="song{{ song.id }}" style="cursor: pointer;">
-                        <div class="fw-bold">{{ song.name }}</div>
-                        {% if song.types is not empty %}
-                            <div class="small text-muted">
-                                {% for t in song.types %}
-                                    {{ t.name }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </label>
-                </div>
-            </div>
-        {% else %}
-            <div class="col-12 text-center text-muted">Aucun chant disponible.</div>
-        {% endfor %}
-    </div>
-
-    <div class="mt-4 text-end">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <p class="text-muted mb-0">
+            Sélectionnez les chants que vous maîtrisez pour qu'ils apparaissent dans votre répertoire personnel.
+        </p>
         <button type="submit" class="btn btn-primary btn-rounded btn-icon">
             <i class="bi bi-check-lg"></i>
-            Sauvegarder mon répertoire
+            Sauvegarder
         </button>
     </div>
+
+    {% if allSongs is empty %}
+        <div class="text-muted text-center py-5">
+            <i class="bi bi-music-note-list" style="font-size: 3rem; opacity: 0.3;"></i>
+            <p class="mt-3">Aucun chant disponible dans la bibliothèque.</p>
+            <a href="{{ path('app_song_index') }}" class="btn btn-outline-primary btn-rounded mt-2">
+                <i class="bi bi-book"></i>
+                Voir la bibliothèque
+            </a>
+        </div>
+    {% else %}
+        {# Filtres de recherche #}
+        <div class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchRepertoire" class="form-control" placeholder="Rechercher dans la liste...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="filterKind" class="form-select">
+                        <option value="all">Tous les éléments</option>
+                        <option value="chants">Chants uniquement</option>
+                        <option value="textes">Textes uniquement</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="filterStatus" class="form-select">
+                        <option value="all">Tous</option>
+                        <option value="selected">Sélectionnés uniquement</option>
+                        <option value="unselected">Non sélectionnés uniquement</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {# Compteur #}
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4">
+            <span>
+                <i class="bi bi-info-circle me-2"></i>
+                <span id="selectedCount">{{ mySongs|length }}</span> chant(s) sélectionné(s) sur {{ allSongs|length }}
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
+                <i class="bi bi-check-all"></i> Tout sélectionner
+            </button>
+        </div>
+
+        {# Liste des chants en cartes #}
+        <div class="row g-3" id="songsList">
+            {% for song in allSongs %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-item" 
+                     data-kind="{{ song.song ? 'chant' : 'texte' }}" 
+                     data-selected="{{ song in mySongs ? 'true' : 'false' }}"
+                     data-name="{{ song.name|lower }}"
+                     data-types="{{ song.types|map(t => t.name)|join(' ')|lower }}">
+                    <div class="app-card-light h-100 position-relative">
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   name="songs[]" 
+                                   value="{{ song.id }}" 
+                                   id="song{{ song.id }}" 
+                                   class="form-check-input song-checkbox"
+                                   {% if song in mySongs %}checked{% endif %}>
+                            <label class="form-check-label w-100 cursor-pointer" for="song{{ song.id }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold mb-1">{{ song.name }}</div>
+                                        <div class="small text-muted mb-2">
+                                            {% if song.song %}
+                                                <i class="bi bi-music-note"></i> Chant
+                                            {% else %}
+                                                <i class="bi bi-book"></i> Texte
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if song.types is not empty %}
+                                    <div class="mt-2">
+                                        {% for t in song.types %}
+                                            <span class="badge text-bg-secondary small">{{ t.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Message si aucun résultat #}
+        <div id="noResults" class="text-muted text-center py-5" style="display: none;">
+            <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
+            <p class="mt-3">Aucun chant ne correspond à vos critères de recherche.</p>
+        </div>
+
+        {# Bouton de sauvegarde fixe en bas #}
+        <div class="mt-4 text-end sticky-bottom bg-white p-3 border-top">
+            <button type="submit" class="btn btn-primary btn-rounded btn-icon">
+                <i class="bi bi-check-lg"></i>
+                Sauvegarder mon répertoire
+            </button>
+        </div>
+    {% endif %}
 </form>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchRepertoire');
+    const filterKind = document.getElementById('filterKind');
+    const filterStatus = document.getElementById('filterStatus');
+    const songsList = document.getElementById('songsList');
+    const noResults = document.getElementById('noResults');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectAllBtn = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.song-checkbox');
+
+    // Fonction de filtrage
+    function filterSongs() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const kindFilter = filterKind.value;
+        const statusFilter = filterStatus.value;
+        let visibleCount = 0;
+
+        document.querySelectorAll('.song-item').forEach(item => {
+            const name = item.dataset.name;
+            const types = item.dataset.types;
+            const kind = item.dataset.kind;
+            const selected = item.dataset.selected;
+            const checkbox = item.querySelector('.song-checkbox');
+            const isChecked = checkbox.checked;
+
+            // Filtre de recherche
+            const matchesSearch = searchTerm === '' || 
+                                 name.includes(searchTerm) || 
+                                 types.includes(searchTerm);
+
+            // Filtre de type (chant/texte)
+            const matchesKind = kindFilter === 'all' || 
+                               (kindFilter === 'chants' && kind === 'chant') ||
+                               (kindFilter === 'textes' && kind === 'texte');
+
+            // Filtre de statut (sélectionné/non sélectionné)
+            const matchesStatus = statusFilter === 'all' ||
+                                 (statusFilter === 'selected' && isChecked) ||
+                                 (statusFilter === 'unselected' && !isChecked);
+
+            if (matchesSearch && matchesKind && matchesStatus) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Afficher/masquer le message "aucun résultat"
+        if (visibleCount === 0) {
+            songsList.style.display = 'none';
+            noResults.style.display = 'block';
+        } else {
+            songsList.style.display = '';
+            noResults.style.display = 'none';
+        }
+    }
+
+    // Mettre à jour le compteur
+    function updateCount() {
+        const count = document.querySelectorAll('.song-checkbox:checked').length;
+        selectedCount.textContent = count;
+    }
+
+    // Événements de filtrage
+    searchInput.addEventListener('input', filterSongs);
+    filterKind.addEventListener('change', filterSongs);
+    filterStatus.addEventListener('change', filterSongs);
+
+    // Mettre à jour le compteur et le data-selected à chaque changement
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const item = this.closest('.song-item');
+            item.dataset.selected = this.checked ? 'true' : 'false';
+            updateCount();
+            
+            // Si le filtre de statut est actif, réappliquer les filtres
+            if (filterStatus.value !== 'all') {
+                filterSongs();
+            }
+        });
+    });
+
+    // Bouton "Tout sélectionner"
+    selectAllBtn.addEventListener('click', function() {
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        checkboxes.forEach(checkbox => {
+            // Ne modifier que les cases visibles
+            const item = checkbox.closest('.song-item');
+            if (item.style.display !== 'none') {
+                checkbox.checked = !allChecked;
+                item.dataset.selected = checkbox.checked ? 'true' : 'false';
+            }
+        });
+        
+        updateCount();
+        this.innerHTML = allChecked 
+            ? '<i class="bi bi-check-all"></i> Tout sélectionner'
+            : '<i class="bi bi-x-lg"></i> Tout désélectionner';
+    });
+});
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.song-item {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.form-check-input:checked ~ .form-check-label {
+    opacity: 0.8;
+}
+
+.sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+</style>
 {% endblock %}

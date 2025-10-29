@@ -10,15 +10,101 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 #[Route('/songs')]
 class SongController extends AbstractController
 {
     #[Route('/', name: 'app_song_index')]
-    public function index(SongRepository $repo): Response
+    public function index(Request $request, SongRepository $repo): Response
     {
+        // Filtres
+        $search = trim((string) $request->query->get('q', ''));
+        $typeFilter = trim((string) $request->query->get('type', ''));
+        $kindFilter = $request->query->get('kind', 'all'); // all, chants, textes
+        
+        // Pagination
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 12;
+
+        // Construction de la requête
+        $qb = $repo->createQueryBuilder('s')
+            ->leftJoin('s.types', 't')
+            ->addSelect('t')
+            ->andWhere('s.suggestion = false')
+            ->orderBy('s.name', 'ASC');
+
+        // Filtre par type de cérémonie
+        if ($kindFilter === 'chants') {
+            $qb->andWhere('s.song = true');
+        } elseif ($kindFilter === 'textes') {
+            $qb->andWhere('s.song = false');
+        }
+
+        // Filtre par type de chant
+        if ($typeFilter !== '') {
+            $qb->andWhere('t.name = :typeName')
+               ->setParameter('typeName', $typeFilter);
+        }
+
+        // Recherche
+        if ($search !== '') {
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->like('LOWER(s.name)', ':search'),
+                $qb->expr()->like('LOWER(s.lyrics)', ':search'),
+                $qb->expr()->like('LOWER(s.lyricsAuthorName)', ':search'),
+                $qb->expr()->like('LOWER(s.musicAuthorName)', ':search'),
+                $qb->expr()->like('LOWER(s.interpretName)', ':search')
+            ))->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        // Compte total
+        $countQb = clone $qb;
+        $paginatorForCount = new Paginator($countQb, true);
+        $total = count($paginatorForCount);
+        $pages = max(1, (int) ceil($total / $perPage));
+        
+        if ($page > $pages) {
+            $page = $pages;
+        }
+
+        // Résultats paginés
+        $qb->setFirstResult(($page - 1) * $perPage)
+           ->setMaxResults($perPage);
+
+        $songs = $qb->getQuery()->getResult();
+
+        // Récupérer toutes les suggestions pour les admin/musiciens
+        $suggestions = $repo->createQueryBuilder('s')
+            ->where('s.suggestion = true')
+            ->orderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Récupérer tous les types pour le filtre
+        $allTypes = [];
+        $allSongs = $repo->findAll();
+        foreach ($allSongs as $song) {
+            foreach ($song->getTypes() as $type) {
+                if (!in_array($type->getName(), $allTypes)) {
+                    $allTypes[] = $type->getName();
+                }
+            }
+        }
+        sort($allTypes);
+
         return $this->render('song/index.html.twig', [
-            'songs' => $repo->findAll(),
+            'songs' => $songs,
+            'suggestions' => $suggestions,
+            'allTypes' => $allTypes,
+            'search' => $search,
+            'typeFilter' => $typeFilter,
+            'kindFilter' => $kindFilter,
+            'pagination' => [
+                'page' => $page,
+                'pages' => $pages,
+                'total' => $total,
+            ],
         ]);
     }
 

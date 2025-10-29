@@ -18,7 +18,14 @@ class RepertoireController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $allSongs = $songRepo->findAll();
+        
+        // Récupérer uniquement les chants (pas les suggestions)
+        $allSongs = $songRepo->createQueryBuilder('s')
+            ->where('s.suggestion = false')
+            ->orderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+            
         $mySongs = $user->getRepertoire();
 
         return $this->render('repertoire/index.html.twig', [

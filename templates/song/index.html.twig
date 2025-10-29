@@ -1,15 +1,17 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des chants & textes{% endblock %}
+{% block title %}Bibliothèque partagée{% endblock %}
 
 {% block body %}
+
 <header class="page-header">
     <h1>Bibliothèque partagée</h1>
 
     <div class="app-actions">
         {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
             <button type="button" class="btn btn-outline-secondary btn-rounded" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
-                Voir les suggestions
+                <i class="bi bi-lightbulb"></i>
+                Suggestions ({{ suggestions|length }})
             </button>
 
             <a href="{{ path('app_song_edit') }}" class="btn btn-primary btn-rounded btn-icon">
@@ -18,257 +20,258 @@
             </a>
         {% elseif 'ROLE_USER' in app.user.roles %}
             <a href="{{ path('app_song_suggest') }}" class="btn btn-outline-secondary btn-rounded">
+                <i class="bi bi-lightbulb"></i>
                 Suggérer un élément
             </a>
         {% endif %}
-
-        {# Champ de recherche + filtre par type #}
-        <div class="d-flex" style="gap:0.5rem;align-items:center;">
-            <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Rechercher..." style="min-width:180px;">
-            <select id="typeFilter" class="form-select form-select-sm" style="min-width:40px; max-width:160px;">
-                <option value="">Tous les types</option>
-                {% set types = [] %}
-                {% for song in songs %}
-                    {% for t in song.types %}
-                        {% if t.name not in types %}
-                            {% set types = types|merge([t.name]) %}
-                            <option value="{{ t.name }}">{{ t.name }}</option>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            </select>
-        </div>
     </div>
 </header>
 
-    {# tabs pour Chants / Textes #}
-    <ul class="app-tabs" id="songTabs" role="tablist">
-        <li class="nav-item">
-            <button class="app-tab app-tab-primary active" id="tab-chants-btn" data-bs-toggle="pill" data-bs-target="#tab-chants" type="button" role="tab" aria-controls="tab-chants" aria-selected="true">
-                <i class="bi bi-music-note" style="font-size:1.15rem;"></i>
-                <span>Chants</span>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="app-tab app-tab-secondary" id="tab-textes-btn" data-bs-toggle="pill" data-bs-target="#tab-textes" type="button" role="tab" aria-controls="tab-textes" aria-selected="false">
-                <i class="bi bi-book" style="font-size:1.15rem;"></i>
-                <span>Textes & Lectures</span>
-            </button>
-        </li>
-    </ul>
-
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="tab-chants" role="tabpanel" aria-labelledby="tab-chants-btn">
-            <div class="row g-4" id="songsGridChants">
-                {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
-                {% if nonSuggestions is not empty %}
-                    {% for song in nonSuggestions|sort((a, b) => a.name|lower <=> b.name|lower) %}
-                        {% if song.song %}
-                        {% set youtubeId = song.previewUrl
-                            |replace({'https://youtu.be/':'','https://www.youtube.com/watch?v=':'','&feature=youtu.be':'','&si=':''})
-                        %}
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.types|map(t => t.name)|join(', ') }}" data-kind="chant">
-                            <div style="position:relative;background:#f8e9e9;border-radius:12px;padding:14px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
-                                <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
-
-                                <div>
-                                    <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
-                                    <div class="small text-muted mb-2" style="font-style:italic;">
-    {% for t in song.types %}
-        {{ t.name }}{% if not loop.last %}, {% endif %}
-    {% endfor %}
-</div>
-
-                                    {% if song.previewUrl %}
-                                        <div class="ratio ratio-16x9 mb-3" style="border-radius:8px;overflow:hidden;">
-                                            <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
-                                        </div>
-                                    {% else %}
-                                        <div class="mb-3 text-muted text-center" style="min-height:140px;display:flex;align-items:center;justify-content:center;">
-                                            Pas de preview
-                                        </div>
-                                    {% endif %}
-
-                                    {# full lyrics hidden for search (chants) #}
-                                    <div class="song-lyrics-text" style="display:none;">{{ song.lyrics ?: '' }}</div>
-                                </div>
-
-                                <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
-                                    <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
-                                    {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
-                                    {% endif %}
-
-                                    {% if 'ROLE_ADMIN' in app.user.roles %}
-                                        <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce chant ?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
-                                            <button class="btn btn-sm btn-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-trash"></i></button>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        {# Modal crédits spécifique à la carte #}
-                        <div class="modal fade" id="creditsModal{{ song.id }}" tabindex="-1" aria-labelledby="creditsModalLabel{{ song.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="creditsModalLabel{{ song.id }}">Crédits — {{ song.name }}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Titre :</strong> {{ song.name }}</p>
-                                        <p><strong>Auteur des paroles :</strong> {{ song.lyricsAuthorName ?: '—' }}</p>
-                                        <p><strong>Auteur de la musique :</strong> {{ song.musicAuthorName ?: '—' }}</p>
-                                        <p><strong>Maison d'édition :</strong> {{ song.editorName ?: '—' }}</p>
-                                        <p><strong>Interprète :</strong> {{ song.interpretName ?: '—' }}</p>
-                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }} {% if song.addedAt is not null %} ({{ song.addedAt ? song.addedAt|date('d/m/Y H:i', 'Europe/Paris') : '' }}){% endif %}</p>
-                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }} {% if song.lastEditAt is not null %} ({{ song.lastEditAt ? song.lastEditAt|date('d/m/Y H:i', 'Europe/Paris') : '' }}){% endif %}</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-secondary">Aucun élément trouvé.</div>
-                    </div>
-                {% endif %}
+<form method="get" class="wedding-filters mb-4" role="search">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="search" name="q" value="{{ search }}" class="form-control" placeholder="Rechercher un chant ou texte...">
             </div>
         </div>
-
-        <div class="tab-pane fade" id="tab-textes" role="tabpanel" aria-labelledby="tab-textes-btn">
-            <div class="row g-4" id="songsGridTextes">
-                {% set nonSuggestions = songs|filter(a => not a.suggestion) %}
-                {% if nonSuggestions is not empty %}
-                    {% for song in nonSuggestions %}
-                        {% if not song.song %}
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 song-card" data-type="{{ song.types|map(t => t.name)|join(', ') }}" data-kind="texte">
-                            <div style="position:relative;background:#eef6ff;border-radius:12px;padding:14px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
-                                <button type="button" class="btn btn-sm btn-light" style="position:absolute;top:10px;right:10px;z-index:10;padding:4px 8px;border-radius:999px;" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">©</button>
-
-                                <div>
-                                    <h6 class="mb-1" style="font-weight:700;">{{ song.name }}</h6>
-                                    <div class="small text-muted mb-2" style="font-style:italic;">
-    {% for t in song.types %}
-        {{ t.name }}{% if not loop.last %}, {% endif %}
-    {% endfor %}
-</div>
-
-                                    <div class="mb-3 text-muted">
-                                        {{ song.lyrics ? song.lyrics|slice(0,120) ~ '…' : 'Pas de texte' }}
-                                    </div>
-
-                                    {# full lyrics hidden for search (textes) #}
-                                    <div class="song-lyrics-text" style="display:none;">{{ song.lyrics ?: '' }}</div>
-                                </div>
-
-                                <div class="d-flex justify-content-center align-items-center" style="gap:0.65rem;padding-top:6px;">
-                                    <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir"><i class="bi bi-eye"></i></a>
-
-                                    {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-                                        <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier"><i class="bi bi-pencil"></i></a>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-light invisible"><i class="bi bi-pencil"></i></button>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        {# Modal crédits spécifique à la carte #}
-                        <div class="modal fade" id="creditsModal{{ song.id }}" tabindex="-1" aria-labelledby="creditsModalLabel{{ song.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="creditsModalLabel{{ song.id }}">Crédits — {{ song.name }}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Référence :</strong> {{ song.textRef ?: '—' }}</p>
-                                        <p><strong>Traduction :</strong> {{ song.textTranslationName ?: '—' }}</p>
-                                        <p><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</p>
-                                        <p><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-secondary">Aucun texte trouvé.</div>
-                    </div>
-                {% endif %}
-            </div>
+        <div class="col-md-3">
+            <select name="kind" class="form-select">
+                <option value="all" {{ kindFilter == 'all' ? 'selected' }}>Tous</option>
+                <option value="chants" {{ kindFilter == 'chants' ? 'selected' }}>Chants uniquement</option>
+                <option value="textes" {{ kindFilter == 'textes' ? 'selected' }}>Textes uniquement</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="type" class="form-select">
+                <option value="">Tous les types</option>
+                {% for typeName in allTypes %}
+                    <option value="{{ typeName }}" {{ typeFilter == typeName ? 'selected' }}>{{ typeName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">Appliquer</button>
+            <a href="{{ path('app_song_index') }}" class="btn btn-outline-secondary flex-fill">Réinitialiser</a>
         </div>
     </div>
-</div>
+</form>
 
-{# Modal Suggestions (inchangé) #}
-{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
-<div class="modal fade" id="suggestionsModal" tabindex="-1" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Suggestions de chants</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                {% set suggestions = songs|filter(a => a.suggestion) %}
-                {% if suggestions %}
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Type</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for song in suggestions %}
-<tr id="suggestionRow{{ song.id }}">
-    <td>{{ song.name }}</td>
-    <td>{% for t in song.types %}
-    {{ t.name }}{% if not loop.last %}, {% endif %}
-{% endfor %}</td>
-    <td>
-        <form method="post" action="{{ path('app_song_approve_suggestion', {'id': song.id}) }}" style="display:inline;" 
-              onsubmit="return confirm('Valider cette suggestion ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('approve_song_' ~ song.id) }}">
-            <button class="btn btn-sm btn-success">Valider</button>
-        </form>
-    </td>
-</tr>
-{% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>Aucune suggestion en attente.</p>
-                {% endif %}
-            </div>
-        </div>
+{% if songs is empty %}
+    <div class="text-muted text-center py-5">
+        <i class="bi bi-music-note-list" style="font-size: 3rem; opacity: 0.3;"></i>
+        <p class="mt-3">Aucun chant ou texte ne correspond à vos critères.</p>
     </div>
-</div>
+{% else %}
+    <div class="row g-3">
+        {% for song in songs %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="app-card-light h-100" style="display: flex; flex-direction: column;">
+                    {# En-tête de la carte #}
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-1">{{ song.name }}</div>
+                            <div class="small text-muted">
+                                {% if song.song %}
+                                    <i class="bi bi-music-note"></i> Chant
+                                {% else %}
+                                    <i class="bi bi-book"></i> Texte
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#creditsModal{{ song.id }}" title="Crédits">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+
+                    {# Types #}
+                    {% if song.types is not empty %}
+                        <div class="mb-2">
+                            {% for t in song.types %}
+                                <span class="badge text-bg-secondary">{{ t.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {# Aperçu du contenu #}
+                    <div class="flex-grow-1 mb-3">
+                        {% if song.song and song.previewUrl %}
+                            {% set youtubeId = song.previewUrl|replace({
+                                'https://youtu.be/': '',
+                                'https://www.youtube.com/watch?v=': '',
+                                '&feature=youtu.be': '',
+                                '&si=': ''
+                            }) %}
+                            <div class="ratio ratio-16x9" style="border-radius: 8px; overflow: hidden;">
+                                <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" title="{{ song.name }}" allowfullscreen></iframe>
+                            </div>
+                        {% elseif song.lyrics %}
+                            <div class="small text-muted" style="max-height: 80px; overflow: hidden;">
+                                {{ song.lyrics|slice(0, 150) }}{% if song.lyrics|length > 150 %}...{% endif %}
+                            </div>
+                        {% else %}
+                            <div class="text-muted small text-center" style="opacity: 0.5;">
+                                <i class="bi bi-file-earmark-text"></i><br>
+                                Pas d'aperçu
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Actions #}
+                    <div class="d-flex justify-content-center gap-2 pt-2 border-top">
+                        <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                            <a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-sm btn-light" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        {% endif %}
+
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <form method="post" action="{{ path('app_song_delete', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer cet élément ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ song.id) }}">
+                                <button class="btn btn-sm btn-danger" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# Modal crédits #}
+            <div class="modal fade" id="creditsModal{{ song.id }}" tabindex="-1" aria-labelledby="creditsModalLabel{{ song.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="creditsModalLabel{{ song.id }}">Crédits — {{ song.name }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            {% if song.song %}
+                                <p><strong>Titre :</strong> {{ song.name }}</p>
+                                <p><strong>Auteur des paroles :</strong> {{ song.lyricsAuthorName ?: '—' }}</p>
+                                <p><strong>Auteur de la musique :</strong> {{ song.musicAuthorName ?: '—' }}</p>
+                                <p><strong>Maison d'édition :</strong> {{ song.editorName ?: '—' }}</p>
+                                <p><strong>Interprète :</strong> {{ song.interpretName ?: '—' }}</p>
+                            {% else %}
+                                <p><strong>Référence :</strong> {{ song.textRef ?: '—' }}</p>
+                                <p><strong>Traduction :</strong> {{ song.textTranslationName ?: '—' }}</p>
+                            {% endif %}
+                            <hr>
+                            <p class="small text-muted mb-1"><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }} {% if song.addedAt is not null %}({{ song.addedAt|date('d/m/Y H:i') }}){% endif %}</p>
+                            <p class="small text-muted mb-0"><strong>Dernière modification :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }} {% if song.lastEditAt is not null %}({{ song.lastEditAt|date('d/m/Y H:i') }}){% endif %}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if pagination.pages > 1 %}
+        {% set prevPage = pagination.page > 1 ? pagination.page - 1 : 1 %}
+        {% set nextPage = pagination.page < pagination.pages ? pagination.page + 1 : pagination.pages %}
+        <nav aria-label="Pagination de la bibliothèque" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ pagination.page == 1 ? 'disabled' }}">
+                    <a class="page-link" href="{{ pagination.page == 1 ? '#' : path('app_song_index', {page: prevPage, q: search, type: typeFilter, kind: kindFilter}) }}" tabindex="-1" aria-disabled="{{ pagination.page == 1 ? 'true' : 'false' }}">Précédent</a>
+                </li>
+                {% for pageNumber in 1..pagination.pages %}
+                    {% if pageNumber == 1 or pageNumber == pagination.pages or (pageNumber >= pagination.page - 2 and pageNumber <= pagination.page + 2) %}
+                        <li class="page-item {{ pageNumber == pagination.page ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('app_song_index', {page: pageNumber, q: search, type: typeFilter, kind: kindFilter}) }}">{{ pageNumber }}</a>
+                        </li>
+                    {% elseif pageNumber == pagination.page - 3 or pageNumber == pagination.page + 3 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {{ pagination.page == pagination.pages ? 'disabled' }}">
+                    <a class="page-link" href="{{ pagination.page == pagination.pages ? '#' : path('app_song_index', {page: nextPage, q: search, type: typeFilter, kind: kindFilter}) }}" aria-disabled="{{ pagination.page == pagination.pages ? 'true' : 'false' }}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
 {% endif %}
 
-<div class="container-fluid mt-4" role="note" aria-label="Information légale">
+{# Modal Suggestions #}
+{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+    <div class="modal fade" id="suggestionsModal" tabindex="-1" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Suggestions de chants</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    {% if suggestions is not empty %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>Types</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for song in suggestions %}
+                                        <tr id="suggestionRow{{ song.id }}">
+                                            <td class="fw-bold">{{ song.name }}</td>
+                                            <td>
+                                                {% if song.song %}
+                                                    <span class="badge text-bg-primary">Chant</span>
+                                                {% else %}
+                                                    <span class="badge text-bg-info">Texte</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for t in song.types %}
+                                                    <span class="badge text-bg-secondary">{{ t.name }}</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <form method="post" action="{{ path('app_song_approve_suggestion', {'id': song.id}) }}" style="display:inline;" onsubmit="return confirm('Valider cette suggestion ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('approve_song_' ~ song.id) }}">
+                                                    <button class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check-lg"></i> Valider
+                                                    </button>
+                                                </form>
+                                                <a href="{{ path('app_song_view', {'id': song.id}) }}" class="btn btn-sm btn-light" target="_blank">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">Aucune suggestion en attente.</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{# Notice légale #}
+<div class="container-fluid mt-5" role="note" aria-label="Information légale">
     <div class="mx-auto" style="max-width:1100px; margin-bottom:2rem;">
         <div class="p-3" style="background:var(--color-tertiary);border-radius:10px;border:1px solid rgba(0,0,0,0.04);">
             <p class="small mb-0 text-muted" style="line-height:1.4;text-align:center;">
-                Ce site agit en tant qu’hébergeur (LCEN, 21 juin 2004). Les publications restent sous la responsabilité de chaque contributeur.
+                Ce site agit en tant qu'hébergeur (LCEN, 21 juin 2004). Les publications restent sous la responsabilité de chaque contributeur.
                 Toute personne peut notifier un contenu illicite via
                 <a href="mailto:contact@notremessedemariage.fr">contact@notremessedemariage.fr</a>.
                 Les contenus signalés sont retirés promptement.
@@ -276,111 +279,5 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const typeFilter = document.getElementById('typeFilter');
-    const searchInput = document.getElementById('searchInput');
-
-    function updateNoResults(container) {
-        const cards = Array.from(container.querySelectorAll('.song-card'));
-        const visible = cards.filter(c => c.style.display !== 'none');
-        const existing = container.querySelector('.no-results-card');
-        if (visible.length === 0) {
-            if (!existing) {
-                const no = document.createElement('div');
-                no.className = 'no-results-card col-12';
-                no.innerHTML = '<div class="alert alert-secondary">Aucun élément trouvé pour ce type / recherche.</div>';
-                container.appendChild(no);
-            }
-        } else if (existing) {
-            existing.remove();
-        }
-    }
-
-    // applique filtre par type + recherche pour une pane donnée
-    function applyFilterToPane(paneId) {
-        const container = document.getElementById(paneId);
-        if (!container) return;
-        const cards = Array.from(container.querySelectorAll('.song-card'));
-        const selectedType = typeFilter.value.trim().toLowerCase();
-        const query = (searchInput.value || '').trim().toLowerCase();
-
-        cards.forEach(card => {
-            let visibleByType = !selectedType || (card.dataset.type && card.dataset.type.toLowerCase() === selectedType);
-            // recherche : titre, type, extrait de paroles et champs visibles dans la carte
-            const title = (card.querySelector('h6')?.textContent || '').toLowerCase();
-            const excerpt = (card.querySelector('.mb-3.text-muted')?.textContent || '').toLowerCase();
-            const meta = (card.querySelector('.small')?.textContent || '').toLowerCase();
-            const creditsText = (card.querySelector('.song-credits-text')?.textContent || '').toLowerCase();
-            const lyrics = (card.querySelector('.song-lyrics-text')?.textContent || '').toLowerCase();
-
-            const matchesQuery = !query || title.includes(query) || excerpt.includes(query) || meta.includes(query) || creditsText.includes(query) || lyrics.includes(query);
-
-            card.style.display = (visibleByType && matchesQuery) ? '' : 'none';
-        });
-
-        updateNoResults(container);
-    }
-
-    // recherche / filtre déclenchés sur entrée et changement
-    searchInput.addEventListener('input', function () {
-        // n'appliquer qu'à l'onglet visible
-        const activePane = document.querySelector('.tab-pane.show.active');
-        if (activePane && activePane.id) {
-            applyFilterToPane(activePane.querySelector('.row')?.id || activePane.id);
-        } else {
-            applyFilterToPane('songsGridChants');
-            applyFilterToPane('songsGridTextes');
-        }
-    });
-
-    typeFilter.addEventListener('change', function () {
-        applyFilterToPane('songsGridChants');
-        applyFilterToPane('songsGridTextes');
-    });
-
-    // when switching tabs, ré-appliquer recherche + filtre pour la pane devenue visible
-    document.getElementById('tab-chants-btn').addEventListener('shown.bs.tab', function () {
-        applyFilterToPane('songsGridChants');
-    });
-    document.getElementById('tab-textes-btn').addEventListener('shown.bs.tab', function () {
-        applyFilterToPane('songsGridTextes');
-    });
-
-    // initial filter application
-    applyFilterToPane('songsGridChants');
-    applyFilterToPane('songsGridTextes');
-
-    // Approve suggestion buttons (ajax) compatibility
-    document.querySelectorAll('.approve-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const songId = this.dataset.songId;
-            const csrfToken = this.dataset.csrf;
-            if (!confirm('Valider cette suggestion ?')) return;
-
-            fetch(`{{ path('app_song_approve_suggestion', {'id': 0}) }}`.replace('0', songId), {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': csrfToken
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const row = document.getElementById('suggestionRow' + songId);
-                    if (row) row.remove();
-                    alert('Suggestion validée !');
-                } else {
-                    alert('Erreur lors de la validation : ' + (data.message || ''));
-                }
-            })
-            .catch(() => alert('Erreur lors de la validation.'));
-        });
-    });
-});
-</script>
 {% endblock %}
