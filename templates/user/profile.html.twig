@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}{% endblock %}
+{% block title %}Mon compte{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -34,32 +34,74 @@
             border-radius: 0.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        .role-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .role-badge.admin {
+            background-color: var(--color-secondary);
+            color: white;
+        }
+
+        .role-badge.musician {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .role-badge.parish {
+            background-color: var(--color-tertiary);
+            color: var(--color-secondary);
+        }
+
+        .role-badge.user {
+            background-color: #e9ecef;
+            color: var(--color-last);
+        }
     </style>
 {% endblock %}
 
 {% block body %}
 <header class="page-header">
-    <h1>{{ user.id ? 'Modifier l\'utilisateur' : 'Ajouter un utilisateur' }}</h1>
+    <h1>Mon compte</h1>
     <div class="app-actions">
-        <button type="submit" form="userForm" class="btn btn-primary btn-rounded btn-icon">
+        <button type="submit" form="profileForm" class="btn btn-primary btn-rounded btn-icon">
             <i class="bi bi-check-lg"></i>
             Enregistrer
         </button>
-        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+        <a href="{{ path('home') }}" class="btn btn-outline-secondary btn-rounded">Retour</a>
     </div>
 </header>
 
-{{ form_start(form, {'attr': {'id': 'userForm'}}) }}
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
+{{ form_start(form, {'attr': {'id': 'profileForm'}}) }}
 
 <div class="row g-4">
-    <!-- Photo de profil -->
-    <div class="col-12">
+    <!-- Photo de profil et rôles -->
+    <div class="col-12 col-lg-4">
         <div class="app-card">
             <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
-                <i class="bi bi-person-circle me-2"></i>Photo de profil
+                <i class="bi bi-person-circle me-2"></i>Photo et rôles
             </h2>
 
-            <div class="form-group">
+            <div class="form-group mb-4">
                 {{ form_label(form.profilePictureFile, 'Photo de profil', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                 
                 {% if user.profilePictureName %}
@@ -74,11 +116,42 @@
                 {{ form_errors(form.profilePictureFile) }}
                 <small class="form-text text-muted">Formats acceptés : JPG, PNG, GIF (max 2 Mo)</small>
             </div>
+
+            <div class="mb-0">
+                <label class="form-label fw-bold">Mes rôles</label>
+                <div class="role-badges">
+                    {% for role in user.roles %}
+                        {% set roleClass = '' %}
+                        {% set roleName = '' %}
+                        
+                        {% if role == 'ROLE_ADMIN' %}
+                            {% set roleClass = 'admin' %}
+                            {% set roleName = 'Administrateur' %}
+                        {% elseif role == 'ROLE_MUSICIAN' %}
+                            {% set roleClass = 'musician' %}
+                            {% set roleName = 'Musicien' %}
+                        {% elseif role == 'ROLE_PARISH' %}
+                            {% set roleClass = 'parish' %}
+                            {% set roleName = 'Paroisse' %}
+                        {% elseif role == 'ROLE_USER' %}
+                            {% set roleClass = 'user' %}
+                            {% set roleName = 'Utilisateur' %}
+                        {% endif %}
+                        
+                        {% if roleName %}
+                            <span class="role-badge {{ roleClass }}">{{ roleName }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <small class="form-text text-muted d-block mt-2">
+                    Vos rôles déterminent vos permissions dans l'application.
+                </small>
+            </div>
         </div>
     </div>
 
     <!-- Informations personnelles -->
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-lg-8">
         <div class="app-card">
             <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
                 <i class="bi bi-person-fill me-2"></i>Informations personnelles
@@ -118,10 +191,8 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Adresse -->
-    <div class="col-12 col-lg-6">
+        <!-- Adresse -->
         <div class="app-card">
             <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
                 <i class="bi bi-geo-alt-fill me-2"></i>Adresse
@@ -153,31 +224,23 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Accès et sécurité -->
-    <div class="col-12">
+        <!-- Sécurité -->
         <div class="app-card">
             <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
-                <i class="bi bi-shield-lock-fill me-2"></i>Accès et sécurité
+                <i class="bi bi-shield-lock-fill me-2"></i>Sécurité
             </h2>
 
             <div class="row g-3">
-                <div class="col-12 col-md-6">
+                <div class="col-12">
                     <div class="form-group">
-                        {{ form_label(form.roles, 'Rôle', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.roles, {'attr': {'class': 'form-select'}}) }}
-                        {{ form_errors(form.roles) }}
-                        <small class="form-text text-muted">Définit les permissions de l'utilisateur dans l'application.</small>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                    <div class="form-group">
-                        {{ form_label(form.password, user.id ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_label(form.password, 'Nouveau mot de passe', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                         {{ form_widget(form.password, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
                         {{ form_help(form.password) }}
                         {{ form_errors(form.password) }}
+                        <small class="form-text text-muted">
+                            Laissez ce champ vide si vous ne souhaitez pas modifier votre mot de passe.
+                        </small>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,12 @@
+liip_imagine:
+    resolvers:
+        default:
+            web_path:
+                web_root: '%kernel.project_dir%/public'
+                cache_prefix: 'media/cache'
+    filter_sets:
+        cache: ~
+        profile_thumb:
+            quality: 75
+            filters:
+                thumbnail: { size: [200, 200], mode: inset }

@@ -272,6 +272,41 @@
                 border-top: 1px solid #ddd;
                 font-size: 0.9rem;
             }
+
+            /* Styles pour les pages de formulaires */
+            .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .app-actions {
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+            
+            .app-card {
+                background: white;
+                border-radius: 0.5rem;
+                padding: 1.5rem;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                margin-bottom: 1.5rem;
+            }
+
+            .btn-rounded {
+                border-radius: 2rem;
+                padding: 0.5rem 1.5rem;
+            }
+
+            .btn-icon {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
         </style>
 
         {% block stylesheets %}
@@ -319,10 +354,15 @@
                             </li>
                         {% endif %}
                     </ul>
-                    <a href="{{ path('app_logout') }}" class="nav-link" title="Se déconnecter">
-                        <span class="me-1" style="color: var(--color-bg);">{{ app.user.firstName }}</span>
-                        <i style="color: var(--color-bg);" class="bi bi-box-arrow-right"></i>
-                    </a>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{{ path('app_user_profile') }}" class="nav-link" title="Mon compte">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <span>{{ app.user.firstName }}</span>
+                        </a>
+                        <a href="{{ path('app_logout') }}" class="nav-link" title="Se déconnecter">
+                            <i style="color: var(--color-bg);" class="bi bi-box-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </nav>

@@ -6,12 +6,15 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -97,6 +100,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $credits = 0;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePictureName = null;
+
+    #[Vich\UploadableField(mapping: "profile_pictures", fileNameProperty: "profilePictureName")]
+    private ?File $profilePictureFile = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $profilePictureUpdatedAt = null;
 
     public function __construct()
     {
@@ -267,11 +279,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Keep serialization minimal to avoid serializing non-serializable objects
+     * (like UploadedFile/File used by VichUploader). Only scalar/state fields
+     * required to restore the security user are stored.
+     */
     public function __serialize(): array
     {
-        $data = (array) $this;
-        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
-        return $data;
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'password' => $this->password,
+            'roles' => $this->roles,
+        ];
+    }
+
+    /**
+     * Restore minimal state when unserializing the user from the session.
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->id = $data['id'] ?? null;
+        $this->email = $data['email'] ?? null;
+        $this->password = $data['password'] ?? null;
+        $this->roles = $data['roles'] ?? [];
     }
 
     #[\Deprecated]
@@ -537,6 +568,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $comment->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getProfilePictureName(): ?string
+    {
+        return $this->profilePictureName;
+    }
+
+    public function setProfilePictureName(?string $profilePictureName): static
+    {
+        $this->profilePictureName = $profilePictureName;
+
+        return $this;
+    }
+
+    public function getProfilePictureFile(): ?File
+    {
+        return $this->profilePictureFile;
+    }
+
+    public function setProfilePictureFile(?File $profilePictureFile = null): static
+    {
+        $this->profilePictureFile = $profilePictureFile;
+
+        if (null !== $profilePictureFile) {
+            // Force Doctrine to update even if only the file changes
+            $this->profilePictureUpdatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function getProfilePictureUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->profilePictureUpdatedAt;
+    }
+
+    public function setProfilePictureUpdatedAt(?\DateTimeInterface $profilePictureUpdatedAt): static
+    {
+        $this->profilePictureUpdatedAt = $profilePictureUpdatedAt;
 
         return $this;
     }

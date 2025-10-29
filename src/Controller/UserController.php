@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserType;
+use App\Form\UserProfileType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,4 +75,35 @@ public function edit(Request $request, UserPasswordHasherInterface $hasher, User
         'user' => $user,
     ]);
 }
+
+    #[Route('/profile', name: 'app_user_profile')]
+    public function profile(Request $request, UserPasswordHasherInterface $hasher, UserRepository $repo): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour accéder à cette page.');
+        }
+
+        $form = $this->createForm(UserProfileType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $plainPassword = $form->get('password')->getData();
+            if ($plainPassword) {
+                $hashedPassword = $hasher->hashPassword($user, $plainPassword);
+                $user->setPassword($hashedPassword);
+            }
+
+            $repo->save($user, true);
+            $this->addFlash('success', 'Votre profil a été mis à jour avec succès.');
+            return $this->redirectToRoute('app_user_profile');
+        }
+
+        return $this->render('user/profile.html.twig', [
+            'form' => $form->createView(),
+            'user' => $user,
+        ]);
+    }
 }
