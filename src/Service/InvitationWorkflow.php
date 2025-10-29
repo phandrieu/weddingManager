@@ -24,7 +24,10 @@ class InvitationWorkflow
             return false;
         }
 
-        return $wedding->isRequiresCouplePayment();
+        // Le paiement est requis si :
+        // 1. Le mariage nécessite le paiement du couple (requiresCouplePayment = true)
+        // 2. ET le mariage n'est pas encore payé (isPaid = false)
+        return $wedding->isRequiresCouplePayment() && !$wedding->isPaid();
     }
 
     public function attachUser(User $user, Invitation $invitation): void

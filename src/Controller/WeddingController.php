@@ -530,6 +530,23 @@ class WeddingController extends AbstractController
             }
 
             if ($isNewWedding && !$isAdmin) {
+                // === RÈGLES DE PAIEMENT POUR LA CRÉATION DE MARIAGE ===
+                // 
+                // 1. ROLE_USER uniquement (sans MUSICIAN/PARISH/ADMIN) :
+                //    - Paiement obligatoire de 49,99€ par CB via Stripe
+                //    - L'utilisateur devient marié ou mariée selon son choix
+                //
+                // 2. ROLE_MUSICIAN, ROLE_PARISH ou ROLE_ADMIN (seuls ou cumulés avec ROLE_USER) :
+                //    - Choix entre 3 options :
+                //      a) Utiliser 1 crédit (si disponible)
+                //      b) Payer 39,99€ par CB via Stripe
+                //      c) Déléguer le paiement au premier marié/mariée invité (39,99€)
+                //
+                // 3. Lorsque le paiement est délégué (option 2c) :
+                //    - Le mariage est marqué requiresCouplePayment = true
+                //    - Le premier marié/mariée qui accepte l'invitation doit payer 39,99€
+                //    - Une fois payé, le mariage est marqué isPaid = true
+                //
                 if ($isParishOrMusician) {
                     // Musicien ou Paroisse : choix entre crédit, CB, ou laisser les mariés payer
                     if ($selectedPaymentOption === '') {
@@ -577,7 +594,7 @@ class WeddingController extends AbstractController
                                         'price_data' => [
                                             'currency' => 'eur',
                                             'product_data' => ['name' => 'Création de mariage (partenaire)'],
-                                            'unit_amount' => 3990,
+                                            'unit_amount' => 3999, // 39,99€ pour les partenaires (musicien/paroisse/admin)
                                         ],
                                         'quantity' => 1,
                                     ]],
@@ -626,7 +643,7 @@ class WeddingController extends AbstractController
                             'price_data' => [
                                 'currency' => 'eur',
                                 'product_data' => ['name' => 'Création de mariage'],
-                                'unit_amount' => 4990,
+                                'unit_amount' => 4999, // 49,99€ pour les utilisateurs simples
                             ],
                             'quantity' => 1,
                         ]],
@@ -1048,8 +1065,8 @@ public function invite(
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'eur',
-                    'product_data' => ['name' => 'Validation de mariage'],
-                    'unit_amount' => 5000,
+                    'product_data' => ['name' => 'Participation au mariage'],
+                    'unit_amount' => 3999, // 39,99€ pour les mariés invités
                 ],
                 'quantity' => 1,
             ]],
@@ -1123,6 +1140,8 @@ public function invite(
         $wedding = $invitation->getWedding();
         $wedding->setRequiresCouplePayment(false);
         $wedding->setCreatedWithCredit(false);
+        $wedding->setIsPaid(true); // Marquer le mariage comme payé
+        $wedding->setPaymentOption('card_couple'); // Indiquer que c'est le couple qui a payé
         $weddingRepo->save($wedding, true);
 
         $session->remove('pending_invitation_token');

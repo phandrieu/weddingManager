@@ -453,6 +453,11 @@
                                     'label': 'Paiement en ligne à finaliser',
                                     'badge': 'info'
                                 } %}
+                            {% elseif wedding.paymentOption == 'card_couple' %}
+                                {% set paymentStatus = {
+                                    'label': 'Payé par le couple',
+                                    'badge': 'success'
+                                } %}
                             {% elseif wedding.paymentOption == 'credit' %}
                                 {% set paymentStatus = {
                                     'label': 'Réglé via crédits',
@@ -657,7 +662,7 @@
                         </span>
                     </button>
                     <button type="button" class="payment-option-card js-payment-option {{ currentPaymentOption == 'card' ? 'is-selected' }}" data-option="card">
-                        <span class="payment-option-card__title"><i class="bi bi-credit-card"></i> Payer 39,90 €</span>
+                        <span class="payment-option-card__title"><i class="bi bi-credit-card"></i> Payer 39,99 €</span>
                         <span class="payment-option-card__subtitle">Réglez maintenant par carte bancaire à tarif préférentiel partenaire.</span>
                         <span class="payment-option-card__meta">Redirection sécurisée vers Stripe</span>
                     </button>
