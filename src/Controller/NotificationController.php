@@ -30,8 +30,8 @@ class NotificationController extends AbstractController
         $user = $this->getUser();
         $repo = $this->entityManager->getRepository(Notification::class);
         
-        $notifications = $repo->findAllByUser($user->getId());
-        $unreadCount = $repo->countUnreadByUser($user->getId());
+        $notifications = $repo->findAllByUser($user);
+        $unreadCount = $repo->countUnreadByUser($user);
 
         $data = [
             'notifications' => array_map(function($notification) {
@@ -62,7 +62,7 @@ class NotificationController extends AbstractController
         $user = $this->getUser();
         $repo = $this->entityManager->getRepository(Notification::class);
         
-        $count = $repo->countUnreadByUser($user->getId());
+        $count = $repo->countUnreadByUser($user);
 
         return $this->json(['count' => $count]);
     }
