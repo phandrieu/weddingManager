@@ -28,25 +28,42 @@
 
 	{% set selectionMap = {} %}
 	{% for selection in wedding.songSelections %}
-		{% if selection.songType and selection.songType.id is not null %}
-			{% set selectionMap = selectionMap|merge({ (selection.songType.id): selection }) %}
+		{% if selection.songType %}
+			{% set songTypeId = selection.songType.id %}
+			{% set selectionMap = selectionMap|merge({ 
+				('id_' ~ songTypeId): selection
+			}) %}
 		{% endif %}
 	{% endfor %}
 
-	{% if selectionMap is empty %}
-		{% for song in wedding.songs %}
-			{% for type in song.types %}
-				{% if type.id is not null and selectionMap[type.id] is not defined %}
-					{% set selectionMap = selectionMap|merge({ (type.id): {'song': song, 'validatedByMusician': false, 'validatedByParish': false} }) %}
-				{% endif %}
-			{% endfor %}
-		{% endfor %}
+	{# Debug: affichage de la selectionMap pour vérifier #}
+	{% if false %}
+		<div class="alert alert-info">
+			<h4>Debug selectionMap:</h4>
+			<ul>
+				{% for typeId, sel in selectionMap %}
+					<li>SongType ID: {{ typeId }} → Song: {{ sel.song ? sel.song.name : 'null' }} (Song ID: {{ sel.song ? sel.song.id : 'N/A' }}) | Selection.songType.id: {{ sel.songType ? sel.songType.id : 'N/A' }}</li>
+				{% endfor %}
+			</ul>
+			<h4>Debug Types affichés:</h4>
+			<ul>
+				{% for t in types %}
+					<li>Type ID: {{ t.id }} → {{ t.name }} (messe: {{ t.isMesse ? 'oui' : 'non' }})</li>
+				{% endfor %}
+			</ul>
+			<h4>Debug Raw Selections:</h4>
+			<ul>
+				{% for selection in wedding.songSelections %}
+					<li>Selection: songType.id = {{ selection.songType ? selection.songType.id : 'NULL' }}, songType.name = {{ selection.songType ? selection.songType.name : 'NULL' }}, song = {{ selection.song ? selection.song.name : 'null' }}</li>
+				{% endfor %}
+			</ul>
+		</div>
 	{% endif %}
 
 	{% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
 
 	<div class="container-xl py-5">
-		<div class="wizard-layout" id="weddingWizardView" data-default-step="0">
+		<div class="wizard-layout wizard-layout--full" id="weddingWizardView" data-default-step="0">
 			<section class="wizard-panel">
 				<header class="wizard-header">
 					<div class="wizard-header__intro">
@@ -319,6 +336,37 @@
 							{% if groups is empty %}
 								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
 							{% else %}
+								<div class="deroule-print-action d-print-none mb-3">
+									<button type="button" id="printDerouleBtn" class="btn btn-outline-primary btn-rounded">
+										<i class="bi bi-printer me-2"></i>
+										Imprimer le déroulé
+									</button>
+								</div>
+
+								<div class="deroule-print-header d-none d-print-block">
+									<h1 class="deroule-print-title">Déroulé de la célébration</h1>
+									<div class="deroule-print-info">
+										<p class="mb-1">
+											<strong>
+												{% if wedding.marie or wedding.mariee %}
+													{{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+												{% else %}
+													Mariage
+												{% endif %}
+											</strong>
+										</p>
+										{% if wedding.date %}
+											<p class="mb-1">{{ wedding.date|date('d/m/Y') }}
+											{% if wedding.time %}
+												à {{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
+											{% endif %}
+											</p>
+										{% endif %}
+										{% if wedding.church %}
+											<p class="mb-0">{{ wedding.church }}{% if wedding.parish %} - {{ wedding.parish }}{% endif %}</p>
+										{% endif %}
+									</div>
+								</div>
 								<div class="deroule-header d-none d-lg-flex">
 									<div class="deroule-col-type">TYPE</div>
 									<div class="deroule-col-choice">CHOIX RETENU</div>
@@ -334,10 +382,16 @@
 												<div class="deroule-group-header">{{ label }}</div>
 												<div class="deroule-group-body">
 													{% for type in groups[label] %}
-														{% set selection = selectionMap[type.id]|default(null) %}
-														{% set selectedSong = selection ? (selection.song ?? null) : null %}
-														{% set validatedMusician = selection ? (selection.validatedByMusician ?? false) : false %}
-														{% set validatedParish = selection ? (selection.validatedByParish ?? false) : false %}
+														{% set selection = selectionMap['id_' ~ type.id]|default(null) %}
+														{% if selection %}
+															{% set selectedSong = selection.song %}
+															{% set validatedMusician = selection.validatedByMusician %}
+															{% set validatedParish = selection.validatedByParish %}
+														{% else %}
+															{% set selectedSong = null %}
+															{% set validatedMusician = false %}
+															{% set validatedParish = false %}
+														{% endif %}
 														<div class="deroule-row">
 															<div>
 																<span class="deroule-type-badge">{{ type.name }}</span>
@@ -345,7 +399,7 @@
 															<div>
 																<span class="deroule-label">Votre choix</span>
 																{% if selectedSong %}
-																	<div class="fw-semibold">{{ selectedSong.name ?? (selectedSong.title ?? 'Titre inconnu') }}</div>
+																	<div class="fw-semibold">{{ selectedSong.name ?? 'Titre inconnu' }}</div>
 																	{% if selectedSong.textRef %}
 																		<div class="text-muted small">{{ selectedSong.textRef }}</div>
 																	{% endif %}
@@ -506,36 +560,6 @@
 					</a>
 				</div>
 			</section>
-
-			<aside class="wizard-sidecard">
-				<div class="wizard-sidecard__inner" id="wizardSideContent">
-					<div class="wizard-sidecard__slide active" data-step="0">
-						<span class="wizard-badge"><i class="bi bi-geo-alt"></i> Étape 1</span>
-						<h2 class="wizard-sidecard__title">Cadrez la célébration</h2>
-						<p class="mb-0">Récapitulatif du format, de la date et du lieu pour que tous les intervenants disposent des bonnes informations.</p>
-					</div>
-					<div class="wizard-sidecard__slide" data-step="1">
-						<span class="wizard-badge"><i class="bi bi-people"></i> Étape 2</span>
-						<h2 class="wizard-sidecard__title">Pilotez le couple</h2>
-						<p class="mb-0">Coordonnées et contacts des mariés regroupés dans une même section.</p>
-					</div>
-					<div class="wizard-sidecard__slide" data-step="2">
-						<span class="wizard-badge"><i class="bi bi-people"></i> Étape 3</span>
-						<h2 class="wizard-sidecard__title">Activez les intervenants</h2>
-						<p class="mb-0">Visualisez instantanément les musiciens, contacts paroissiaux et le célébrant associés.</p>
-					</div>
-					<div class="wizard-sidecard__slide" data-step="3">
-						<span class="wizard-badge"><i class="bi bi-music-note-beamed"></i> Étape 4</span>
-						<h2 class="wizard-sidecard__title">Construisez le déroulé</h2>
-						<p class="mb-0">Suivi des chants retenus et de leurs validations.</p>
-					</div>
-					<div class="wizard-sidecard__slide" data-step="4">
-						<span class="wizard-badge"><i class="bi bi-coin"></i> Étape 5</span>
-						<h2 class="wizard-sidecard__title">Clôturez le dossier</h2>
-						<p class="mb-0">Un coup d'œil sur l'état financier et le statut d'archivage.</p>
-					</div>
-				</div>
-			</aside>
 		</div>
 	</div>
 
@@ -564,7 +588,6 @@
 			const wizardLayout = document.getElementById('weddingWizardView');
 			const steps = Array.from(document.querySelectorAll('.wizard-step'));
 			const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
-			const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));
 			const prevBtn = document.querySelector('.wizard-prev');
 			const nextBtn = document.querySelector('.wizard-next');
 			let currentStep = 0;
@@ -579,7 +602,6 @@
 			function syncUI() {
 				steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
 				stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
-				sideSlides.forEach((slide, index) => slide.classList.toggle('active', index === currentStep));
 				if (prevBtn) {
 					prevBtn.classList.toggle('d-none', currentStep === 0);
 				}
@@ -617,6 +639,23 @@
 			});
 
 			syncUI();
+
+			// Gestion du bouton d'impression
+			const printBtn = document.getElementById('printDerouleBtn');
+			if (printBtn) {
+				printBtn.addEventListener('click', function() {
+					// S'assurer d'être sur l'étape du répertoire avant d'imprimer
+					if (currentStep !== 3) {
+						currentStep = 3;
+						syncUI();
+					}
+					
+					// Attendre un court instant pour que l'affichage se mette à jour
+					setTimeout(() => {
+						window.print();
+					}, 100);
+				});
+			}
 
 			const modalEl = document.getElementById('commentsModal');
 			if (modalEl && typeof bootstrap !== 'undefined') {
