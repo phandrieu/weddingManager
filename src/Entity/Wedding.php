@@ -104,7 +104,7 @@ private ?User $mariee = null;
     /**
      * @var Collection<int, Invitation>
      */
-    #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'wedding')]
+    #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'wedding', orphanRemoval: true, cascade: ['remove'])]
     private Collection $invitations;
 
     #[ORM\Column]

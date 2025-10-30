@@ -2,20 +2,291 @@
 
 {% block title %}Utilisateur {{ user.firstName }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .app-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-picture-display {
+            max-width: 200px;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .role-badge.admin {
+            background-color: var(--color-secondary);
+            color: white;
+        }
+
+        .role-badge.musician {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .role-badge.parish {
+            background-color: var(--color-tertiary);
+            color: var(--color-secondary);
+        }
+
+        .role-badge.user {
+            background-color: #e9ecef;
+            color: var(--color-last);
+        }
+
+        .info-row {
+            display: flex;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--color-secondary);
+            min-width: 180px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: var(--color-last);
+            flex-grow: 1;
+        }
+
+        .credits-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 1rem 0;
+        }
+
+        .subscription-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        .subscription-status.active {
+            background-color: #d1f4e0;
+            color: #0f5132;
+        }
+
+        .subscription-status.inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<h1>Détails de {{ user.firstName }} {{ user.name }}</h1>
+<header class="page-header">
+    <h1>Détails de {{ user.firstName }} {{ user.name }}</h1>
+    <div class="app-actions">
+        <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-pencil-fill"></i>
+            Modifier
+        </a>
+        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary btn-rounded">Retour à la liste</a>
+    </div>
+</header>
 
-<ul class="list-group">
-    <li class="list-group-item"><strong>Nom :</strong> {{ user.name }}</li>
-    <li class="list-group-item"><strong>Prénom :</strong> {{ user.firstName }}</li>
-    <li class="list-group-item"><strong>Email :</strong> {{ user.email }}</li>
-    <li class="list-group-item"><strong>Téléphone :</strong> {{ user.telephone }}</li>
-    <li class="list-group-item"><strong>Adresse ligne 1 :</strong> {{ user.addressLine1 }}</li>
-    <li class="list-group-item"><strong>Adresse ligne 2 :</strong> {{ user.addressLine2 }}</li>
-    <li class="list-group-item"><strong>Code postal & Ville :</strong> {{ user.addressPostalCodeAndCity }}</li>
-    <li class="list-group-item"><strong>Rôles :</strong> {{ user.roles|join(', ') }}</li>
-</ul>
+<div class="row g-4">
+    <!-- Photo de profil et rôles -->
+    <div class="col-12 col-lg-4">
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-person-circle me-2"></i>Photo et rôles
+            </h2>
 
-<a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
-<a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-warning mt-3">Modifier</a>
+            {% if user.profilePictureName %}
+                <div class="mb-3 text-center">
+                    <img src="{{ vich_uploader_asset(user, 'profilePictureFile') }}" 
+                         alt="Photo de profil de {{ user.fullName }}" 
+                         class="img-fluid profile-picture-display">
+                </div>
+            {% else %}
+                <div class="mb-3 text-center text-muted">
+                    <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
+                    <p class="mt-2">Aucune photo de profil</p>
+                </div>
+            {% endif %}
+
+            <div class="mb-0">
+                <label class="form-label fw-bold">Rôles</label>
+                <div class="role-badges">
+                    {% for role in user.roles %}
+                        {% set roleClass = '' %}
+                        {% set roleName = '' %}
+                        
+                        {% if role == 'ROLE_ADMIN' %}
+                            {% set roleClass = 'admin' %}
+                            {% set roleName = 'Administrateur' %}
+                        {% elseif role == 'ROLE_MUSICIAN' %}
+                            {% set roleClass = 'musician' %}
+                            {% set roleName = 'Musicien' %}
+                        {% elseif role == 'ROLE_PARISH' %}
+                            {% set roleClass = 'parish' %}
+                            {% set roleName = 'Paroisse' %}
+                        {% elseif role == 'ROLE_USER' %}
+                            {% set roleClass = 'user' %}
+                            {% set roleName = 'Utilisateur' %}
+                        {% endif %}
+                        
+                        {% if roleName %}
+                            <span class="role-badge {{ roleClass }}">{{ roleName }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% if is_granted('ROLE_MUSICIAN', user) or is_granted('ROLE_PARISH', user) %}
+        <!-- Crédits -->
+        <div class="app-card">
+            <h2 class="h5 mb-3" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-coin me-2"></i>Crédits
+            </h2>
+
+            <div class="text-center">
+                <div class="credits-display">
+                    {{ user.credits }}
+                    <small style="font-size: 1rem; color: var(--color-last);">crédit{{ user.credits > 1 ? 's' : '' }}</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_granted('ROLE_MUSICIAN', user) %}
+        <!-- Abonnement -->
+        <div class="app-card">
+            <h2 class="h5 mb-3" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-star-fill me-2"></i>Abonnement
+            </h2>
+
+            <div class="text-center">
+                {% if user.subscription %}
+                    <div class="subscription-status active">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Abonnement actif</span>
+                    </div>
+                {% else %}
+                    <div class="subscription-status inactive">
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Pas d'abonnement</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Informations personnelles -->
+    <div class="col-12 col-lg-8">
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-person-fill me-2"></i>Informations personnelles
+            </h2>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-person me-2"></i>Prénom
+                </div>
+                <div class="info-value">{{ user.firstName }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-person me-2"></i>Nom
+                </div>
+                <div class="info-value">{{ user.name }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-envelope me-2"></i>Email
+                </div>
+                <div class="info-value">{{ user.email }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-telephone me-2"></i>Téléphone
+                </div>
+                <div class="info-value">{{ user.telephone ?: '—' }}</div>
+            </div>
+        </div>
+
+        <!-- Adresse -->
+        <div class="app-card">
+            <h2 class="h5 mb-4" style="color: var(--color-secondary); font-weight: 600;">
+                <i class="bi bi-geo-alt-fill me-2"></i>Adresse
+            </h2>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-house me-2"></i>Ligne 1
+                </div>
+                <div class="info-value">{{ user.addressLine1 ?: '—' }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-house me-2"></i>Ligne 2
+                </div>
+                <div class="info-value">{{ user.addressLine2 ?: '—' }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">
+                    <i class="bi bi-mailbox me-2"></i>Code postal et ville
+                </div>
+                <div class="info-value">{{ user.addressPostalCodeAndCity ?: '—' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

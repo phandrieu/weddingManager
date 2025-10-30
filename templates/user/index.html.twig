@@ -2,6 +2,31 @@
 
 {% block title %}Liste des utilisateurs{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <header class="page-header">
     <h1>Utilisateurs</h1>
@@ -17,6 +42,7 @@
     <table class="app-table">
         <thead>
             <tr>
+                <th style="width: 60px;"></th>
                 <th>Prénom</th>
                 <th>Nom</th>
                 <th>Email</th>
@@ -28,6 +54,17 @@
         <tbody>
             {% for user in users %}
                 <tr>
+                    <td>
+                        {% if user.profilePictureName %}
+                            <img src="{{ vich_uploader_asset(user, 'profilePictureFile') }}" 
+                                 alt="Photo de {{ user.fullName }}" 
+                                 class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        {% endif %}
+                    </td>
                     <td>{{ user.firstName }}</td>
                     <td>{{ user.name }}</td>
                     <td>{{ user.email }}</td>
@@ -55,7 +92,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+                    <td colspan="7" class="text-center text-muted">Aucun utilisateur trouvé.</td>
                 </tr>
             {% endfor %}
         </tbody>
