@@ -57,7 +57,7 @@ $PHP_BIN bin/console doctrine:migrations:migrate --no-interaction --env=$ENV
 # 6. Permissions
 # -------------------------------
 echo "Mise à jour des permissions..."
-HTTP_USER=$(ps aux | grep -E 'apache|nginx|php-fpm' | grep -v grep | head -n 1 | awk '{print $1}')
+HTTP_USER=www-data
 sudo chown -R $HTTP_USER:$HTTP_USER var/
 sudo chown -R $HTTP_USER:$HTTP_USER public/
 
@@ -66,5 +66,7 @@ sudo chown -R $HTTP_USER:$HTTP_USER public/
 # -------------------------------
 echo "Redémarrage de PHP-FPM..."
 sudo systemctl reload php8.4-fpm || sudo systemctl restart php8.4fpm
+
+
 
 echo "=== Déploiement terminé ==="
