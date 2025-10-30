@@ -4,6 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
     <style>
         .page-header {
             display: flex;
@@ -33,6 +34,79 @@
             margin-top: 1rem;
             border-radius: 0.5rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Styles pour le modal de recadrage */
+        .crop-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .crop-modal.active {
+            display: flex;
+        }
+
+        .crop-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .crop-image-container {
+            max-height: 500px;
+            margin: 1.5rem 0;
+        }
+
+        .crop-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Cacher l'input file par défaut */
+        input[type="file"].form-control {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(255, 129, 0, 0.3);
+        }
+
+        .custom-file-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 129, 0, 0.4);
+        }
+
+        .custom-file-upload i {
+            margin-right: 0.5rem;
         }
     </style>
 {% endblock %}
@@ -186,4 +260,154 @@
 </div>
 
 {{ form_end(form) }}
+
+<!-- Modal de recadrage de photo -->
+<div id="cropModal" class="crop-modal">
+    <div class="crop-container">
+        <h3 style="color: var(--color-secondary); margin-bottom: 1rem;">
+            <i class="bi bi-crop me-2"></i>Recadrer la photo
+        </h3>
+        <p style="color: var(--color-last); margin-bottom: 1rem;">
+            Ajustez le cadrage de la photo de profil. Vous pouvez zoomer et déplacer l'image.
+        </p>
+        <div class="crop-image-container">
+            <img id="cropImage" src="" alt="Image à recadrer" style="max-width: 100%; display: block;">
+        </div>
+        <div class="crop-actions">
+            <button type="button" class="btn btn-outline-secondary" id="cancelCrop">
+                <i class="bi bi-x-lg me-1"></i>Annuler
+            </button>
+            <button type="button" class="btn btn-primary" id="applyCrop">
+                <i class="bi bi-check-lg me-1"></i>Appliquer
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let cropper = null;
+            const fileInput = document.getElementById('user_profilePictureFile_file');
+            const cropModal = document.getElementById('cropModal');
+            const cropImage = document.getElementById('cropImage');
+            const cancelCropBtn = document.getElementById('cancelCrop');
+            const applyCropBtn = document.getElementById('applyCrop');
+            
+            // Créer un bouton personnalisé
+            const customButton = document.createElement('label');
+            customButton.className = 'custom-file-upload';
+            customButton.innerHTML = '<i class="bi bi-camera-fill"></i>Choisir une photo';
+            customButton.htmlFor = 'user_profilePictureFile_file';
+            
+            if (fileInput && fileInput.parentNode) {
+                fileInput.parentNode.insertBefore(customButton, fileInput.nextSibling);
+            }
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    
+                    if (file) {
+                        if (!file.type.match('image.*')) {
+                            alert('Veuillez sélectionner une image (JPG, PNG, GIF)');
+                            fileInput.value = '';
+                            return;
+                        }
+
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('La taille de l\'image ne doit pas dépasser 10 Mo');
+                            fileInput.value = '';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            cropImage.src = event.target.result;
+                            cropModal.classList.add('active');
+                            
+                            if (cropper) {
+                                cropper.destroy();
+                            }
+                            
+                            cropper = new Cropper(cropImage, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                dragMode: 'move',
+                                autoCropArea: 0.8,
+                                restore: false,
+                                guides: true,
+                                center: true,
+                                highlight: false,
+                                cropBoxMovable: true,
+                                cropBoxResizable: true,
+                                toggleDragModeOnDblclick: false,
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            cancelCropBtn.addEventListener('click', function() {
+                cropModal.classList.remove('active');
+                fileInput.value = '';
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+
+            applyCropBtn.addEventListener('click', function() {
+                if (!cropper) return;
+
+                const canvas = cropper.getCroppedCanvas({
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    fillColor: '#fff',
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+
+                canvas.toBlob(function(blob) {
+                    const fileName = fileInput.files[0].name;
+                    const compressedFile = new File([blob], fileName, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(compressedFile);
+                    fileInput.files = dataTransfer.files;
+
+                    const preview = document.querySelector('.profile-picture-preview');
+                    if (preview) {
+                        preview.src = canvas.toDataURL('image/jpeg');
+                    }
+
+                    cropModal.classList.remove('active');
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'alert alert-success mt-2';
+                    successMessage.innerHTML = '<i class="bi bi-check-circle me-2"></i>Photo recadrée et compressée avec succès !';
+                    fileInput.parentNode.appendChild(successMessage);
+                    setTimeout(() => successMessage.remove(), 3000);
+                }, 'image/jpeg', 0.85);
+            });
+
+            cropModal.addEventListener('click', function(e) {
+                if (e.target === cropModal) {
+                    cancelCropBtn.click();
+                }
+            });
+        });
+    </script>
 {% endblock %}

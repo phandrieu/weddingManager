@@ -1,6 +1,7 @@
 monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - ms_teams # Channel pour les notifications MS Teams
 
 when@dev:
     monolog:
@@ -60,3 +61,8 @@ when@prod:
                 channels: [deprecation]
                 path: php://stderr
                 formatter: monolog.formatter.json
+            ms_teams:
+                type: service
+                id: App\Monolog\MsTeamsHandler
+                level: error
+                channels: ["!event", "!deprecation"]

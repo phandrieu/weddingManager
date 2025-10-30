@@ -18,3 +18,15 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # MS Teams Notification Service
+    App\Service\MsTeamsNotificationService:
+        arguments:
+            $webhookUrl: '%env(resolve:MS_TEAMS_WEBHOOK_URL)%'
+
+    # MS Teams Monolog Handler
+    App\Monolog\MsTeamsHandler:
+        arguments:
+            $level: !php/const Monolog\Level::Error
+        tags:
+            - { name: monolog.logger, channel: ms_teams }

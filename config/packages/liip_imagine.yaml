@@ -10,3 +10,14 @@ liip_imagine:
             quality: 75
             filters:
                 thumbnail: { size: [200, 200], mode: inset }
+        profile_large:
+            quality: 80
+            filters:
+                thumbnail: { size: [800, 800], mode: inset }
+                strip: ~  # Supprime les métadonnées EXIF
+        profile_original:
+            quality: 85
+            filters:
+                thumbnail: { size: [1200, 1200], mode: inset }
+                strip: ~
+                auto_rotate: ~  # Rotation automatique selon EXIF

@@ -1,0 +1,272 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page non trouvée - Notre Messe de Mariage{% endblock %}
+
+{% block body %}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon error-icon--404">
+            <i class="bi bi-compass"></i>
+        </div>
+        
+        <h1 class="error-title">Page non trouvée</h1>
+        
+        <div class="error-message">
+            <p>Désolé, la page que vous recherchez semble introuvable.</p>
+            <p>Elle a peut-être été déplacée ou supprimée.</p>
+        </div>
+        
+        <div class="error-details">
+            <div class="error-code">
+                <span class="error-label">Code d'erreur</span>
+                <span class="error-value">404</span>
+            </div>
+        </div>
+        
+        <div class="error-actions">
+            <a href="{{ path('home') }}" class="btn btn-primary btn-rounded">
+                <i class="bi bi-house-fill"></i>
+                Retour à l'accueil
+            </a>
+            <button onclick="history.back()" class="btn btn-secondary btn-rounded">
+                <i class="bi bi-arrow-left"></i>
+                Page précédente
+            </button>
+        </div>
+        
+        {% if app.user %}
+        <div class="error-suggestions">
+            <p class="error-help-title">Liens rapides :</p>
+            <div class="error-links">
+                <a href="{{ path('home') }}" class="error-link">
+                    <i class="bi bi-house"></i>
+                    Accueil
+                </a>
+                {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                <a href="{{ path('app_wedding_index') }}" class="error-link">
+                    <i class="bi bi-calendar-heart"></i>
+                    Mes mariages
+                </a>
+                {% endif %}
+                <a href="{{ path('app_song_index') }}" class="error-link">
+                    <i class="bi bi-music-note-list"></i>
+                    Bibliothèque
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.error-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.error-container {
+    max-width: 600px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.error-icon {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(101, 45, 144, 0.1), rgba(255, 129, 0, 0.1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.error-icon i {
+    font-size: 3.5rem;
+    color: var(--color-secondary);
+}
+
+.error-icon--404 {
+    animation: rotate 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+@keyframes rotate {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-15deg);
+    }
+    75% {
+        transform: rotate(15deg);
+    }
+}
+
+.error-title {
+    font-family: 'Alfarn', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-secondary);
+    margin: 0;
+    background: transparent;
+    padding: 0;
+    text-transform: uppercase;
+    box-shadow: none;
+    border-radius: 0;
+    display: inline;
+    width: auto;
+}
+
+.error-message {
+    background: rgba(230, 222, 246, 0.5);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    line-height: 1.6;
+}
+
+.error-message p {
+    margin: 0.5rem 0;
+    color: var(--color-last);
+}
+
+.error-details {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.error-code {
+    background: white;
+    border: 1px solid rgba(101, 45, 144, 0.2);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.error-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: rgba(97, 97, 111, 0.7);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.error-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.error-suggestions {
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.error-help-title {
+    font-size: 0.9rem;
+    color: rgba(97, 97, 111, 0.8);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.error-links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.error-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    background: white;
+    border: 1px solid rgba(101, 45, 144, 0.2);
+    border-radius: 999px;
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.error-link:hover {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(101, 45, 144, 0.3);
+}
+
+@media (max-width: 575.98px) {
+    .error-page {
+        padding: 1rem 0;
+    }
+    
+    .error-icon {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .error-icon i {
+        font-size: 2.5rem;
+    }
+    
+    .error-title {
+        font-size: 1.3rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .error-links {
+        flex-direction: column;
+    }
+    
+    .error-link {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

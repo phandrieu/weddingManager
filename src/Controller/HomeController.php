@@ -12,12 +12,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'home')]
+    #[Route('/', name: 'home')]
+    #[Route('/home', name: 'dashboard')]
     public function index(WeddingRepository $weddingRepository, UserRepository $userRepository): Response
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
-            return $this->redirectToRoute('public');
+            return $this->redirectToRoute('app_login');
         }
 
         $roles = $user->getRoles();
@@ -301,14 +302,5 @@ class HomeController extends AbstractController
 
         return $user->getEmail() ?? $fallback;
     }
-    #[Route('/', name: 'public')]
-    public function public(WeddingRepository $weddingRepository): Response
-    {
-        // Récupère tous les mariages
-        $weddings = $weddingRepository->findAll();
 
-        return $this->render('home/public.html.twig', [
-            
-        ]);
-    }
 }

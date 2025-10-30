@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accès refusé - Notre Messe de Mariage{% endblock %}
+
+{% block body %}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon error-icon--403">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        
+        <h1 class="error-title">Accès refusé</h1>
+        
+        <div class="error-message">
+            <p>Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+            {% if not app.user %}
+                <p>Vous devez vous connecter pour accéder à cette ressource.</p>
+            {% endif %}
+        </div>
+        
+        <div class="error-details">
+            <div class="error-code">
+                <span class="error-label">Code d'erreur</span>
+                <span class="error-value">403</span>
+            </div>
+        </div>
+        
+        <div class="error-actions">
+            {% if not app.user %}
+                <a href="{{ path('app_login') }}" class="btn btn-primary btn-rounded">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Se connecter
+                </a>
+            {% endif %}
+            <a href="{{ path('home') }}" class="btn btn-secondary btn-rounded">
+                <i class="bi bi-house-fill"></i>
+                Retour à l'accueil
+            </a>
+        </div>
+        
+        <div class="error-help">
+            {% if app.user %}
+                <p>Si vous pensez qu'il s'agit d'une erreur, contactez un administrateur.</p>
+            {% else %}
+                <p>Connectez-vous avec vos identifiants pour accéder à cette page.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.error-container {
+    max-width: 600px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.error-icon {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(101, 45, 144, 0.1), rgba(255, 129, 0, 0.1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.error-icon i {
+    font-size: 3.5rem;
+    color: var(--color-secondary);
+}
+
+.error-icon--403 {
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.error-title {
+    font-family: 'Alfarn', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-secondary);
+    margin: 0;
+    background: transparent;
+    padding: 0;
+    text-transform: uppercase;
+    box-shadow: none;
+    border-radius: 0;
+    display: inline;
+    width: auto;
+}
+
+.error-message {
+    background: rgba(230, 222, 246, 0.5);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    line-height: 1.6;
+}
+
+.error-message p {
+    margin: 0.5rem 0;
+    color: var(--color-last);
+}
+
+.error-details {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.error-code {
+    background: white;
+    border: 1px solid rgba(101, 45, 144, 0.2);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.error-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: rgba(97, 97, 111, 0.7);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.error-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.error-help {
+    font-size: 0.9rem;
+    color: rgba(97, 97, 111, 0.8);
+    margin-top: 1rem;
+}
+
+.error-help p {
+    margin: 0;
+}
+
+@media (max-width: 575.98px) {
+    .error-page {
+        padding: 1rem 0;
+    }
+    
+    .error-icon {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .error-icon i {
+        font-size: 2.5rem;
+    }
+    
+    .error-title {
+        font-size: 1.3rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .error-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
