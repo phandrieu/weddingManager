@@ -5,10 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"> {# 🔑 important pour la responsivité #}
         <title>{% block title %}Notre Messe de Mariage{% endblock %}</title>
 
-        {% set apple_touch_icon = asset('logos/logo_app_pro.png') %}
+        {% set apple_touch_icon = '/logos/logo_app_pro.png' %}
         {% if app.user is defined and app.user %}
             {% if 'ROLE_USER' in app.user.roles and app.user.roles|length == 1 %}
-                {% set apple_touch_icon = asset('logos/logo_app.png') %}
+                {% set apple_touch_icon = '/logos/logo_app.png' %}
             {% endif %}
         {% endif %}
 
@@ -27,14 +27,14 @@
             /* === Intégration des polices locales === */
             @font-face {
                 font-family: 'Alfarn';
-                src: url('{{ asset("fonts/Alfarn-Regular.ttf") }}') format("truetype");
+                src: url('/fonts/Alfarn-Regular.ttf') format("truetype");
                 font-weight: 400;
                 font-style: normal;
             }
 
             @font-face {
                 font-family: 'Avenir LT Pro';
-                src: url('{{ asset("fonts/AvenirLTPro.ttf") }}') format("truetype");
+                src: url('/fonts/AvenirLTPro.ttf') format("truetype");
                 font-weight: 400;
                 font-style: normal;
             }
@@ -627,7 +627,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
-                    <img src="{{ asset('logos/logo_white_nobg_noborder.png') }}" alt="Logo" class="me-2">
+                    <img src="/logos/logo_white_nobg_noborder.png" alt="Logo" class="me-2">
                     <span class="d-none d-sm-inline">Notre Messe de Mariage</span>
                 </a>  
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 

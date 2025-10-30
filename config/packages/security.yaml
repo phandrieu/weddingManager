@@ -45,7 +45,7 @@ security:
         # --- ROLE_USER ---
         - { path: ^/logout, roles: ROLE_USER }
         - { path: ^/home, roles: ROLE_USER }
-        - { path: ^/songs, roles: ROLE_USER }
+        - { path: ^/songs/$, roles: ROLE_USER }
         - { path: ^/songs/view, roles: ROLE_USER }
         - { path: ^/mariages, roles: ROLE_USER }
         - { path: ^/mariages/view, roles: ROLE_USER }
@@ -54,17 +54,21 @@ security:
         - { path: ^/suggest-song, roles: ROLE_USER}
         - { path: ^/comments, roles: ROLE_USER}
         
+        # --- Édition de chants (MUSICIAN, PARISH, ADMIN) ---
+        - { path: ^/songs/edit, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/songs/delete, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/song/approve, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
 
         # --- ROLE_MUSICIAN ---
-        - { path: ^/song, roles: ROLE_MUSICIAN }
         - { path: ^/songs, roles: ROLE_MUSICIAN }
-        - { path: ^/song/approve/, roles: ROLE_MUSICIAN }
-        - { path: ^/songs/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
         - { path: ^/mariages, roles: ROLE_MUSICIAN }
         - { path: ^/repertoire, roles: ROLE_MUSICIAN }
         - { path: ^/comments, roles: ROLE_MUSICIAN}
+
+        # --- Notifications (accessible à tous les utilisateurs connectés) ---
+        - { path: ^/notification, roles: ROLE_USER }
 
         # --- ROLE_ADMIN (accès total) ---
         - { path: ^/mariages, roles: ROLE_ADMIN }

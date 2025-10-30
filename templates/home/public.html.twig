@@ -44,7 +44,7 @@
 </style>
 
 <!-- Hero -->
-<section class="position-relative text-center text-white" style="height: 100vh; background: url('{{ asset('images/wide1.jpg') }}') center/cover no-repeat;">
+<section class="position-relative text-center text-white" style="height: 100vh; background: url('/images/wide1.jpg') center/cover no-repeat;">
     <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-dark bg-opacity-50">
         <h1 class="display-3 fw-bold">NOTRE MESSE DE MARIAGE</h1>
         <p class="fs-2 fw-bold">La solution pour orchestrer votre cérémonie</p>
@@ -82,7 +82,7 @@
                 <a href="{{ path('app_register') }}" class="btn btn-primary">Créez votre cérémonie</a>
             </div>
             <div class="col-lg-6 text-center">
-                <img src="{{ asset('images/vertical1.jpg') }}" alt="Futurs mariés" class="img-fluid rounded shadow">
+                <img src="/images/vertical1.jpg" alt="Futurs mariés" class="img-fluid rounded shadow">
             </div>
         </div>
     </div>
@@ -105,9 +105,33 @@
                 <p class="mt-3 text-success">Prix : <strong>Offert</strong></p>
                 <a href="{{ path('app_register') }}" class="btn btn-primary">Accéder à l’espace paroisse</a>
             </div>
+                        </div>
             <div class="col-lg-6 text-center">
-                <img src="{{ asset('images/vertical2.jpg') }}" alt="Paroisse" class="img-fluid rounded shadow">
+                <img src="/images/vertical1.jpg" alt="Futurs mariés" class="img-fluid rounded shadow">
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- Paroisses -->
+<section class="section fade-in">
+    <div class="container">
+        <div class="row align-items-center g-4 flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <h2 class="mb-3">⛪ Fonctionnalités pour les paroisses</h2>
+                <p>
+                    Suivez les couples, validez leurs choix et gardez la maîtrise liturgique de chaque célébration.
+                </p>
+                <ul>
+                    <li>Invitez vos futurs mariés</li>
+                    <li>Consultez leurs dossiers</li>
+                    <li>Validez ou refusez</li>
+                </ul>
+                <p class="mt-3 text-primary">Prix : <strong>29,99€ / mois</strong> (sans engagement)</p>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">En savoir plus</a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="/images/vertical2.jpg" alt="Paroisse" class="img-fluid rounded shadow">
         </div>
     </div>
 </section>
@@ -126,10 +150,10 @@
                     <li>📑 Génération automatique de partitions</li>
                     <li>🤝 Collaboration simplifiée avec les couples</li>
                 </ul>
-                <a href="{{ path('app_register') }}" class="btn btn-primary">Accéder à l’espace musicien</a>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">Accéder à l'espace musicien</a>
             </div>
             <div class="col-lg-6 text-center">
-                <img src="{{ asset('images/vertical3.jpg') }}" alt="Musicien" class="img-fluid rounded shadow">
+                <img src="/images/vertical3.jpg" alt="Musicien" class="img-fluid rounded shadow">
             </div>
         </div>
     </div>
@@ -137,7 +161,7 @@
 
 <!-- Footer -->
 <footer class="text-center py-4">
-    <img src="{{ asset('logos/horizontal_onde_blanche.png') }}" alt="Logo" class="mb-2" style="height:80px;">
+    <img src="/logos/horizontal_onde_blanche.png" alt="Logo" class="mb-2" style="height:80px;">
     <p class="mb-0">© {{ "now"|date("Y") }} Notre Messe de Mariage. Tous droits réservés.</p>
 </footer>
 
