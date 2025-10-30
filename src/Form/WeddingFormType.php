@@ -114,6 +114,78 @@ class WeddingFormType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
+            // Champs du marié
+            ->add('marieFirstName', TextType::class, [
+                'label' => 'Prénom',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieName', TextType::class, [
+                'label' => 'Nom',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieEmail', EmailType::class, [
+                'label' => 'Email',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieTelephone', TextType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieAddressLine1', TextType::class, [
+                'label' => 'Adresse ligne 1',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieAddressLine2', TextType::class, [
+                'label' => 'Adresse ligne 2',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieAddressPostalCodeAndCity', TextType::class, [
+                'label' => 'Code postal & ville',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            // Champs de la mariée
+            ->add('marieeFirstName', TextType::class, [
+                'label' => 'Prénom',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeName', TextType::class, [
+                'label' => 'Nom',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeEmail', EmailType::class, [
+                'label' => 'Email',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeTelephone', TextType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeAddressLine1', TextType::class, [
+                'label' => 'Adresse ligne 1',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeAddressLine2', TextType::class, [
+                'label' => 'Adresse ligne 2',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('marieeAddressPostalCodeAndCity', TextType::class, [
+                'label' => 'Code postal & ville',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
         ;
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {

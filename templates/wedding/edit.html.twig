@@ -18,8 +18,8 @@
                 <h2 class="wizard-panel__title">{{ wedding.id ? 'Modifier le mariage' : 'Ajouter un mariage' }}</h2>
                 <p class="wizard-header__meta mb-0">
                     <span>
-                        {% if wedding.marie or wedding.mariee %}
-                            {{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
+                        {% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
+                            {% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié à compléter{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée à compléter{% endif %}
                         {% else %}
                             Identifiez le couple pour personnaliser la collaboration.
                         {% endif %}
@@ -143,77 +143,157 @@
             <div class="wizard-step" data-step="1">
                 <div class="participant-grid">
                     <div>
-                        {% if form.marie is defined %}
-                            <div class="participant-card">
-                                <div class="participant-card__header">
-                                    <h3 class="mb-0">Futur marié</h3>
-                                    {% if wedding.marie %}
-                                        <span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
-                                    {% endif %}
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-sm-6">{{ form_row(form.marie.firstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.marie.name, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.marie.email, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.marie.telephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.marie.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.marie.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.marie.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                </div>
-                                {{ form_rest(form.marie) }}
-                            </div>
-                        {% else %}
-                            <div class="participant-empty">
-                                <h3 class="mb-1">Inviter le futur marié</h3>
-                                <p class="mb-0">Associez-le pour qu'il accède au déroulé et aux commentaires.</p>
-                                {% if wedding.id %}
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <button type="button" class="btn btn-outline-light invite-trigger" data-invite-role="marie" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                                            <i class="bi bi-envelope-heart"></i> Envoyer une invitation
-                                        </button>
-                                    </div>
+                        <div class="participant-card">
+                            <div class="participant-card__header">
+                                <h3 class="mb-0">Futur marié</h3>
+                                {% if wedding.marie %}
+                                    <span class="badge rounded-pill bg-success text-white">
+                                        <i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+                                    </span>
+                                    <span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
                                 {% else %}
-                                    <div class="alert alert-light mb-0">Sauvegardez le mariage pour envoyer des invitations.</div>
+                                    <span class="badge rounded-pill bg-warning text-dark">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+                                    </span>
                                 {% endif %}
                             </div>
-                        {% endif %}
+                            
+                            {% if wedding.marie %}
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de <strong>{{ wedding.marie.fullName }}</strong>.
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Prénom</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.firstName }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Nom</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.name }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Email</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.email }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Téléphone</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.telephone ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Adresse ligne 1</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.addressLine1 ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Adresse ligne 2</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.addressLine2 ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Code postal & ville</label>
+                                        <div class="form-control-plaintext">{{ wedding.marie.addressPostalCodeAndCity ?: 'Non renseigné' }}</div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="row g-3">
+                                    <div class="col-sm-6">{{ form_row(form.marieFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieEmail, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieTelephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieAddressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieAddressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieAddressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if not wedding.marie and wedding.id %}
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-primary invite-trigger" data-invite-role="marie" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                        <i class="bi bi-envelope-heart"></i> Inviter le futur marié
+                                    </button>
+                                    <p class="text-muted small mt-2 mb-0">En invitant le marié, ses coordonnées seront automatiquement synchronisées avec son profil utilisateur.</p>
+                                </div>
+                            {% elseif not wedding.marie %}
+                                <div class="alert alert-light mt-3 mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Sauvegardez le mariage pour pouvoir envoyer une invitation.
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div>
-                        {% if form.mariee is defined %}
-                            <div class="participant-card">
-                                <div class="participant-card__header">
-                                    <h3 class="mb-0">Future mariée</h3>
-                                    {% if wedding.mariee %}
-                                        <span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
-                                    {% endif %}
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-sm-6">{{ form_row(form.mariee.firstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.mariee.name, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.mariee.email, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-sm-6">{{ form_row(form.mariee.telephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.mariee.addressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.mariee.addressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                    <div class="col-12">{{ form_row(form.mariee.addressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
-                                </div>
-                                {{ form_rest(form.mariee) }}
-                            </div>
-                        {% else %}
-                            <div class="participant-empty">
-                                <h3 class="mb-1">Inviter la future mariée</h3>
-                                <p class="mb-0">Son profil est nécessaire pour partager le déroulé et les documents.</p>
-                                {% if wedding.id %}
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <button type="button" class="btn btn-outline-light invite-trigger" data-invite-role="mariee" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                                            <i class="bi bi-envelope-heart"></i> Envoyer une invitation
-                                        </button>
-                                    </div>
+                        <div class="participant-card">
+                            <div class="participant-card__header">
+                                <h3 class="mb-0">Future mariée</h3>
+                                {% if wedding.mariee %}
+                                    <span class="badge rounded-pill bg-success text-white">
+                                        <i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+                                    </span>
+                                    <span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
                                 {% else %}
-                                    <div class="alert alert-light mb-0">Sauvegardez le mariage pour envoyer des invitations.</div>
+                                    <span class="badge rounded-pill bg-warning text-dark">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+                                    </span>
                                 {% endif %}
                             </div>
-                        {% endif %}
+                            
+                            {% if wedding.mariee %}
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de <strong>{{ wedding.mariee.fullName }}</strong>.
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Prénom</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.firstName }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Nom</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.name }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Email</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.email }}</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-sm">Téléphone</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.telephone ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Adresse ligne 1</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.addressLine1 ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Adresse ligne 2</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.addressLine2 ?: 'Non renseigné' }}</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label-sm">Code postal & ville</label>
+                                        <div class="form-control-plaintext">{{ wedding.mariee.addressPostalCodeAndCity ?: 'Non renseigné' }}</div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="row g-3">
+                                    <div class="col-sm-6">{{ form_row(form.marieeFirstName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieeName, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieeEmail, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-sm-6">{{ form_row(form.marieeTelephone, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieeAddressLine1, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieeAddressLine2, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                    <div class="col-12">{{ form_row(form.marieeAddressPostalCodeAndCity, {'label_attr': {'class': 'form-label-sm'}}) }}</div>
+                                </div>
+                            {% endif %}
+                            
+                            {% if not wedding.mariee and wedding.id %}
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-primary invite-trigger" data-invite-role="mariee" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                                        <i class="bi bi-envelope-heart"></i> Inviter la future mariée
+                                    </button>
+                                    <p class="text-muted small mt-2 mb-0">En invitant la mariée, ses coordonnées seront automatiquement synchronisées avec son profil utilisateur.</p>
+                                </div>
+                            {% elseif not wedding.mariee %}
+                                <div class="alert alert-light mt-3 mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>Sauvegardez le mariage pour pouvoir envoyer une invitation.
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

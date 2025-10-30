@@ -47,15 +47,33 @@
             <div class="wedding-grid">
                 <div class="wedding-grid__main">
                     <div class="app-avatar">
-                        {% if wedding.mariee and wedding.marie %}
-                            {{ (wedding.mariee.firstName|default('')|slice(0,1)|upper) }}&{{ (wedding.marie.firstName|default('')|slice(0,1)|upper) }}
+                        {% set marieeInitial = wedding.mariee ? (wedding.mariee.firstName|default('')|slice(0,1)|upper) : (wedding.marieeFirstName ? (wedding.marieeFirstName|slice(0,1)|upper) : '') %}
+                        {% set marieInitial = wedding.marie ? (wedding.marie.firstName|default('')|slice(0,1)|upper) : (wedding.marieFirstName ? (wedding.marieFirstName|slice(0,1)|upper) : '') %}
+                        {% if marieeInitial or marieInitial %}
+                            {{ marieeInitial }}&{{ marieInitial }}
                         {% else %}
                             -
                         {% endif %}
                     </div>
                     <div>
                         <div class="fw-bold d-flex align-items-center gap-2 flex-wrap">
-                            <span>Mariage de {{ wedding.marie ? wedding.marie.firstName ~ ' ' ~ wedding.marie.name : '-' }} &amp; {{ wedding.mariee ? wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name : '-' }}</span>
+                            <span>Mariage de 
+                                {% if wedding.marie %}
+                                    {{ wedding.marie.firstName ~ ' ' ~ wedding.marie.name }}
+                                {% elseif wedding.marieFirstName %}
+                                    {{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                                &amp; 
+                                {% if wedding.mariee %}
+                                    {{ wedding.mariee.firstName ~ ' ' ~ wedding.mariee.name }}
+                                {% elseif wedding.marieeFirstName %}
+                                    {{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
                             {% if wedding.archive %}
                                 <span class="badge bg-secondary">Archivé</span>
                             {% endif %}

@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-	{% if wedding.marie or wedding.mariee %}
-		Mariage de {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+	{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
+		Mariage de {% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée{% endif %}
 	{% else %}
 		Détails du mariage
 	{% endif %}
@@ -68,16 +68,16 @@
 				<header class="wizard-header">
 					<div class="wizard-header__intro">
 						<h2 class="wizard-panel__title">
-							{% if wedding.marie or wedding.mariee %}
-								Mariage de {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+							{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
+								Mariage de {% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée{% endif %}
 							{% else %}
 								Détails du mariage
 							{% endif %}
 						</h2>
 						<p class="wizard-header__meta mb-0">
 							<span>
-								{% if wedding.marie or wedding.mariee %}
-									{{ wedding.marie ? wedding.marie.fullName : 'Marié à inviter' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée à inviter' }}
+								{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
+									{% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié à compléter{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée à compléter{% endif %}
 								{% else %}
 									Couple à compléter pour personnaliser la collaboration.
 								{% endif %}
@@ -183,6 +183,9 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Futur marié</h3>
+											<span class="badge rounded-pill bg-success text-white">
+												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+											</span>
 											{% if wedding.marie.email %}
 												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
 											{% endif %}
@@ -197,9 +200,39 @@
 											{% endif %}
 											{% if wedding.marie.addressLine1 or wedding.marie.addressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{{ wedding.marie.addressLine1 ?? '' }}<br>
-													{{ wedding.marie.addressLine2 ?? '' }}<br>
-													{{ wedding.marie.addressPostalCodeAndCity ?? '' }}
+													{% if wedding.marie.addressLine1 %}{{ wedding.marie.addressLine1 }}<br>{% endif %}
+													{% if wedding.marie.addressLine2 %}{{ wedding.marie.addressLine2 }}<br>{% endif %}
+													{% if wedding.marie.addressPostalCodeAndCity %}{{ wedding.marie.addressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elseif wedding.marieFirstName or wedding.marieName or wedding.marieEmail %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Futur marié</h3>
+											<span class="badge rounded-pill bg-warning text-dark">
+												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+											</span>
+											{% if wedding.marieEmail %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieEmail }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											{% if wedding.marieFirstName or wedding.marieName %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}</div>
+												</div>
+											{% endif %}
+											{% if wedding.marieTelephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieTelephone }}</div>
+											{% endif %}
+											{% if wedding.marieAddressLine1 or wedding.marieAddressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.marieAddressLine1 %}{{ wedding.marieAddressLine1 }}<br>{% endif %}
+													{% if wedding.marieAddressLine2 %}{{ wedding.marieAddressLine2 }}<br>{% endif %}
+													{% if wedding.marieAddressPostalCodeAndCity %}{{ wedding.marieAddressPostalCodeAndCity }}{% endif %}
 												</div>
 											{% endif %}
 										</div>
@@ -217,6 +250,9 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Future mariée</h3>
+											<span class="badge rounded-pill bg-success text-white">
+												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+											</span>
 											{% if wedding.mariee.email %}
 												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
 											{% endif %}
@@ -231,9 +267,39 @@
 											{% endif %}
 											{% if wedding.mariee.addressLine1 or wedding.mariee.addressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{{ wedding.mariee.addressLine1 ?? '' }}<br>
-													{{ wedding.mariee.addressLine2 ?? '' }}<br>
-													{{ wedding.mariee.addressPostalCodeAndCity ?? '' }}
+													{% if wedding.mariee.addressLine1 %}{{ wedding.mariee.addressLine1 }}<br>{% endif %}
+													{% if wedding.mariee.addressLine2 %}{{ wedding.mariee.addressLine2 }}<br>{% endif %}
+													{% if wedding.mariee.addressPostalCodeAndCity %}{{ wedding.mariee.addressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elseif wedding.marieeFirstName or wedding.marieeName or wedding.marieeEmail %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Future mariée</h3>
+											<span class="badge rounded-pill bg-warning text-dark">
+												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+											</span>
+											{% if wedding.marieeEmail %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieeEmail }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											{% if wedding.marieeFirstName or wedding.marieeName %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}</div>
+												</div>
+											{% endif %}
+											{% if wedding.marieeTelephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieeTelephone }}</div>
+											{% endif %}
+											{% if wedding.marieeAddressLine1 or wedding.marieeAddressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.marieeAddressLine1 %}{{ wedding.marieeAddressLine1 }}<br>{% endif %}
+													{% if wedding.marieeAddressLine2 %}{{ wedding.marieeAddressLine2 }}<br>{% endif %}
+													{% if wedding.marieeAddressPostalCodeAndCity %}{{ wedding.marieeAddressPostalCodeAndCity }}{% endif %}
 												</div>
 											{% endif %}
 										</div>

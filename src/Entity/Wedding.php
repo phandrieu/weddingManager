@@ -22,8 +22,50 @@ class Wedding
     #[ORM\ManyToOne(inversedBy: 'weddings')]
 private ?User $marie = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieFirstName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieEmail = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $marieTelephone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieAddressLine1 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieAddressLine2 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieAddressPostalCodeAndCity = null;
+
 #[ORM\ManyToOne(inversedBy: 'weddingsAsMariee')]
 private ?User $mariee = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeFirstName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeEmail = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $marieeTelephone = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeAddressLine1 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeAddressLine2 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $marieeAddressPostalCodeAndCity = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
@@ -578,6 +620,174 @@ private ?User $mariee = null;
     public function setPaymentOption(?string $paymentOption): static
     {
         $this->paymentOption = $paymentOption;
+
+        return $this;
+    }
+
+    public function getMarieFirstName(): ?string
+    {
+        return $this->marieFirstName;
+    }
+
+    public function setMarieFirstName(?string $marieFirstName): static
+    {
+        $this->marieFirstName = $marieFirstName;
+
+        return $this;
+    }
+
+    public function getMarieName(): ?string
+    {
+        return $this->marieName;
+    }
+
+    public function setMarieName(?string $marieName): static
+    {
+        $this->marieName = $marieName;
+
+        return $this;
+    }
+
+    public function getMarieEmail(): ?string
+    {
+        return $this->marieEmail;
+    }
+
+    public function setMarieEmail(?string $marieEmail): static
+    {
+        $this->marieEmail = $marieEmail;
+
+        return $this;
+    }
+
+    public function getMarieTelephone(): ?string
+    {
+        return $this->marieTelephone;
+    }
+
+    public function setMarieTelephone(?string $marieTelephone): static
+    {
+        $this->marieTelephone = $marieTelephone;
+
+        return $this;
+    }
+
+    public function getMarieAddressLine1(): ?string
+    {
+        return $this->marieAddressLine1;
+    }
+
+    public function setMarieAddressLine1(?string $marieAddressLine1): static
+    {
+        $this->marieAddressLine1 = $marieAddressLine1;
+
+        return $this;
+    }
+
+    public function getMarieAddressLine2(): ?string
+    {
+        return $this->marieAddressLine2;
+    }
+
+    public function setMarieAddressLine2(?string $marieAddressLine2): static
+    {
+        $this->marieAddressLine2 = $marieAddressLine2;
+
+        return $this;
+    }
+
+    public function getMarieAddressPostalCodeAndCity(): ?string
+    {
+        return $this->marieAddressPostalCodeAndCity;
+    }
+
+    public function setMarieAddressPostalCodeAndCity(?string $marieAddressPostalCodeAndCity): static
+    {
+        $this->marieAddressPostalCodeAndCity = $marieAddressPostalCodeAndCity;
+
+        return $this;
+    }
+
+    public function getMarieeFirstName(): ?string
+    {
+        return $this->marieeFirstName;
+    }
+
+    public function setMarieeFirstName(?string $marieeFirstName): static
+    {
+        $this->marieeFirstName = $marieeFirstName;
+
+        return $this;
+    }
+
+    public function getMarieeName(): ?string
+    {
+        return $this->marieeName;
+    }
+
+    public function setMarieeName(?string $marieeName): static
+    {
+        $this->marieeName = $marieeName;
+
+        return $this;
+    }
+
+    public function getMarieeEmail(): ?string
+    {
+        return $this->marieeEmail;
+    }
+
+    public function setMarieeEmail(?string $marieeEmail): static
+    {
+        $this->marieeEmail = $marieeEmail;
+
+        return $this;
+    }
+
+    public function getMarieeTelephone(): ?string
+    {
+        return $this->marieeTelephone;
+    }
+
+    public function setMarieeTelephone(?string $marieeTelephone): static
+    {
+        $this->marieeTelephone = $marieeTelephone;
+
+        return $this;
+    }
+
+    public function getMarieeAddressLine1(): ?string
+    {
+        return $this->marieeAddressLine1;
+    }
+
+    public function setMarieeAddressLine1(?string $marieeAddressLine1): static
+    {
+        $this->marieeAddressLine1 = $marieeAddressLine1;
+
+        return $this;
+    }
+
+    public function getMarieeAddressLine2(): ?string
+    {
+        return $this->marieeAddressLine2;
+    }
+
+    public function setMarieeAddressLine2(?string $marieeAddressLine2): static
+    {
+        $this->marieeAddressLine2 = $marieeAddressLine2;
+
+        return $this;
+    }
+
+    public function getMarieeAddressPostalCodeAndCity(): ?string
+    {
+        return $this->marieeAddressPostalCodeAndCity;
+    }
+
+    public function setMarieeAddressPostalCodeAndCity(?string $marieeAddressPostalCodeAndCity): static
+    {
+        $this->marieeAddressPostalCodeAndCity = $marieeAddressPostalCodeAndCity;
 
         return $this;
     }
