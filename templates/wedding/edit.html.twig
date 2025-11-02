@@ -547,13 +547,13 @@
                         {% endif %}
                         <div class="wizard-finance-inputs">
                             <div class="wizard-finance-field">
-                                <label for="{{ form.montantTotal.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant de la prestation</label>
-                                {{ form_widget(form.montantTotal, {'attr': form.montantTotal.vars.attr|merge({})}) }}
+                                <label for="{{ form.montantTotal.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant de la prestation <span class="text-danger">*</span></label>
+                                {{ form_widget(form.montantTotal, {'attr': form.montantTotal.vars.attr|merge({'required': 'required'})}) }}
                                 {{ form_errors(form.montantTotal) }}
                             </div>
                             <div class="wizard-finance-field">
-                                <label for="{{ form.montantPaye.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant déjà versé</label>
-                                {{ form_widget(form.montantPaye, {'attr': form.montantPaye.vars.attr|merge({})}) }}
+                                <label for="{{ form.montantPaye.vars.id }}" class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Montant déjà versé <span class="text-danger">*</span></label>
+                                {{ form_widget(form.montantPaye, {'attr': form.montantPaye.vars.attr|merge({'required': 'required'})}) }}
                                 {{ form_errors(form.montantPaye) }}
                             </div>
                         </div>
