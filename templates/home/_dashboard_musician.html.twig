@@ -29,7 +29,10 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p class="text-muted mb-0">Aucun mariage à venir enregistré pour le moment.</p>
+                <p class="text-muted mb-3">Aucun mariage à venir enregistré pour le moment.</p>
+                <a href="{{ path('app_wedding_edit') }}" class="btn btn-cta btn-sm">
+                    <i class="bi bi-plus-circle me-2"></i>Créer un nouveau mariage
+                </a>
             {% endif %}
         </article>
 

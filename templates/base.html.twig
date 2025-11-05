@@ -645,7 +645,7 @@
                             <a class="nav-link" href="{{ path('app_wedding_index') }}">Mes mariages</a>
                         </li>
                         {% endif %}
-                        {% if 'ROLE_MUSICIAN' in app.user.roles %}
+                        {% if 'ROLE_MUSICIAN' in app.user.roles or 'ROLE_PARISH' in app.user.roles %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_repertoire_index') }}">Mon répertoire</a>
                         </li>
