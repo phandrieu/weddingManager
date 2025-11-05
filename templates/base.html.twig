@@ -638,9 +638,9 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
+                            <a class="nav-link" href="{{ path('home') }}">{% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles or 'ROLE_PARISH' in app.user.roles %}Accueil{% else %}Mon mariage{% endif %}</a>
                         </li>
-                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles %}
+                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_MUSICIAN' in app.user.roles or 'ROLE_PARISH' in app.user.roles %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_wedding_index') }}">Mes mariages</a>
                         </li>
