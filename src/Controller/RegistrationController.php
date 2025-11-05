@@ -38,6 +38,7 @@ class RegistrationController extends AbstractController
                 $user->setSubscription(isset($data['subscription']) && $data['subscription'] === '1');
             } elseif ($data['status'] === 'paroisse') {
                 $user->setRoles(['ROLE_USER', 'ROLE_PARISH']);
+                $user->setSubscription(false);
             } else {
                 $user->setRoles(['ROLE_USER']);
                 $user->setSubscription(false);
