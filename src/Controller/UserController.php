@@ -33,12 +33,20 @@ final class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/delete/{id}', name: 'app_user_delete', methods: ['POST'])]
+    #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET', 'POST'])]
     public function delete(Request $request, User $user, UserRepository $repo): Response
     {
+        // Si la requête est GET, rediriger avec un message d'erreur
+        if ($request->isMethod('GET')) {
+            $this->addFlash('warning', 'La suppression d\'utilisateur doit être effectuée via le formulaire approprié.');
+            return $this->redirectToRoute('app_user_index');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
             $repo->remove($user, true);
             $this->addFlash('success', 'Utilisateur supprimé avec succès.');
+        } else {
+            $this->addFlash('error', 'Token CSRF invalide.');
         }
 
         return $this->redirectToRoute('app_user_index');

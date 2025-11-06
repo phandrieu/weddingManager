@@ -20,7 +20,8 @@ class Wedding
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'weddings')]
-private ?User $marie = null;
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?User $marie = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $marieFirstName = null;
@@ -43,8 +44,9 @@ private ?User $marie = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $marieAddressPostalCodeAndCity = null;
 
-#[ORM\ManyToOne(inversedBy: 'weddingsAsMariee')]
-private ?User $mariee = null;
+    #[ORM\ManyToOne(inversedBy: 'weddingsAsMariee')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?User $mariee = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $marieeFirstName = null;
