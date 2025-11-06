@@ -125,6 +125,89 @@
             margin-top: 1.75rem;
         }
 
+        /* Animations pour les transitions fluides */
+        .fade-slide-enter {
+            animation: fadeSlideIn 0.4s ease-out forwards;
+        }
+
+        .fade-slide-exit {
+            animation: fadeSlideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeSlideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .email-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(101, 45, 144, 0.08);
+            border-radius: 0.5rem;
+            color: var(--color-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .btn-change-email {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(101, 45, 144, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: var(--color-secondary);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 991.98px) {
             .auth-wrapper {
                 margin-top: 1rem;
@@ -164,36 +247,67 @@
                 </div>
             {% endif %}
 
-            <form method="post" class="d-flex flex-column gap-3">
-                <div class="form-floating">
-                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" placeholder="Email" autocomplete="email" required autofocus>
-                    <label for="username">Adresse e-mail</label>
-                </div>
+            <!-- Indicateur d'étapes -->
+            <div class="step-indicator">
+                <div class="step-dot active" id="step-dot-1"></div>
+                <div class="step-dot" id="step-dot-2"></div>
+            </div>
 
-                <div class="form-floating position-relative">
-                    <input type="password" name="_password" id="password" class="form-control" placeholder="Mot de passe" autocomplete="current-password" required>
-                    <label for="password">Mot de passe</label>
-                    <button class="btn btn-link text-decoration-none toggle-password" type="button" data-target="password">
-                        <i class="bi bi-eye"></i>
-                        <span class="visually-hidden">Afficher le mot de passe</span>
+            <!-- ÉTAPE 1 : Email uniquement -->
+            <div id="step-email">
+                <form id="email-form" class="d-flex flex-column gap-3">
+                    <div class="form-floating">
+                        <input type="email" value="{{ last_username }}" name="email" id="email-input" 
+                               class="form-control" placeholder="Email" autocomplete="email" required autofocus>
+                        <label for="email-input">Adresse e-mail</label>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg w-100" type="submit" id="continue-btn">
+                        <span id="continue-text">
+                            <i class="bi bi-arrow-right me-2"></i>Continuer
+                        </span>
+                        <span id="continue-loading" class="d-none">
+                            <span class="loading-spinner me-2"></span>Vérification...
+                        </span>
                     </button>
+                </form>
+            </div>
+
+            <!-- ÉTAPE 2 : Mot de passe (cachée par défaut) -->
+            <div id="step-password" class="d-none">
+                <div class="mb-3">
+                    <div class="email-display">
+                        <i class="bi bi-envelope-check"></i>
+                        <span id="email-display-text"></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-change-email ms-2" id="change-email-btn">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </button>
+                    </div>
                 </div>
 
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <form method="post" id="password-form" class="d-flex flex-column gap-3">
+                    <input type="hidden" name="_username" id="username-hidden">
+                    
+                    <div class="form-floating position-relative">
+                        <input type="password" name="_password" id="password" class="form-control" 
+                               placeholder="Mot de passe" autocomplete="current-password" required>
+                        <label for="password">Mot de passe</label>
+                        <button class="btn btn-link text-decoration-none toggle-password" type="button" data-target="password">
+                            <i class="bi bi-eye"></i>
+                            <span class="visually-hidden">Afficher le mot de passe</span>
+                        </button>
+                    </div>
 
-                <button class="btn btn-primary btn-lg w-100" type="submit">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
-                </button>
-            </form>
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <div class="auth-links">
-                <a href="{{ path('app_register') }}" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-heart-fill me-2"></i>Créer un compte
-                </a>
-                <div class="d-flex justify-content-between flex-wrap gap-2">
-                    <a class="link-secondary" href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
-                    <a class="link-secondary" href="{{ path('app_credits_buy') }}">Acheter des crédits</a>
-                </div>
+                    <button class="btn btn-primary btn-lg w-100" type="submit">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                    </button>
+
+                    <a class="link-secondary text-center" href="{{ path('app_forgot_password') }}">
+                        <i class="bi bi-question-circle me-1"></i>Mot de passe oublié ?
+                    </a>
+                </form>
             </div>
 
             <p class="auth-meta mt-4 mb-0 text-center">&copy; {{ "now"|date('Y') }} Notre Messe de Mariage</p>
@@ -214,33 +328,27 @@
                         <span class="auth-step__icon"><i class="bi bi-envelope-heart"></i></span>
                         <div>
                             <h5 class="mb-1">2. Invitez vos partenaires</h5>
-                            <p class="mb-0 small">Partagez des accès sécurisés, suivez l’usage des crédits et pilotez les validations de chants.</p>
+                            <p class="mb-0 small">Partagez des accès sécurisés, suivez l'usage des crédits et pilotez les validations de chants.</p>
                         </div>
                     </div>
                     <div class="auth-step">
                         <span class="auth-step__icon"><i class="bi bi-music-note-beamed"></i></span>
                         <div>
                             <h5 class="mb-1">3. Co-construisez la célébration</h5>
-                            <p class="mb-0 small">Centralisez déroulé, répertoire et logistique afin d’arriver sereins le jour J.</p>
+                            <p class="mb-0 small">Centralisez déroulé, répertoire et logistique afin d'arriver sereins le jour J.</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="auth-insight">
-                    {% if app.session.get('pending_invitation_token') %}
-                        <i class="bi bi-hourglass-split me-2"></i>Un paiement d’invitation est en cours. Finalisez-le depuis vos notifications après connexion.
-                    {% else %}
-                        <i class="bi bi-lightbulb me-2"></i>Astuce : paroisses et musiciens peuvent débloquer l’accès aux couples grâce aux crédits achetés dans l’espace dédié.
-                    {% endif %}
-                </div>
-            </div>
-        </aside>
-    </div>
+                        });
+    </script>
 {% endblock %}
+
 
 {% block javascripts %}
     {{ parent() }}
     <script>
+        // Gestion du toggle password
         document.querySelectorAll('.toggle-password').forEach(function (button) {
             button.addEventListener('click', function () {
                 var targetId = button.getAttribute('data-target');
@@ -253,6 +361,124 @@
                 button.querySelector('i').classList.toggle('bi-eye');
                 button.querySelector('i').classList.toggle('bi-eye-slash');
             });
+        });
+
+        // Gestion du formulaire en deux étapes
+        const emailForm = document.getElementById('email-form');
+        const emailInput = document.getElementById('email-input');
+        const stepEmail = document.getElementById('step-email');
+        const stepPassword = document.getElementById('step-password');
+        const continueBtn = document.getElementById('continue-btn');
+        const continueText = document.getElementById('continue-text');
+        const continueLoading = document.getElementById('continue-loading');
+        const emailDisplayText = document.getElementById('email-display-text');
+        const usernameHidden = document.getElementById('username-hidden');
+        const changeEmailBtn = document.getElementById('change-email-btn');
+        const stepDot1 = document.getElementById('step-dot-1');
+        const stepDot2 = document.getElementById('step-dot-2');
+
+        emailForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                return;
+            }
+
+            // Afficher le loading
+            continueBtn.disabled = true;
+            continueText.classList.add('d-none');
+            continueLoading.classList.remove('d-none');
+
+            try {
+                // Vérifier si l'email existe
+                const response = await fetch('{{ path('api_check_email') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur serveur: ' + response.status);
+                }
+
+                const data = await response.json();
+
+                if (data.exists) {
+                    // L'utilisateur existe, passer à l'étape 2
+                    showPasswordStep(email);
+                } else {
+                    // L'utilisateur n'existe pas, rediriger vers l'inscription
+                    window.location.href = '{{ path('app_register') }}?email=' + encodeURIComponent(email);
+                }
+            } catch (error) {
+                console.error('Erreur détaillée:', error);
+                alert('Une erreur est survenue: ' + error.message);
+                
+                // Restaurer le bouton
+                continueBtn.disabled = false;
+                continueText.classList.remove('d-none');
+                continueLoading.classList.add('d-none');
+            }
+        });
+
+        function showPasswordStep(email) {
+            // Animer la sortie de l'étape email
+            stepEmail.classList.add('fade-slide-exit');
+            
+            setTimeout(() => {
+                stepEmail.classList.add('d-none');
+                stepEmail.classList.remove('fade-slide-exit');
+                
+                // Mettre à jour l'affichage de l'email
+                emailDisplayText.textContent = email;
+                usernameHidden.value = email;
+                
+                // Afficher l'étape password avec animation
+                stepPassword.classList.remove('d-none');
+                stepPassword.classList.add('fade-slide-enter');
+                
+                // Mettre à jour les indicateurs d'étapes
+                stepDot1.classList.remove('active');
+                stepDot2.classList.add('active');
+                
+                // Focus sur le champ password
+                setTimeout(() => {
+                    document.getElementById('password').focus();
+                }, 100);
+            }, 300);
+        }
+
+        // Bouton pour revenir à l'étape email
+        changeEmailBtn.addEventListener('click', function() {
+            stepPassword.classList.add('fade-slide-exit');
+            
+            setTimeout(() => {
+                stepPassword.classList.add('d-none');
+                stepPassword.classList.remove('fade-slide-exit', 'fade-slide-enter');
+                
+                // Réafficher l'étape email
+                stepEmail.classList.remove('d-none');
+                stepEmail.classList.add('fade-slide-enter');
+                
+                // Mettre à jour les indicateurs d'étapes
+                stepDot1.classList.add('active');
+                stepDot2.classList.remove('active');
+                
+                // Restaurer le bouton continuer
+                continueBtn.disabled = false;
+                continueText.classList.remove('d-none');
+                continueLoading.classList.add('d-none');
+                
+                // Focus sur l'email
+                setTimeout(() => {
+                    emailInput.focus();
+                    emailInput.select();
+                }, 100);
+            }, 300);
         });
     </script>
 {% endblock %}

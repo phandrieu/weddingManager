@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Repository\InvitationRepository;
+use App\Repository\UserRepository;
 use App\Service\InvitationWorkflow;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -70,5 +72,23 @@ class SecurityController extends AbstractController
     public function logout(): void
     {
         throw new \LogicException('Intercepted by Symfony firewall.');
+    }
+
+    #[Route(path: '/api/check-email', name: 'api_check_email', methods: ['POST'])]
+    public function checkEmail(Request $request, UserRepository $userRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return new JsonResponse(['exists' => false, 'valid' => false]);
+        }
+
+        $user = $userRepository->findOneBy(['email' => $email]);
+
+        return new JsonResponse([
+            'exists' => $user !== null,
+            'valid' => true
+        ]);
     }
 }

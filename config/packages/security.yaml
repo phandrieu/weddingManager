@@ -41,6 +41,7 @@ security:
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles : PUBLIC_ACCESS}
         - { path: ^/invitation, roles : PUBLIC_ACCESS }
+        - { path: ^/api/check-email, roles: PUBLIC_ACCESS }
 
         # --- ROLE_USER ---
         - { path: ^/logout, roles: ROLE_USER }

@@ -25,6 +25,9 @@ class RegistrationController extends AbstractController
         InvitationRepository $invitationRepo,
         InvitationWorkflow $invitationWorkflow
     ): Response {
+        // Récupérer l'email depuis les paramètres GET (depuis la page de login)
+        $prefilledEmail = $request->query->get('email', '');
+
         if ($request->isMethod('POST')) {
             $data = $request->request->all();
 
@@ -109,7 +112,9 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_register_success');
         }
 
-        return $this->render('registration/register.html.twig');
+        return $this->render('registration/register.html.twig', [
+            'prefilled_email' => $prefilledEmail,
+        ]);
     }
 
     #[Route('/register/success', name: 'app_register_success')]
