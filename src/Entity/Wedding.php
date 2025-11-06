@@ -150,6 +150,7 @@ class Wedding
     private Collection $comments;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]

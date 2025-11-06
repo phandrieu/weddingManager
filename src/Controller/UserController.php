@@ -34,7 +34,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET', 'POST'])]
-    public function delete(Request $request, User $user, UserRepository $repo): Response
+    public function delete(Request $request, User $user, UserRepository $repo, EntityManagerInterface $em): Response
     {
         // Si la requête est GET, rediriger avec un message d'erreur
         if ($request->isMethod('GET')) {
@@ -42,11 +42,53 @@ final class UserController extends AbstractController
             return $this->redirectToRoute('app_user_index');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_user_index');
+        }
+
+        // Vérifier les relations qui pourraient empêcher la suppression
+        $hasRelations = false;
+        $relationMessages = [];
+
+        if (!$user->getWeddings()->isEmpty()) {
+            $relationMessages[] = sprintf('%d mariage(s) comme marié', $user->getWeddings()->count());
+            $hasRelations = true;
+        }
+
+        if (!$user->getWeddingsAsMariee()->isEmpty()) {
+            $relationMessages[] = sprintf('%d mariage(s) comme mariée', $user->getWeddingsAsMariee()->count());
+            $hasRelations = true;
+        }
+
+        if (!$user->getWeddingsAsMusicians()->isEmpty()) {
+            $relationMessages[] = sprintf('%d mariage(s) comme musicien', $user->getWeddingsAsMusicians()->count());
+            $hasRelations = true;
+        }
+
+        if (!$user->getWeddingsAsParish()->isEmpty()) {
+            $relationMessages[] = sprintf('%d mariage(s) comme utilisateur paroisse', $user->getWeddingsAsParish()->count());
+            $hasRelations = true;
+        }
+
+        if (!$user->getComments()->isEmpty()) {
+            $relationMessages[] = sprintf('%d commentaire(s)', $user->getComments()->count());
+            $hasRelations = true;
+        }
+
+        if ($hasRelations) {
+            $this->addFlash('error', sprintf(
+                'Impossible de supprimer cet utilisateur car il est lié à : %s. Veuillez d\'abord supprimer ou modifier ces éléments.',
+                implode(', ', $relationMessages)
+            ));
+            return $this->redirectToRoute('app_user_index');
+        }
+
+        try {
             $repo->remove($user, true);
             $this->addFlash('success', 'Utilisateur supprimé avec succès.');
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de la suppression : ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('app_user_index');
