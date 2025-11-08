@@ -141,7 +141,22 @@ public function edit(Request $request, UserPasswordHasherInterface $hasher, User
 
         if ($form->isSubmitted() && $form->isValid()) {
             $plainPassword = $form->get('password')->getData();
+            $currentPassword = $form->get('currentPassword')->getData();
+            
             if ($plainPassword) {
+                // Vérifier que l'ancien mot de passe a été fourni
+                if (!$currentPassword) {
+                    $this->addFlash('error', 'Vous devez entrer votre mot de passe actuel pour le modifier.');
+                    return $this->redirectToRoute('app_user_profile');
+                }
+                
+                // Vérifier que l'ancien mot de passe est correct
+                if (!$hasher->isPasswordValid($user, $currentPassword)) {
+                    $this->addFlash('error', 'Le mot de passe actuel est incorrect.');
+                    return $this->redirectToRoute('app_user_profile');
+                }
+                
+                // Hasher et définir le nouveau mot de passe
                 $hashedPassword = $hasher->hashPassword($user, $plainPassword);
                 $user->setPassword($hashedPassword);
             }

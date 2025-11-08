@@ -182,4 +182,86 @@ public function delete(Request $request, Song $song, SongRepository $repo): Resp
             'song' => $song,
         ]);
     }
+
+    #[Route('/suggestion/create', name: 'song_suggestion_create', methods: ['POST'])]
+    public function createSuggestion(Request $request, EntityManagerInterface $em): Response
+    {
+        if (!$request->isXmlHttpRequest()) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$user instanceof \App\Entity\User) {
+            return $this->json(['success' => false, 'message' => 'Non authentifié'], 401);
+        }
+
+        $name = trim((string) $request->request->get('name', ''));
+        if (empty($name)) {
+            return $this->json(['success' => false, 'message' => 'Le titre est obligatoire'], 400);
+        }
+
+        $isSong = $request->request->get('isSong', '1') === '1';
+
+        $song = new Song();
+        $song->setName($name);
+        $song->setSuggestion(true);
+        $song->setSong($isSong); // Chant (true) ou Lecture/Prière (false)
+        $song->setAddedBy($user);
+        $song->setAddedAt(new \DateTime());
+        $song->setLastEditBy($user);
+        $song->setLastEditAt(new \DateTime());
+
+        // Champs optionnels
+        if ($lyricsAuthor = trim((string) $request->request->get('lyricsAuthorName', ''))) {
+            $song->setLyricsAuthorName($lyricsAuthor);
+        }
+        if ($musicAuthor = trim((string) $request->request->get('musicAuthorName', ''))) {
+            $song->setMusicAuthorName($musicAuthor);
+        }
+        if ($interpret = trim((string) $request->request->get('interpretName', ''))) {
+            $song->setInterpretName($interpret);
+        }
+        if ($editor = trim((string) $request->request->get('editorName', ''))) {
+            $song->setEditorName($editor);
+        }
+        if ($textRef = trim((string) $request->request->get('textRef', ''))) {
+            $song->setTextRef($textRef);
+        }
+        if ($textTranslation = trim((string) $request->request->get('textTranslationName', ''))) {
+            $song->setTextTranslationName($textTranslation);
+        }
+        if ($previewUrl = trim((string) $request->request->get('previewUrl', ''))) {
+            $song->setPreviewUrl($previewUrl);
+        }
+        if ($lyrics = trim((string) $request->request->get('lyrics', ''))) {
+            $song->setLyrics($lyrics);
+        }
+
+        // Associer les types de chant si fournis
+        $typeIds = $request->request->all('typeIds');
+        if (is_array($typeIds) && !empty($typeIds)) {
+            foreach ($typeIds as $typeId) {
+                $songType = $em->getRepository(\App\Entity\SongType::class)->find($typeId);
+                if ($songType) {
+                    $song->addType($songType);
+                }
+            }
+        }
+
+        try {
+            $em->persist($song);
+            $em->flush();
+
+            return $this->json([
+                'success' => true,
+                'songId' => $song->getId(),
+                'message' => 'Suggestion créée avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création : ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

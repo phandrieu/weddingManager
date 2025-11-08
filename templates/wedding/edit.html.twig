@@ -42,7 +42,7 @@
                         Inviter
                     </button>
                 {% endif %}
-                <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+                <a href="{{ wedding.id ? path('app_wedding_view', {'id': wedding.id}) : path('app_wedding_index') }}" id="cancelBtn" class="btn btn-outline-secondary btn-rounded">Annuler</a>
             </div>
         </header>
 
@@ -50,6 +50,8 @@
 
         <input type="hidden" name="payment_option" id="payment_option_input" value="{{ selectedPaymentOption }}">
         <input type="hidden" name="user_role" id="user_role_input" value="">
+        <input type="hidden" name="current_step" id="current_step_input" value="{{ initialWizardStep|default(0) }}">
+        <input type="hidden" name="stay_on_edit" id="stay_on_edit_input" value="0">
 
         <div class="wizard-stepper" id="weddingStepper">
             <button type="button" class="wizard-stepper__item active" data-step="0">
@@ -64,9 +66,11 @@
             <button type="button" class="wizard-stepper__item" data-step="3">
                 Répertoire<br><small>Déroulé &amp; validations</small>
             </button>
+            {% if not isCouple %}
             <button type="button" class="wizard-stepper__item" data-step="4">
                 Suivi<br><small>Finances &amp; archive</small>
             </button>
+            {% endif %}
         </div>
 
         <div class="wizard-steps">
@@ -453,17 +457,22 @@
                                                     <div>
                                                         <span class="deroule-type-badge">{{ type.name }}</span>
                                                     </div>
-                                                    <div>
-                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}">
+                                                    <div class="d-flex gap-2 align-items-center">
+                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
                                                             <option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
                                                             {% if songsForType|length > 0 %}
                                                                 {% for song in songsForType %}
-                                                                    <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>{{ song.name ?? (song.title ?? 'Titre inconnu') }}</option>
+                                                                    <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
+                                                                        {% if song.suggestion %}✨ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
+                                                                    </option>
                                                                 {% endfor %}
                                                             {% else %}
                                                                 <option disabled>Pas de chants disponibles</option>
                                                             {% endif %}
                                                         </select>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary js-suggest-song" data-song-type="{{ type.id }}" title="Suggérer un nouveau chant">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
                                                     </div>
                                                     <div>
                                                         <input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
@@ -496,6 +505,7 @@
                 {{ form_widget(form.songs, {'attr': {'class': 'd-none'}}) }}
             </div>
 
+            {% if not isCouple %}
             <div class="wizard-step" data-step="4">
                 <div class="form-grid">
                     <div class="form-card">
@@ -620,6 +630,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
 
         <div class="wizard-actions">
@@ -639,7 +650,17 @@
             </button>
         </div>
 
-        {{ form_rest(form) }}
+        {# Rendre uniquement le token CSRF et les champs système nécessaires #}
+        {{ form_row(form._token) }}
+        
+        {# Rendre les champs marie/mariee dynamiques s'ils existent #}
+        {% if form.marie is defined %}
+            <div class="d-none">{{ form_row(form.marie) }}</div>
+        {% endif %}
+        {% if form.mariee is defined %}
+            <div class="d-none">{{ form_row(form.mariee) }}</div>
+        {% endif %}
+        
         {{ form_end(form, {'render_rest': false}) }}
     </section>
 
@@ -696,14 +717,14 @@
     </div>
 </div>
 
-<div class="modal fade" id="userRoleModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ shouldOpenRoleModal ? '1' : '0' }}" data-backdrop="static" data-keyboard="false">
+<div class="modal fade" id="userRoleModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ (shouldOpenRoleModal or (isOnlyUser and not wedding.id)) ? '1' : '0' }}" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Votre rôle dans ce mariage</h5>
             </div>
             <div class="modal-body">
-                <p class="mb-4">Vous créez un nouveau mariage. Êtes-vous le marié ou la mariée ?</p>
+                <p class="mb-4">Pour commencer, merci de préciser votre rôle : êtes-vous le marié ou la mariée ?</p>
                 <div class="d-grid gap-3">
                     <button type="button" class="btn btn-outline-primary btn-lg js-user-role-option" data-role="marie">
                         <i class="bi bi-person me-2"></i> Je suis le marié
@@ -761,7 +782,7 @@
     </div>
 </div>
 
-<div class="modal fade duplicate-modal" id="duplicateCheckModal" tabindex="-1" aria-hidden="true" data-autoshow="{{ wedding.id ? '0' : '1' }}">
+<div class="modal fade duplicate-modal" id="duplicateCheckModal" tabindex="-1" aria-hidden="true" data-autoshow="0" data-shouldautoshow="{{ (wedding.id ? '0' : '1') }}">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header duplicate-modal__header">
@@ -829,6 +850,11 @@
                                 <option value="mariee">Mariée</option>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message personnalisé (optionnel)</label>
+                            <textarea class="form-control" id="message" name="message" rows="3" placeholder="Ajoutez un message personnel pour accompagner l'invitation..."></textarea>
+                            <small class="text-muted">Ce message apparaîtra dans l'email d'invitation et la notification.</small>
+                        </div>
                     </div>
                     {% if generatedInvitationLink is defined %}
                         <div class="alert alert-info mt-3 mx-3">
@@ -848,6 +874,133 @@
         </div>
     </div>
 {% endif %}
+
+<!-- Modal pour suggérer un chant personnalisé -->
+<div class="modal fade" id="suggestSongModal" tabindex="-1" aria-labelledby="suggestSongModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suggestSongModalLabel">Ajouter un nouvel élément</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    Cette bibliothèque vit grâce aux apports de la communauté : musiciens, paroisses et futurs mariés.
+                    Chacun peut proposer ses versions de chants, partitions ou textes pour enrichir la préparation des célébrations.
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-7">
+                        <!-- Section principale -->
+                        <section>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Type d'élément <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input suggestion-type-radio" type="radio" name="suggestion-song-type" id="suggestion-type-text" value="0">
+                                        <label class="form-check-label" for="suggestion-type-text">
+                                            Lecture et Prière
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input suggestion-type-radio" type="radio" name="suggestion-song-type" id="suggestion-type-song" value="1" checked>
+                                        <label class="form-check-label" for="suggestion-type-song">
+                                            Chant
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="suggestion-name" class="form-label fw-bold">Titre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="suggestion-name" required placeholder="Écrire le titre ici">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="suggestion-types" class="form-label fw-bold">Catégorie(s)</label>
+                                <select class="form-select" id="suggestion-types" multiple data-placeholder="Rechercher et sélectionner">
+                                    {% for type in songTypes|default([]) %}
+                                        <option value="{{ type.id }}">{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="suggestion-lyrics" class="form-label fw-bold">Paroles</label>
+                                <textarea class="form-control" id="suggestion-lyrics" rows="12" placeholder="Écrire le texte ici (Mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)"></textarea>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <!-- Sidebar -->
+                        
+                        <!-- Section spécifique aux chants -->
+                        <section id="suggestion-song-specific">
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom pb-2">Prévisualisation</h6>
+                                <div class="mb-3">
+                                    <label for="suggestion-preview-url" class="form-label">URL de prévisualisation (lien Youtube)</label>
+                                    <input type="url" class="form-control" id="suggestion-preview-url" placeholder="Coller l'URL Youtube ici">
+                                </div>
+                                <div id="suggestion-youtube-preview" class="d-none">
+                                    <div class="ratio ratio-16x9">
+                                        <iframe id="suggestion-youtube-iframe" src="about:blank" title="Prévisualisation vidéo" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom pb-2">Crédits</h6>
+                                <div class="mb-3">
+                                    <label for="suggestion-music-author" class="form-label">Compositeur(s)</label>
+                                    <input type="text" class="form-control" id="suggestion-music-author" placeholder="Écrire le(s) Nom(s) et Prénom(s) ici">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="suggestion-lyrics-author" class="form-label">Écriture des paroles</label>
+                                    <input type="text" class="form-control" id="suggestion-lyrics-author" placeholder="Écrire le(s) Nom(s) et Prénom(s)">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="suggestion-interpret" class="form-label">Interprète(s)</label>
+                                    <input type="text" class="form-control" id="suggestion-interpret" placeholder="Écrire le(s) Nom(s) et Prénom(s)">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="suggestion-editor" class="form-label">Éditeur(s)</label>
+                                    <input type="text" class="form-control" id="suggestion-editor" placeholder="Écrire le(s) Nom(s) ou organisme">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Section spécifique aux textes -->
+                        <section id="suggestion-text-specific" class="d-none">
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom pb-2">Informations sur le texte</h6>
+                                <div class="mb-3">
+                                    <label for="suggestion-text-ref" class="form-label">Référence du texte (ex : Jean 3:16)</label>
+                                    <input type="text" class="form-control" id="suggestion-text-ref" placeholder="Référence du texte">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="suggestion-text-translation" class="form-label">Nom de la traduction</label>
+                                    <input type="text" class="form-control" id="suggestion-text-translation" placeholder="Nom de la traduction">
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary small mt-3 mb-0">
+                    <strong>Note légale :</strong> Ce site agit en tant qu'hébergeur (LCEN, 21 juin 2004). 
+                    Les publications restent sous la responsabilité de chaque contributeur.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirm-song-suggestion">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1009,13 +1162,65 @@
                 roleButtons.forEach((btn) => {
                     btn.addEventListener('click', function () {
                         const role = this.dataset.role || '';
-                        if (!role || !userRoleInput || !weddingForm) {
+                        if (!role || !userRoleInput) {
                             return;
                         }
 
                         userRoleInput.value = role;
                         userRoleModal.hide();
-                        weddingForm.requestSubmit();
+                        
+                        // Après avoir sélectionné le rôle, auto-remplir les champs avec les infos utilisateur
+                        const currentUserFirstName = '{{ app.user ? app.user.firstName : "" }}';
+                        const currentUserLastName = '{{ app.user ? app.user.name : "" }}';
+                        const currentUserEmail = '{{ app.user ? app.user.email : "" }}';
+                        const currentUserPhone = '{{ app.user ? app.user.telephone : "" }}';
+                        const currentUserAddress1 = '{{ app.user ? app.user.addressLine1 : "" }}';
+                        const currentUserAddress2 = '{{ app.user ? app.user.addressLine2 : "" }}';
+                        const currentUserPostal = '{{ app.user ? app.user.addressPostalCodeAndCity : "" }}';
+                        
+                        if (role === 'marie') {
+                            const marieFirstNameInput = document.getElementById('wedding_form_marieFirstName');
+                            const marieNameInput = document.getElementById('wedding_form_marieName');
+                            const marieEmailInput = document.getElementById('wedding_form_marieEmail');
+                            const marieTelInput = document.getElementById('wedding_form_marieTelephone');
+                            const marieAddr1Input = document.getElementById('wedding_form_marieAddressLine1');
+                            const marieAddr2Input = document.getElementById('wedding_form_marieAddressLine2');
+                            const mariePostalInput = document.getElementById('wedding_form_marieAddressPostalCodeAndCity');
+                            
+                            if (marieFirstNameInput && !marieFirstNameInput.value) marieFirstNameInput.value = currentUserFirstName;
+                            if (marieNameInput && !marieNameInput.value) marieNameInput.value = currentUserLastName;
+                            if (marieEmailInput && !marieEmailInput.value) marieEmailInput.value = currentUserEmail;
+                            if (marieTelInput && !marieTelInput.value) marieTelInput.value = currentUserPhone;
+                            if (marieAddr1Input && !marieAddr1Input.value) marieAddr1Input.value = currentUserAddress1;
+                            if (marieAddr2Input && !marieAddr2Input.value) marieAddr2Input.value = currentUserAddress2;
+                            if (mariePostalInput && !mariePostalInput.value) mariePostalInput.value = currentUserPostal;
+                        } else if (role === 'mariee') {
+                            const marieeFirstNameInput = document.getElementById('wedding_form_marieeFirstName');
+                            const marieeNameInput = document.getElementById('wedding_form_marieeName');
+                            const marieeEmailInput = document.getElementById('wedding_form_marieeEmail');
+                            const marieeTelInput = document.getElementById('wedding_form_marieeTelephone');
+                            const marieeAddr1Input = document.getElementById('wedding_form_marieeAddressLine1');
+                            const marieeAddr2Input = document.getElementById('wedding_form_marieeAddressLine2');
+                            const marieePostalInput = document.getElementById('wedding_form_marieeAddressPostalCodeAndCity');
+                            
+                            if (marieeFirstNameInput && !marieeFirstNameInput.value) marieeFirstNameInput.value = currentUserFirstName;
+                            if (marieeNameInput && !marieeNameInput.value) marieeNameInput.value = currentUserLastName;
+                            if (marieeEmailInput && !marieeEmailInput.value) marieeEmailInput.value = currentUserEmail;
+                            if (marieeTelInput && !marieeTelInput.value) marieeTelInput.value = currentUserPhone;
+                            if (marieeAddr1Input && !marieeAddr1Input.value) marieeAddr1Input.value = currentUserAddress1;
+                            if (marieeAddr2Input && !marieeAddr2Input.value) marieeAddr2Input.value = currentUserAddress2;
+                            if (marieePostalInput && !marieePostalInput.value) marieePostalInput.value = currentUserPostal;
+                        }
+                        
+                        // Après avoir rempli les champs, ouvrir la modal de vérification des doublons
+                        const duplicateModalEl = document.getElementById('duplicateCheckModal');
+                        if (duplicateModalEl && duplicateModalEl.dataset.shouldAutoshow === '1') {
+                            const duplicateModal = bootstrap.Modal.getInstance(duplicateModalEl) || new bootstrap.Modal(duplicateModalEl, {
+                                backdrop: 'static',
+                                keyboard: false,
+                            });
+                            duplicateModal.show();
+                        }
                     });
                 });
 
@@ -1094,6 +1299,10 @@
             const duplicateModalEl = document.getElementById('duplicateCheckModal');
             if (duplicateModalEl && typeof bootstrap !== 'undefined') {
                 const autoshow = duplicateModalEl.dataset.autoshow === '1';
+                const shouldAutoshow = duplicateModalEl.dataset.shouldautoshow === '1';
+                const isOnlyUser = {{ isOnlyUser ? 'true' : 'false' }};
+                const isNewWedding = {{ wedding.id ? 'false' : 'true' }};
+                
                 const duplicateModal = new bootstrap.Modal(duplicateModalEl, {
                     backdrop: 'static',
                     keyboard: false,
@@ -1277,24 +1486,35 @@
                     });
                 }
 
-                if (autoshow) {
+                // N'afficher la modal de duplication automatiquement que si ce n'est pas un utilisateur simple créant un nouveau mariage
+                // (pour les utilisateurs simples, elle s'affichera après la sélection du rôle)
+                if (autoshow && !(isOnlyUser && isNewWedding)) {
                     duplicateModal.show();
                 }
             }
 
+            console.log('=== DEBUT INITIALISATION WIZARD ===');
             const wizardLayout = document.getElementById('weddingWizard');
+            console.log('wizardLayout:', wizardLayout);
             const steps = Array.from(document.querySelectorAll('.wizard-step'));
+            console.log('Nombre d\'étapes trouvées:', steps.length);
             const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+            console.log('Nombre de stepper items:', stepperItems.length);
             const sideSlides = Array.from(document.querySelectorAll('.wizard-sidecard__slide'));
             const prevBtn = document.querySelector('.wizard-prev');
             const nextBtn = document.querySelector('.wizard-next');
             const submitBtn = document.querySelector('.wizard-submit');
             let currentStep = 0;
 
+            // Initialiser avec l'étape demandée via le paramètre URL
             if (wizardLayout) {
-                const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
-                if (!Number.isNaN(defaultStep)) {
+                const defaultStepAttr = wizardLayout.dataset.defaultStep;
+                console.log('Attribut data-default-step:', defaultStepAttr);
+                const defaultStep = parseInt(defaultStepAttr || '0', 10);
+                console.log('defaultStep parsé:', defaultStep);
+                if (!Number.isNaN(defaultStep) && defaultStep >= 0) {
                     currentStep = Math.max(0, Math.min(steps.length - 1, defaultStep));
+                    console.log('Initialisation à l\'étape:', currentStep, 'depuis data-default-step:', defaultStep);
                 }
             }
 
@@ -1342,6 +1562,33 @@
             });
 
             syncUI();
+
+            // Mettre à jour le champ caché current_step quand on change d'étape
+            const currentStepInput = document.getElementById('current_step_input');
+            const originalSyncUI = syncUI;
+            syncUI = function() {
+                originalSyncUI();
+                if (currentStepInput) {
+                    currentStepInput.value = currentStep;
+                    console.log('Step actuel mis à jour dans le formulaire:', currentStep);
+                }
+            };
+
+            // Gérer le bouton Annuler pour revenir à la page view au même step
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const weddingId = '{{ wedding.id }}';
+                    if (weddingId) {
+                        const viewUrl = '{{ path('app_wedding_view', {'id': wedding.id}) }}' + '?step=' + currentStep;
+                        console.log('Redirection Annuler vers:', viewUrl);
+                        window.location.href = viewUrl;
+                    } else {
+                        window.location.href = '{{ path('app_wedding_index') }}';
+                    }
+                });
+            }
 
             if (window.TomSelect) {
                 derouleSelects.forEach((select) => {
@@ -1463,6 +1710,231 @@
                     });
                 });
             }
+        });
+
+        // Gestion des suggestions de chants personnalisés
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentSongTypeId = null;
+            const suggestModal = new bootstrap.Modal(document.getElementById('suggestSongModal'));
+            const confirmBtn = document.getElementById('confirm-song-suggestion');
+            const songSpecific = document.getElementById('suggestion-song-specific');
+            const textSpecific = document.getElementById('suggestion-text-specific');
+            const previewInput = document.getElementById('suggestion-preview-url');
+            const previewWrapper = document.getElementById('suggestion-youtube-preview');
+            const iframe = document.getElementById('suggestion-youtube-iframe');
+            
+            // Initialiser TomSelect pour le sélecteur de catégories dans le modal
+            let suggestionTypesSelect = null;
+            const typesSelectElement = document.getElementById('suggestion-types');
+            if (typesSelectElement && window.TomSelect) {
+                suggestionTypesSelect = new TomSelect(typesSelectElement, {
+                    plugins: ['remove_button'],
+                    placeholder: typesSelectElement.dataset.placeholder || 'Rechercher et sélectionner',
+                    create: false,
+                    maxOptions: 500,
+                    closeAfterSelect: false
+                });
+            }
+
+            // Basculer entre chant et texte
+            document.querySelectorAll('.suggestion-type-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const isSong = document.getElementById('suggestion-type-song').checked;
+                    if (songSpecific) {
+                        songSpecific.classList.toggle('d-none', !isSong);
+                    }
+                    if (textSpecific) {
+                        textSpecific.classList.toggle('d-none', isSong);
+                    }
+                });
+            });
+
+            // Gestion de la prévisualisation YouTube
+            if (previewInput) {
+                previewInput.addEventListener('input', function() {
+                    const url = this.value.trim();
+                    let videoId = '';
+
+                    if (url.includes('v=')) {
+                        videoId = url.split('v=')[1].split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                        videoId = url.replace('https://youtu.be/', '').replace('http://youtu.be/', '').split('?')[0];
+                    }
+
+                    if (videoId && iframe && previewWrapper) {
+                        iframe.src = 'https://www.youtube.com/embed/' + videoId;
+                        previewWrapper.classList.remove('d-none');
+                    } else if (previewWrapper) {
+                        previewWrapper.classList.add('d-none');
+                        if (iframe) {
+                            iframe.src = 'about:blank';
+                        }
+                    }
+                });
+            }
+
+            // Ouvrir la modal lors du clic sur un bouton de suggestion
+            document.querySelectorAll('.js-suggest-song').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentSongTypeId = this.getAttribute('data-song-type');
+                    // Réinitialiser le formulaire
+                    document.getElementById('suggestion-type-song').checked = true;
+                    document.getElementById('suggestion-name').value = '';
+                    
+                    // Réinitialiser TomSelect ou le select classique
+                    if (suggestionTypesSelect) {
+                        suggestionTypesSelect.clear();
+                        if (currentSongTypeId) {
+                            suggestionTypesSelect.addItem(currentSongTypeId);
+                        }
+                    } else {
+                        const typesSelect = document.getElementById('suggestion-types');
+                        if (typesSelect) {
+                            typesSelect.selectedIndex = -1;
+                            if (currentSongTypeId) {
+                                Array.from(typesSelect.options).forEach(option => {
+                                    option.selected = option.value == currentSongTypeId;
+                                });
+                            }
+                        }
+                    }
+                    
+                    document.getElementById('suggestion-lyrics').value = '';
+                    document.getElementById('suggestion-preview-url').value = '';
+                    document.getElementById('suggestion-music-author').value = '';
+                    document.getElementById('suggestion-lyrics-author').value = '';
+                    document.getElementById('suggestion-interpret').value = '';
+                    document.getElementById('suggestion-editor').value = '';
+                    document.getElementById('suggestion-text-ref').value = '';
+                    document.getElementById('suggestion-text-translation').value = '';
+                    
+                    // Afficher la section chant par défaut
+                    if (songSpecific) songSpecific.classList.remove('d-none');
+                    if (textSpecific) textSpecific.classList.add('d-none');
+                    if (previewWrapper) previewWrapper.classList.add('d-none');
+                    if (iframe) iframe.src = 'about:blank';
+                    
+                    suggestModal.show();
+                    setTimeout(() => document.getElementById('suggestion-name').focus(), 300);
+                });
+            });
+
+            // Confirmer la suggestion
+            confirmBtn.addEventListener('click', async function() {
+                const songName = document.getElementById('suggestion-name').value.trim();
+                if (!songName) {
+                    alert('Veuillez entrer le titre');
+                    return;
+                }
+
+                // Récupérer le type (chant ou texte)
+                const isSong = document.getElementById('suggestion-type-song').checked;
+
+                // Récupérer les types sélectionnés
+                let selectedTypes = [];
+                if (suggestionTypesSelect) {
+                    // Utiliser l'API TomSelect si disponible
+                    selectedTypes = suggestionTypesSelect.getValue();
+                    if (typeof selectedTypes === 'string') {
+                        selectedTypes = selectedTypes ? [selectedTypes] : [];
+                    }
+                } else {
+                    // Fallback sur le select classique
+                    const typesSelect = document.getElementById('suggestion-types');
+                    selectedTypes = Array.from(typesSelect.selectedOptions).map(opt => opt.value);
+                }
+
+                // Désactiver le bouton pendant le traitement
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
+
+                try {
+                    // Créer la suggestion de chant via AJAX
+                    const formData = new FormData();
+                    formData.append('name', songName);
+                    formData.append('isSong', isSong ? '1' : '0');
+                    formData.append('lyrics', document.getElementById('suggestion-lyrics').value);
+                    formData.append('previewUrl', document.getElementById('suggestion-preview-url').value);
+                    formData.append('lyricsAuthorName', document.getElementById('suggestion-lyrics-author').value);
+                    formData.append('musicAuthorName', document.getElementById('suggestion-music-author').value);
+                    formData.append('interpretName', document.getElementById('suggestion-interpret').value);
+                    formData.append('editorName', document.getElementById('suggestion-editor').value);
+                    formData.append('textRef', document.getElementById('suggestion-text-ref').value);
+                    formData.append('textTranslationName', document.getElementById('suggestion-text-translation').value);
+                    
+                    // Ajouter les types sélectionnés
+                    selectedTypes.forEach(typeId => {
+                        formData.append('typeIds[]', typeId);
+                    });
+
+                    const response = await fetch('{{ path('song_suggestion_create') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la création de la suggestion');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.success && data.songId) {
+                        // Fermer la modal
+                        suggestModal.hide();
+                        
+                        // Récupérer l'étape actuelle
+                        const wizardLayout = document.getElementById('weddingWizard');
+                        const currentStepValue = wizardLayout ? parseInt(wizardLayout.dataset.defaultStep || '0', 10) : 0;
+                        
+                        // Soumettre le formulaire pour sauvegarder et rafraîchir
+                        const mainForm = document.querySelector('form[name="wedding_form"]');
+                        if (mainForm) {
+                            // Afficher un message de chargement
+                            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+                            
+                            // Mettre à jour le champ current_step pour rester sur la même étape
+                            const currentStepInput = document.getElementById('current_step_input');
+                            if (currentStepInput) {
+                                currentStepInput.value = currentStepValue;
+                            }
+                            
+                            // Indiquer qu'on veut rester sur la page edit
+                            const stayOnEditInput = document.getElementById('stay_on_edit_input');
+                            if (stayOnEditInput) {
+                                stayOnEditInput.value = '1';
+                            }
+                            
+                            // Sélectionner la suggestion dans le select avant de soumettre
+                            const select = document.querySelector('.deroule-select[data-song-type-id="' + currentSongTypeId + '"]');
+                            if (select) {
+                                // Ajouter temporairement l'option pour la sélectionner
+                                const option = document.createElement('option');
+                                option.value = data.songId;
+                                option.textContent = '✨ ' + songName + ' (suggestion)';
+                                option.selected = true;
+                                select.insertBefore(option, select.firstChild);
+                            }
+                            
+                            // Soumettre le formulaire
+                            mainForm.submit();
+                        } else {
+                            // Si pas de formulaire, juste rafraîchir la page avec le step
+                            window.location.href = window.location.pathname + '?step=' + currentStepValue;
+                            window.location.reload();
+                        }
+                    } else {
+                        throw new Error(data.message || 'Erreur lors de la création');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Erreur : ' + error.message);
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = 'Enregistrer';
+                }
+            });
         });
     </script>
 {% endblock %}

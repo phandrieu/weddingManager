@@ -91,7 +91,11 @@
 						</p>
 					</div>
 					<div class="wizard-header__actions">
-						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta btn-rounded btn-icon">
+						<button type="button" class="btn btn-outline-primary btn-rounded btn-icon" data-bs-toggle="modal" data-bs-target="#inviteModal">
+							<i class="bi bi-envelope-plus"></i>
+							Inviter
+						</button>
+						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" id="editWeddingBtn" class="btn btn-cta btn-rounded btn-icon">
 							<i class="bi bi-pencil-square"></i>
 							Modifier
 						</a>
@@ -114,9 +118,11 @@
 					<button type="button" class="wizard-stepper__item" data-step="3">
 						Répertoire<br><small>Déroulé &amp; validations</small>
 					</button>
+					{% if not isCouple %}
 					<button type="button" class="wizard-stepper__item" data-step="4">
 						Suivi<br><small>Finances &amp; archive</small>
 					</button>
+					{% endif %}
 				</div>
 
 				<div class="wizard-steps">
@@ -496,7 +502,8 @@
 							{% endif %}
 						</div>
 					</div>
-
+					
+					{% if not isCouple %}
 					<div class="wizard-step" data-step="4">
 						<div class="form-grid">
 							<div class="form-card">
@@ -607,6 +614,7 @@
 							</div>
 						</div>
 					</div>
+					{% endif %}
 				</div>
 
 				<div class="wizard-actions">
@@ -645,18 +653,57 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="email" class="form-label">Email</label>
+							<input type="email" class="form-control" id="email" name="email" required>
+						</div>
+						<div class="mb-3">
+							<label for="role" class="form-label">Rôle</label>
+							<select class="form-select" id="role" name="role" required>
+								<option value="paroisse">Paroisse</option>
+								<option value="musicien">Musicien</option>
+								<option value="marie">Marié</option>
+								<option value="mariee">Mariée</option>
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
 	{{ parent() }}
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+			console.log('=== DEBUT SCRIPT VIEW ===');
 			const wizardLayout = document.getElementById('weddingWizardView');
+			console.log('wizardLayout:', wizardLayout);
 			const steps = Array.from(document.querySelectorAll('.wizard-step'));
+			console.log('Steps trouvés:', steps.length);
 			const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+			console.log('Stepper items:', stepperItems.length);
 			const prevBtn = document.querySelector('.wizard-prev');
 			const nextBtn = document.querySelector('.wizard-next');
-			let currentStep = 0;
+			
+			// Initialiser avec le step passé en paramètre URL
+			let currentStep = {{ initialStep|default(0) }};
+			console.log('Step initial depuis le serveur:', currentStep);
 
 			if (wizardLayout) {
 				const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
@@ -666,6 +713,7 @@
 			}
 
 			function syncUI() {
+				console.log('syncUI appelé, currentStep =', currentStep);
 				steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
 				stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
 				if (prevBtn) {
@@ -697,6 +745,7 @@
 			stepperItems.forEach((item) => {
 				item.addEventListener('click', function () {
 					const target = parseInt(item.dataset.step, 10);
+					console.log('Clic sur stepper item, étape:', target);
 					if (!Number.isNaN(target)) {
 						currentStep = target;
 						syncUI();
@@ -704,7 +753,30 @@
 				});
 			});
 
+			console.log('Appel initial de syncUI');
 			syncUI();
+
+			// Intercepter le clic sur le bouton "Modifier" pour ajouter l'étape actuelle
+			const editButton = document.getElementById('editWeddingBtn');
+			console.log('=== RECHERCHE BOUTON MODIFIER ===');
+			console.log('Bouton Modifier trouvé par ID:', editButton);
+			console.log('Href actuel:', editButton ? editButton.href : 'null');
+			console.log('currentStep actuel:', currentStep);
+			
+			if (editButton) {
+				console.log('Installation du listener sur le bouton Modifier');
+				editButton.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					const baseUrl = '{{ path('app_wedding_edit', {'id': wedding.id}) }}';
+					const finalUrl = baseUrl + '?step=' + currentStep;
+					console.log('!!! CLIC DETECTE !!! Redirection vers:', finalUrl, 'currentStep=', currentStep);
+					window.location.href = finalUrl;
+					return false;
+				}, true);
+			} else {
+				console.error('ERREUR: Bouton Modifier non trouvé !');
+			}
 
 			// Gestion du bouton d'impression
 			const printBtn = document.getElementById('printDerouleBtn');

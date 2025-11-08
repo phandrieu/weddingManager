@@ -37,11 +37,18 @@ class NotificationService
         $inviterName = $creator->getFirstName() . ' ' . $creator->getName();
         $weddingName = $this->getWeddingDisplayName($wedding);
         
-        $notification->setMessage(sprintf(
+        $message = sprintf(
             '%s vous a invité(e) au mariage de %s',
             $inviterName,
             $weddingName
-        ));
+        );
+        
+        // Ajouter le message personnalisé s'il existe
+        if ($invitation->getMessage()) {
+            $message .= ' : ' . $invitation->getMessage();
+        }
+        
+        $notification->setMessage($message);
         
         // Lien vers la page du mariage
         $notification->setLink($this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]));

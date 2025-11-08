@@ -79,19 +79,21 @@ class WeddingFormType extends AbstractType
                 'required' => false,
             ])
             ->add('messe', CheckboxType::class, [
-                'label' => 'Messe (coché = messe, décoché = célébration)',
+                'label' => ' ',
                 'required' => false,
             ])
             ->add('montantTotal', NumberType::class, [
                 'label' => 'Montant total (€)',
                 'required' => false,
                 'scale' => 2,
+                'empty_data' => '0',
                 'attr' => ['class' => 'form-control', 'step' => '0.01']
             ])
             ->add('montantPaye', NumberType::class, [
                 'label' => 'Montant déjà versé (€)',
                 'required' => false,
                 'scale' => 2,
+                'empty_data' => '0',
                 'attr' => ['class' => 'form-control', 'step' => '0.01']
             ])
             ->add('priestFirstName', TextType::class, [

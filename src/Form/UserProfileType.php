@@ -9,6 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class UserProfileType extends AbstractType
@@ -64,12 +65,35 @@ class UserProfileType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('password', PasswordType::class, [
+            ->add('currentPassword', PasswordType::class, [
                 'required' => false,
                 'mapped' => false,
                 'attr' => [
-                    'autocomplete' => 'new-password',
+                    'autocomplete' => 'current-password',
+                    'class' => 'form-control',
                 ],
+                'label' => 'Mot de passe actuel',
+                'help' => 'Requis pour changer votre mot de passe.',
+            ])
+            ->add('password', RepeatedType::class, [
+                'type' => PasswordType::class,
+                'required' => false,
+                'mapped' => false,
+                'first_options' => [
+                    'label' => 'Nouveau mot de passe',
+                    'attr' => [
+                        'autocomplete' => 'new-password',
+                        'class' => 'form-control',
+                    ],
+                ],
+                'second_options' => [
+                    'label' => 'Confirmer le nouveau mot de passe',
+                    'attr' => [
+                        'autocomplete' => 'new-password',
+                        'class' => 'form-control',
+                    ],
+                ],
+                'invalid_message' => 'Les mots de passe doivent correspondre.',
                 'help' => 'Laissez vide si vous ne voulez pas changer le mot de passe.',
             ]);
     }

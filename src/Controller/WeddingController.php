@@ -330,7 +330,7 @@ class WeddingController extends AbstractController
     }
 
     #[Route('/view/{id}', name: 'app_wedding_view')]
-    public function view(Wedding $wedding, SongTypeRepository $songTypeRepo): Response
+    public function view(Wedding $wedding, SongTypeRepository $songTypeRepo, Request $request): Response
     {
         // Vérifier l'accès au mariage
         $this->checkWeddingAccess($wedding);
@@ -349,10 +349,25 @@ class WeddingController extends AbstractController
             }
         }
 
+        // Vérifier si l'utilisateur actuel est un marié/mariée
+        $currentUser = $this->getUser();
+        $isCouple = false;
+        if ($currentUser instanceof User) {
+            $isMarie = $wedding->getMarie() && $wedding->getMarie()->getId() === $currentUser->getId();
+            $isMariee = $wedding->getMariee() && $wedding->getMariee()->getId() === $currentUser->getId();
+            $isCouple = $isMarie || $isMariee;
+        }
+
+        // Récupérer le step depuis l'URL
+        $maxStepIndex = 4;
+        $initialStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
+
         return $this->render('wedding/view.html.twig', [
             'wedding' => $wedding,
             'songTypes' => $songTypes,
             'availableSongs' => $songs,
+            'isCouple' => $isCouple,
+            'initialStep' => $initialStep,
         ]);
     }
 
@@ -362,6 +377,9 @@ class WeddingController extends AbstractController
         WeddingRepository $repo,
         SongRepository $songRepo,
         SongTypeRepository $songTypeRepo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
         Wedding $wedding = null
     ): Response {
         if (!$wedding) {
@@ -426,8 +444,22 @@ class WeddingController extends AbstractController
                     $this->addFlash('warning', 'Veuillez sélectionner si vous êtes le marié ou la mariée.');
                 } elseif ($selectedUserRole === 'marie') {
                     $wedding->setMarie($currentUser);
+                    // Initialiser les montants financiers à 0 pour les mariés
+                    if ($wedding->getMontantTotal() === null) {
+                        $wedding->setMontantTotal(0);
+                    }
+                    if ($wedding->getMontantPaye() === null) {
+                        $wedding->setMontantPaye(0);
+                    }
                 } elseif ($selectedUserRole === 'mariee') {
                     $wedding->setMariee($currentUser);
+                    // Initialiser les montants financiers à 0 pour les mariées
+                    if ($wedding->getMontantTotal() === null) {
+                        $wedding->setMontantTotal(0);
+                    }
+                    if ($wedding->getMontantPaye() === null) {
+                        $wedding->setMontantPaye(0);
+                    }
                 } else {
                     $shouldOpenRoleModal = true;
                     $canPersist = false;
@@ -657,10 +689,119 @@ class WeddingController extends AbstractController
             }
 
             if ($canPersist) {
+                // Vérifier si des emails de mariés correspondent à des utilisateurs existants
+                // et envoyer automatiquement des invitations
+                $marieEmail = $wedding->getMarieEmail();
+                $marieeEmail = $wedding->getMarieeEmail();
+                
+                // Vérifier le marié
+                if ($marieEmail && !$wedding->getMarie()) {
+                    $existingUser = $userRepo->findOneBy(['email' => $marieEmail]);
+                    if ($existingUser) {
+                        // Créer une invitation automatique
+                        $invitation = new Invitation();
+                        $invitation->setEmail($marieEmail);
+                        $invitation->setWedding($wedding);
+                        $invitation->setRole('marie');
+                        $invitation->setToken(bin2hex(random_bytes(32)));
+                        $invitation->setUsed(false);
+                        $invitation->setCreatedAt(new \DateTimeImmutable());
+                        
+                        $em->persist($invitation);
+                        
+                        // Envoyer l'email d'invitation
+                        $invitationLink = $this->generateUrl(
+                            'app_wedding_invitation',
+                            ['token' => $invitation->getToken()],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        );
+                        
+                        $requiresPayment = $wedding->isRequiresCouplePayment() && !$wedding->isPaid();
+                        
+                        $emailMessage = (new Email())
+                            ->from(new Address('no-reply@notremessedemariage.fr', 'Notre Messe de Mariage'))
+                            ->to($marieEmail)
+                            ->subject('Invitation à rejoindre votre mariage sur Notre Messe de Mariage')
+                            ->html($this->renderView('emails/wedding_invitation.html.twig', [
+                                'wedding' => $wedding,
+                                'role' => 'marié',
+                                'invitationLink' => $invitationLink,
+                                'requiresPayment' => $requiresPayment,
+                                'message' => null,
+                            ]));
+                        
+                        $mailer->send($emailMessage);
+                        $this->addFlash('success', 'Une invitation a été envoyée automatiquement au marié.');
+                    }
+                }
+                
+                // Vérifier la mariée
+                if ($marieeEmail && !$wedding->getMariee()) {
+                    $existingUser = $userRepo->findOneBy(['email' => $marieeEmail]);
+                    if ($existingUser) {
+                        // Créer une invitation automatique
+                        $invitation = new Invitation();
+                        $invitation->setEmail($marieeEmail);
+                        $invitation->setWedding($wedding);
+                        $invitation->setRole('mariee');
+                        $invitation->setToken(bin2hex(random_bytes(32)));
+                        $invitation->setUsed(false);
+                        $invitation->setCreatedAt(new \DateTimeImmutable());
+                        
+                        $em->persist($invitation);
+                        
+                        // Envoyer l'email d'invitation
+                        $invitationLink = $this->generateUrl(
+                            'app_wedding_invitation',
+                            ['token' => $invitation->getToken()],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        );
+                        
+                        $requiresPayment = $wedding->isRequiresCouplePayment() && !$wedding->isPaid();
+                        
+                        $emailMessage = (new Email())
+                            ->from(new Address('no-reply@notremessedemariage.fr', 'Notre Messe de Mariage'))
+                            ->to($marieeEmail)
+                            ->subject('Invitation à rejoindre votre mariage sur Notre Messe de Mariage')
+                            ->html($this->renderView('emails/wedding_invitation.html.twig', [
+                                'wedding' => $wedding,
+                                'role' => 'mariée',
+                                'invitationLink' => $invitationLink,
+                                'requiresPayment' => $requiresPayment,
+                                'message' => null,
+                            ]));
+                        
+                        $mailer->send($emailMessage);
+                        $this->addFlash('success', 'Une invitation a été envoyée automatiquement à la mariée.');
+                    }
+                }
+                
                 $repo->save($wedding, true);
                 $this->addFlash('success', 'Mariage sauvegardé avec succès.');
 
-                return $this->redirectToRoute('app_wedding_index');
+                // Récupérer le step actuel du formulaire
+                $currentStep = max(0, min(4, $request->request->getInt('current_step', 0)));
+                
+                // Vérifier si on doit rester sur la page edit (cas d'une suggestion ajoutée)
+                $stayOnEdit = $request->request->get('stay_on_edit') === '1';
+                
+                if ($wedding->getId()) {
+                    if ($stayOnEdit) {
+                        // Rester sur la page edit avec le même step
+                        return $this->redirectToRoute('app_wedding_edit', [
+                            'id' => $wedding->getId(),
+                            'step' => $currentStep
+                        ]);
+                    } else {
+                        // Aller à la page view avec le step
+                        return $this->redirectToRoute('app_wedding_view', [
+                            'id' => $wedding->getId(),
+                            'step' => $currentStep
+                        ]);
+                    }
+                } else {
+                    return $this->redirectToRoute('app_wedding_index');
+                }
             }
         }
 
@@ -668,6 +809,17 @@ class WeddingController extends AbstractController
         foreach ($wedding->getMusicians() as $musician) {
             foreach ($musician->getRepertoire() as $song) {
                 $availableSongs[$song->getId()] = $song;
+            }
+        }
+        
+        // Ajouter les suggestions créées par l'utilisateur courant
+        if ($currentUser instanceof User) {
+            $userSuggestions = $songRepo->findBy([
+                'suggestion' => true,
+                'addedBy' => $currentUser
+            ]);
+            foreach ($userSuggestions as $suggestion) {
+                $availableSongs[$suggestion->getId()] = $suggestion;
             }
         }
 
@@ -689,6 +841,23 @@ class WeddingController extends AbstractController
             if (empty($songsForType)) {
                 foreach ($songType->getSongs() as $song) {
                     $songsForType[$song->getId()] = $song;
+                }
+            }
+            
+            // Ajouter les suggestions de l'utilisateur pour ce type
+            if ($currentUser instanceof User) {
+                $userSuggestionsForType = $songRepo->createQueryBuilder('s')
+                    ->where('s.suggestion = :suggestion')
+                    ->andWhere('s.addedBy = :user')
+                    ->andWhere(':songType MEMBER OF s.types')
+                    ->setParameter('suggestion', true)
+                    ->setParameter('user', $currentUser)
+                    ->setParameter('songType', $songType)
+                    ->getQuery()
+                    ->getResult();
+                    
+                foreach ($userSuggestionsForType as $suggestion) {
+                    $songsForType[$suggestion->getId()] = $suggestion;
                 }
             }
 
@@ -727,6 +896,14 @@ class WeddingController extends AbstractController
         $maxStepIndex = 4;
         $requestedStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
 
+        // Vérifier si l'utilisateur actuel est un marié/mariée
+        $isCouple = false;
+        if ($currentUser instanceof User && !$isNewWedding) {
+            $isMarie = $wedding->getMarie() && $wedding->getMarie()->getId() === $currentUser->getId();
+            $isMariee = $wedding->getMariee() && $wedding->getMariee()->getId() === $currentUser->getId();
+            $isCouple = $isMarie || $isMariee;
+        }
+
         return $this->render('wedding/edit.html.twig', [
             'form' => $form->createView(),
             'wedding' => $wedding,
@@ -738,11 +915,12 @@ class WeddingController extends AbstractController
             'shouldOpenPaymentModal' => $shouldOpenPaymentModal ?? false,
             'shouldOpenRoleModal' => $shouldOpenRoleModal ?? false,
             'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
+            'isCouple' => $isCouple,
+            'initialWizardStep' => $requestedStep,
             'selectedPaymentOption' => $selectedPaymentOption ?? '',
             'paymentOptionError' => $paymentOptionError ?? null,
             'userCredits' => $currentUser instanceof User ? $currentUser->getCredits() : 0,
             'isOnlyUser' => $isOnlyUser ?? false,
-            'initialWizardStep' => $requestedStep,
         ]);
     }
 
@@ -903,11 +1081,13 @@ public function invite(
     if ($request->isMethod('POST')) {
         $email = $request->request->get('email');
         $role = $request->request->get('role');
+        $message = $request->request->get('message');
 
         $invitation = new Invitation();
         $invitation->setEmail($email);
         $invitation->setWedding($wedding);
         $invitation->setRole($role);
+        $invitation->setMessage($message);
         $invitation->setToken(bin2hex(random_bytes(32)));
         $invitation->setUsed(false);
         $invitation->setCreatedAt(new \DateTimeImmutable());
@@ -938,6 +1118,7 @@ public function invite(
                 'role' => $role,
                 'invitationLink' => $generatedInvitationLink,
                 'requiresPayment' => $requiresPayment,
+                'message' => $message,
             ]));
 
         $mailer->send($emailMessage);
