@@ -95,7 +95,7 @@
 							<i class="bi bi-envelope-plus"></i>
 							Inviter
 						</button>
-						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" id="editWeddingBtn" class="btn btn-cta btn-rounded btn-icon">
+						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" id="editWeddingBtn" class="btn btn-cta btn-rounded btn-icon js-edit-wedding-btn">
 							<i class="bi bi-pencil-square"></i>
 							Modifier
 						</a>
@@ -628,9 +628,9 @@
 							<i class="bi bi-arrow-right ms-2"></i>
 						</button>
 					</div>
-					<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta">
-						<i class="bi bi-pencil"></i>
-						Modifier ce mariage
+					<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta btn-rounded btn-icon js-edit-wedding-btn">
+						<i class="bi bi-pencil-square"></i>
+						Modifier
 					</a>
 				</div>
 			</section>
@@ -756,26 +756,28 @@
 			console.log('Appel initial de syncUI');
 			syncUI();
 
-			// Intercepter le clic sur le bouton "Modifier" pour ajouter l'étape actuelle
-			const editButton = document.getElementById('editWeddingBtn');
-			console.log('=== RECHERCHE BOUTON MODIFIER ===');
-			console.log('Bouton Modifier trouvé par ID:', editButton);
-			console.log('Href actuel:', editButton ? editButton.href : 'null');
+			// Intercepter le clic sur les boutons "Modifier" pour ajouter l'étape actuelle
+			const editButtons = document.querySelectorAll('.js-edit-wedding-btn');
+			console.log('=== RECHERCHE BOUTONS MODIFIER ===');
+			console.log('Boutons Modifier trouvés:', editButtons.length);
 			console.log('currentStep actuel:', currentStep);
 			
-			if (editButton) {
-				console.log('Installation du listener sur le bouton Modifier');
-				editButton.addEventListener('click', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					const baseUrl = '{{ path('app_wedding_edit', {'id': wedding.id}) }}';
-					const finalUrl = baseUrl + '?step=' + currentStep;
-					console.log('!!! CLIC DETECTE !!! Redirection vers:', finalUrl, 'currentStep=', currentStep);
-					window.location.href = finalUrl;
-					return false;
-				}, true);
+			if (editButtons.length > 0) {
+				console.log('Installation des listeners sur', editButtons.length, 'bouton(s) Modifier');
+				editButtons.forEach((editButton, index) => {
+					console.log('Bouton', index + 1, '- Href actuel:', editButton.href);
+					editButton.addEventListener('click', function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+						const baseUrl = '{{ path('app_wedding_edit', {'id': wedding.id}) }}';
+						const finalUrl = baseUrl + '?step=' + currentStep;
+						console.log('!!! CLIC DETECTE sur bouton', index + 1, '!!! Redirection vers:', finalUrl, 'currentStep=', currentStep);
+						window.location.href = finalUrl;
+						return false;
+					}, true);
+				});
 			} else {
-				console.error('ERREUR: Bouton Modifier non trouvé !');
+				console.error('ERREUR: Aucun bouton Modifier trouvé !');
 			}
 
 			// Gestion du bouton d'impression
