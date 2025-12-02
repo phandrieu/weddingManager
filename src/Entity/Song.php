@@ -46,11 +46,11 @@ class Song
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?bool $suggestion = false;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $suggestion = false;
 
-    #[ORM\Column]
-    private ?bool $song = null;
+    #[ORM\Column(options: ['default' => true])]
+    private bool $song = true;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $lyricsAuthorName = null;
@@ -93,12 +93,6 @@ class Song
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(int $id): static
-    {
-        $this->id = $id;
-        return $this;
     }
 
     /**
@@ -220,19 +214,19 @@ public function removeType(SongType $type): self
         return $this;
     }
 
-    public function isSuggestion(): ?bool
+    public function isSuggestion(): bool
     {
         return $this->suggestion;
     }
 
-    public function setSuggestion(?bool $suggestion): static
+    public function setSuggestion(bool $suggestion): static
     {
         $this->suggestion = $suggestion;
 
         return $this;
     }
 
-    public function isSong(): ?bool
+    public function isSong(): bool
     {
         return $this->song;
     }

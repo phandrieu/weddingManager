@@ -65,8 +65,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Wedding::class, mappedBy: 'musicians')]
     private Collection $weddingsAsMusicians;
 
-    #[ORM\Column]
-    private ?bool $subscription = null;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $subscription = false;
         /**
      * @var Collection<int, Song>
      */
@@ -408,7 +408,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isSubscription(): ?bool
+    public function isSubscription(): bool
     {
         return $this->subscription;
     }

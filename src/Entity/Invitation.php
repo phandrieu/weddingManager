@@ -6,6 +6,10 @@ use App\Repository\InvitationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvitationRepository::class)]
+#[ORM\Table(name: 'invitation', uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'UNIQ_INVITATION_TOKEN', columns: ['token'])
+])]
+#[ORM\HasLifecycleCallbacks]
 class Invitation
 {
     #[ORM\Id]
@@ -20,13 +24,14 @@ class Invitation
     private ?string $token = null;
 
     #[ORM\ManyToOne(inversedBy: 'invitations')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Wedding $wedding = null;
 
     #[ORM\Column(length: 255)]
     private ?string $role = null;
 
-    #[ORM\Column]
-    private ?bool $used = null;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $used = false;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -87,7 +92,7 @@ class Invitation
         return $this;
     }
 
-    public function isUsed(): ?bool
+    public function isUsed(): bool
     {
         return $this->used;
     }
@@ -121,5 +126,11 @@ class Invitation
         $this->message = $message;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function initializeCreatedAt(): void
+    {
+        $this->createdAt ??= new \DateTimeImmutable();
     }
 }

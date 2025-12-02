@@ -109,8 +109,8 @@ class Wedding
     #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'wedding', orphanRemoval: true, cascade: ['remove'])]
     private Collection $invitations;
 
-    #[ORM\Column]
-    private ?bool $archive = null;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $archive = false;
 
     #[ORM\Column]
     private ?float $montantTotal = null;
@@ -118,8 +118,8 @@ class Wedding
     #[ORM\Column]
     private ?float $montantPaye = null;
 
-    #[ORM\Column]
-    private ?bool $messe = null;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $messe = false;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $priestFirstName = null;
@@ -172,19 +172,12 @@ class Wedding
         $this->invitations = new ArrayCollection();
         $this->parishUsers = new ArrayCollection();
         $this->comments = new ArrayCollection();
-    $this->songSelections = new ArrayCollection();
+        $this->songSelections = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(int $id): static
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getMarie(): ?User
@@ -235,6 +228,7 @@ class Wedding
     {
         if (!$this->songs->contains($song)) {
             $this->songs->add($song);
+            $song->addWedding($this);
         }
 
         return $this;
@@ -242,7 +236,9 @@ class Wedding
 
     public function removeSong(Song $song): static
     {
-        $this->songs->removeElement($song);
+        if ($this->songs->removeElement($song)) {
+            $song->removeWedding($this);
+        }
 
         return $this;
     }
@@ -405,7 +401,7 @@ class Wedding
         return $this;
     }
 
-    public function isArchive(): ?bool
+    public function isArchive(): bool
     {
         return $this->archive;
     }
@@ -441,7 +437,7 @@ class Wedding
         return $this;
     }
 
-    public function isMesse(): ?bool
+    public function isMesse(): bool
     {
         return $this->messe;
     }
