@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use App\Repository\WeddingRepository;
 use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
+use App\Repository\CommentRepository;
 use App\Service\InvitationWorkflow;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -31,6 +32,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 #[Route('/mariages')]
 class WeddingController extends AbstractController
 {
+    public function __construct(private readonly CommentRepository $commentRepository)
+    {
+    }
     #[Route('/', name: 'app_wedding_index')]
     public function index(Request $request, WeddingRepository $repo): Response
     {
@@ -362,12 +366,17 @@ class WeddingController extends AbstractController
         $maxStepIndex = 4;
         $initialStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
 
+        $commentCountsByType = $this->countCommentsByType($wedding);
+        $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
+
         return $this->render('wedding/view.html.twig', [
             'wedding' => $wedding,
             'songTypes' => $songTypes,
             'availableSongs' => $songs,
             'isCouple' => $isCouple,
             'initialStep' => $initialStep,
+            'songSelectionsByType' => $songSelectionsByType,
+            'commentCountsByType' => $commentCountsByType,
         ]);
     }
 
@@ -375,8 +384,8 @@ class WeddingController extends AbstractController
     public function edit(
         Request $request,
         WeddingRepository $repo,
-        SongRepository $songRepo,
-        SongTypeRepository $songTypeRepo,
+    SongRepository $songRepo,
+    SongTypeRepository $songTypeRepo,
         UserRepository $userRepo,
         EntityManagerInterface $em,
         MailerInterface $mailer,
@@ -864,34 +873,8 @@ class WeddingController extends AbstractController
             $availableSongsByType[$songType->getId()] = array_values($songsForType);
         }
 
-        $songSelectionsByType = [];
-        foreach ($wedding->getSongSelections() as $selection) {
-            $type = $selection->getSongType();
-            if ($type && $type->getId() !== null) {
-                $songSelectionsByType[$type->getId()] = [
-                    'songId' => $selection->getSong()?->getId(),
-                    'validatedByMusician' => $selection->isValidatedByMusician(),
-                    'validatedByParish' => $selection->isValidatedByParish(),
-                ];
-            }
-        }
-
-        if (empty($songSelectionsByType)) {
-            foreach ($wedding->getSongs() as $song) {
-                if (!$song instanceof Song || $song->getId() === null) {
-                    continue;
-                }
-                foreach ($song->getTypes() as $type) {
-                    if ($type && $type->getId() !== null && !array_key_exists($type->getId(), $songSelectionsByType)) {
-                        $songSelectionsByType[$type->getId()] = [
-                            'songId' => $song->getId(),
-                            'validatedByMusician' => false,
-                            'validatedByParish' => false,
-                        ];
-                    }
-                }
-            }
-        }
+    $commentCountsByType = $this->countCommentsByType($wedding);
+        $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
 
         $maxStepIndex = 4;
         $requestedStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
@@ -1065,14 +1048,14 @@ class WeddingController extends AbstractController
     }
 
     #[Route('/{id}/invite', name: 'app_wedding_invite')]
-public function invite(
-    Wedding $wedding,
-    Request $request,
-    EntityManagerInterface $em,
-    MailerInterface $mailer,
-    SongTypeRepository $songTypeRepo,
-    SongRepository $songRepo
-): Response {
+    public function invite(
+        Wedding $wedding,
+        Request $request,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        SongTypeRepository $songTypeRepo,
+        SongRepository $songRepo
+    ): Response {
     // Vérifier l'accès au mariage
     $this->checkWeddingAccess($wedding);
     
@@ -1161,18 +1144,8 @@ public function invite(
             $availableSongsByType[$songType->getId()] = array_values($songsForType);
         }
 
-        // Préparer songSelectionsByType comme dans edit()
-        $songSelectionsByType = [];
-        foreach ($wedding->getSongSelections() as $selection) {
-            $type = $selection->getSongType();
-            if ($type && $type->getId() !== null) {
-                $songSelectionsByType[$type->getId()] = [
-                    'songId' => $selection->getSong()?->getId(),
-                    'validatedByMusician' => $selection->isValidatedByMusician(),
-                    'validatedByParish' => $selection->isValidatedByParish(),
-                ];
-            }
-        }
+    $commentCountsByType = $this->countCommentsByType($wedding);
+        $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
 
         $currentUser = $this->getUser();
         $isNewWedding = false; // Dans invite(), on travaille toujours sur un mariage existant
@@ -1200,8 +1173,8 @@ public function invite(
         ]);
     }
 
-    return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId()]);
-}
+        return $this->redirectToRoute('app_wedding_edit', ['id' => $wedding->getId()]);
+    }
 
     #[Route('/{id}/invitation/checkout', name: 'app_wedding_invitation_checkout')]
     public function invitationCheckout(
@@ -1411,5 +1384,99 @@ public function invite(
 
         $this->addFlash('success', 'Mariage désarchivé.');
         return $this->redirectToRoute('app_wedding_index');
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function countCommentsByType(Wedding $wedding): array
+    {
+        if (!$wedding->getId()) {
+            return [];
+        }
+
+        $results = $this->commentRepository->createQueryBuilder('c')
+            ->select('IDENTITY(c.songType) AS typeId', 'COUNT(c.id) AS commentsCount')
+            ->where('c.wedding = :wedding')
+            ->andWhere('c.songType IS NOT NULL')
+            ->groupBy('typeId')
+            ->setParameter('wedding', $wedding)
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($results as $result) {
+            if ($result['typeId'] === null) {
+                continue;
+            }
+
+            $counts[(int) $result['typeId']] = (int) $result['commentsCount'];
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @param array<int, int> $commentCountsByType
+     * @return array<int, array{songId: ?int, validatedByMusician: bool, validatedByParish: bool, commentsCount: int}>
+     */
+    private function buildSongSelectionsState(Wedding $wedding, array $commentCountsByType): array
+    {
+        $songSelectionsByType = [];
+        foreach ($wedding->getSongSelections() as $selection) {
+            $type = $selection->getSongType();
+            if (!$type || $type->getId() === null) {
+                continue;
+            }
+
+            $typeId = $type->getId();
+            $songSelectionsByType[$typeId] = [
+                'songId' => $selection->getSong()?->getId(),
+                'validatedByMusician' => $selection->isValidatedByMusician(),
+                'validatedByParish' => $selection->isValidatedByParish(),
+                'commentsCount' => $commentCountsByType[$typeId] ?? 0,
+            ];
+        }
+
+        if (empty($songSelectionsByType)) {
+            foreach ($wedding->getSongs() as $song) {
+                if (!$song instanceof Song || $song->getId() === null) {
+                    continue;
+                }
+
+                foreach ($song->getTypes() as $type) {
+                    if (!$type || $type->getId() === null) {
+                        continue;
+                    }
+
+                    $typeId = $type->getId();
+                    if (array_key_exists($typeId, $songSelectionsByType)) {
+                        continue;
+                    }
+
+                    $songSelectionsByType[$typeId] = [
+                        'songId' => $song->getId(),
+                        'validatedByMusician' => false,
+                        'validatedByParish' => false,
+                        'commentsCount' => $commentCountsByType[$typeId] ?? 0,
+                    ];
+                }
+            }
+        }
+
+        foreach ($commentCountsByType as $typeId => $count) {
+            if (!array_key_exists($typeId, $songSelectionsByType)) {
+                $songSelectionsByType[$typeId] = [
+                    'songId' => null,
+                    'validatedByMusician' => false,
+                    'validatedByParish' => false,
+                    'commentsCount' => $count,
+                ];
+            } else {
+                $songSelectionsByType[$typeId]['commentsCount'] = $count;
+            }
+        }
+
+        return $songSelectionsByType;
     }
 }

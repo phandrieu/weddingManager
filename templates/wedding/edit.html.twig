@@ -484,9 +484,17 @@
                                                     </div>
                                                     <div>
                                                         {% if wedding.id %}
-                                                            <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
-                                                                <i class="bi bi-chat-dots"></i>
-                                                            </button>
+                                                            {% set commentsCount = selectionState.commentsCount|default(0) %}
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+                                                                    <i class="bi bi-chat-dots"></i>
+                                                                </button>
+                                                                {% if commentsCount > 0 %}
+                                                                    <span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
+                                                                        {{ commentsCount }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
                                                         {% else %}
                                                             <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
                                                                 <i class="bi bi-chat-dots"></i>

@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block body %}
+	{% set songSelectionsByType = songSelectionsByType|default({}) %}
+	{% set commentCountsByType = commentCountsByType|default({}) %}
 	{% set types = [] %}
 	{% for type in songTypes %}
 		{% if wedding.isMesse or not type.isMesse %}
@@ -464,6 +466,7 @@
 															{% set validatedMusician = false %}
 															{% set validatedParish = false %}
 														{% endif %}
+														{% set selectionState = songSelectionsByType[type.id]|default({}) %}
 														<div class="deroule-row">
 															<div>
 																<span class="deroule-type-badge">{{ type.name }}</span>
@@ -486,11 +489,19 @@
 																<span class="btn btn-validation {{ validatedParish ? 'is-active' : '' }} disabled" role="presentation">PAR</span>
 															</div>
 															<div>
-																{% if wedding.id %}
-																	<button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
-																		<i class="bi bi-chat-dots"></i>
-																	</button>
-																{% endif %}
+								
+							                                                            {% set commentsCount = selectionState.commentsCount|default(commentCountsByType[type.id]|default(0)) %}
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+                                                                    <i class="bi bi-chat-dots"></i>
+                                                                </button>
+                                                                {% if commentsCount > 0 %}
+                                                                    <span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
+                                                                        {{ commentsCount }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
+                                                        
 															</div>
 														</div>
 													{% endfor %}
