@@ -15,6 +15,30 @@ class SongTypeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, SongType::class);
     }
+
+    /**
+     * @return SongType[]
+     */
+    public function findOrderedByCelebrationPeriod(bool $includeMesseTypes = true): array
+    {
+        $qb = $this->createQueryBuilder('st')
+            ->leftJoin('st.celebrationPeriod', 'cp')
+            ->addSelect('cp')
+            ->addSelect('COALESCE(cp.periodOrder, 999) AS HIDDEN cpSortOrder')
+            ->addSelect('COALESCE(st.ordre, 999) AS HIDDEN stSortOrder')
+            ->orderBy('cpSortOrder', 'ASC')
+            ->addOrderBy('cp.fullName', 'ASC')
+            ->addOrderBy('stSortOrder', 'ASC')
+            ->addOrderBy('st.name', 'ASC');
+
+        if (!$includeMesseTypes) {
+            $qb->andWhere('st.messe = :isMesse')
+               ->setParameter('isMesse', false);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function save(SongType $entity, bool $flush = false): void
 {
     $em = $this->getEntityManager();

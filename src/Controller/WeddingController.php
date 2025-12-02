@@ -340,11 +340,7 @@ class WeddingController extends AbstractController
         $this->checkWeddingAccess($wedding);
 
         $includeMesseTypes = true === $wedding->isMesse();
-        if ($includeMesseTypes) {
-            $songTypes = $songTypeRepo->findAll();
-        } else {
-            $songTypes = $songTypeRepo->findBy(['messe' => false], ['id' => 'ASC']);
-        }
+        $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
 
         $songs = [];
         foreach ($wedding->getMusicians() as $musician) {
@@ -430,11 +426,7 @@ class WeddingController extends AbstractController
         $paymentOptionError = null;
 
         $includeMesseTypes = true === $wedding->isMesse();
-        if ($includeMesseTypes) {
-            $songTypes = $songTypeRepo->findAll();
-        } else {
-            $songTypes = $songTypeRepo->findBy(['messe' => false], ['id' => 'ASC']);
-        }
+        $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
         $songTypesById = [];
         foreach ($songTypes as $songType) {
             if ($songType->getId() !== null) {
@@ -1106,13 +1098,10 @@ class WeddingController extends AbstractController
 
         $mailer->send($emailMessage);
 
-        $this->addFlash('success', 'Invitation envoyée !');
+    $this->addFlash('success', 'Invitation envoyée !');
 
-        // 🔑 Reprend les mêmes données que edit()
-        $songTypes = $songTypeRepo->findAll();
-
-        // 🔑 Reprend les mêmes données que edit()
-        $songTypes = $songTypeRepo->findAll();
+    $includeMesseTypes = true === $wedding->isMesse();
+    $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
 
         $availableSongs = [];
         foreach ($wedding->getMusicians() as $musician) {

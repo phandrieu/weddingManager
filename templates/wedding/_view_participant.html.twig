@@ -1,0 +1,66 @@
+<div class="participant-card">
+	<div class="participant-card__header">
+		<h3 class="mb-0">{{ label }}</h3>
+		{% if user %}
+			<span class="badge rounded-pill bg-success text-white">
+				<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+			</span>
+			{% if user.email %}
+				<span class="badge rounded-pill bg-light text-secondary">{{ user.email }}</span>
+			{% endif %}
+		{% elseif userEmail %}
+			<span class="badge rounded-pill bg-warning text-dark">
+				<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+			</span>
+			<span class="badge rounded-pill bg-light text-secondary">{{ userEmail }}</span>
+		{% else %}
+			<span class="badge rounded-pill bg-light text-secondary">Informations à compléter</span>
+		{% endif %}
+	</div>
+
+	{% if user %}
+		<div class="participant-card__body d-flex flex-column gap-2">
+			<div>
+				<span class="form-label-sm">Nom complet</span>
+				<div class="fw-semibold">{{ user.fullName ?? '-' }}</div>
+			</div>
+			{% if user.telephone %}
+				<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ user.telephone }}</div>
+			{% endif %}
+			{% if user.addressLine1 or user.addressPostalCodeAndCity %}
+				<div class="text-muted small">
+					{% if user.addressLine1 %}{{ user.addressLine1 }}<br>{% endif %}
+					{% if user.addressLine2 %}{{ user.addressLine2 }}<br>{% endif %}
+					{% if user.addressPostalCodeAndCity %}{{ user.addressPostalCodeAndCity }}{% endif %}
+				</div>
+			{% endif %}
+		</div>
+	{% elseif firstName or lastName or userEmail or telephone or addressLine1 or addressLine2 or addressPostalCodeAndCity %}
+		<div class="participant-card__body d-flex flex-column gap-2">
+			{% if firstName or lastName %}
+				<div>
+					<span class="form-label-sm">Nom complet</span>
+					<div class="fw-semibold">{{ (firstName ? firstName ~ ' ' : '') ~ (lastName ?? '') }}</div>
+				</div>
+			{% endif %}
+			{% if userEmail %}
+				<div class="text-muted small"><i class="bi bi-envelope me-1"></i>{{ userEmail }}</div>
+			{% endif %}
+			{% if telephone %}
+				<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ telephone }}</div>
+			{% endif %}
+			{% if addressLine1 or addressPostalCodeAndCity %}
+				<div class="text-muted small">
+					{% if addressLine1 %}{{ addressLine1 }}<br>{% endif %}
+					{% if addressLine2 %}{{ addressLine2 }}<br>{% endif %}
+					{% if addressPostalCodeAndCity %}{{ addressPostalCodeAndCity }}{% endif %}
+				</div>
+			{% endif %}
+		</div>
+	{% else %}
+		<div class="participant-empty">
+			<h3 class="mb-1">{{ label }} manquant</h3>
+			<p class="mb-0">Aucune information renseignée pour le moment.</p>
+		</div>
+	{% endif %}
+</div>

@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\SongTypeRepository;
-use App\Enum\CelebrationPeriod;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,23 +23,20 @@ class SongType
 
     #[ORM\Column]
     private ?bool $messe = null;
-    #[ORM\Column(type: 'string', enumType: CelebrationPeriod::class, nullable: true)]
+
+    #[ORM\ManyToOne(targetEntity: CelebrationPeriod::class, inversedBy: 'songTypes')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?CelebrationPeriod $celebrationPeriod = null;
+
+    #[ORM\Column]
+    private ?int $ordre = null;
+
 
     public function __construct()
     {
         $this->songs = new ArrayCollection();
     }
-    public function getCelebrationPeriod(): ?CelebrationPeriod
-    {
-        return $this->celebrationPeriod;
-    }
-    public function setCelebrationPeriod(?CelebrationPeriod $celebrationPeriod): static
-    {
-        $this->celebrationPeriod = $celebrationPeriod;
-
-        return $this;
-    }
+    
 
     public function getId(): ?int
     {
@@ -94,6 +90,30 @@ class SongType
     public function setMesse(bool $messe): static
     {
         $this->messe = $messe;
+
+        return $this;
+    }
+
+    public function getCelebrationPeriod(): ?CelebrationPeriod
+    {
+        return $this->celebrationPeriod;
+    }
+
+    public function setCelebrationPeriod(?CelebrationPeriod $celebrationPeriod): static
+    {
+        $this->celebrationPeriod = $celebrationPeriod;
+
+        return $this;
+    }
+
+    public function getOrdre(): ?int
+    {
+        return $this->ordre;
+    }
+
+    public function setOrdre(int $ordre): static
+    {
+        $this->ordre = $ordre;
 
         return $this;
     }

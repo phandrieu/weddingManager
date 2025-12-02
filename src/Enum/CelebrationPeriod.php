@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
-enum CelebrationPeriod: string
+/**
+ * @deprecated Cette classe est conservée pour compatibilité rétroactive.
+ *             Utiliser l'entité App\\Entity\\CelebrationPeriod à la place.
+ */
+final class CelebrationPeriod
 {
-    case accueil = 'Accueil';
-    case liturgieDeLaParole = 'Liturgie de la Parole';
-    case liturgieDuMariage = 'Liturgie du Mariage';
-    case liturgieEucharistique = 'Liturgie Eucharistique';
-    case envoi = 'Envoi';
+	private function __construct()
+	{
+	}
 }

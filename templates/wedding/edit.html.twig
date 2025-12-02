@@ -420,15 +420,22 @@
                     {% set types = songTypes is defined ? songTypes : [] %}
                     {% set groups = {} %}
                     {% for t in types %}
-                        {% set label = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
-                        {% if groups[label] is defined %}
-                            {% set groups = groups|merge({ (label): groups[label]|merge([t]) }) %}
-                        {% else %}
-                            {% set groups = groups|merge({ (label): [t] }) %}
-                        {% endif %}
+                        {% set period = t.celebrationPeriod %}
+                        {% set label = period ? period.fullName : 'Autres' %}
+                        {% set color = period ? period.color : null %}
+                        {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
+                        {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
+                        {% set existing = groups[key]|default({ 'label': label, 'color': color, 'order': orderValue, 'types': [] }) %}
+                        {% set groups = groups|merge({
+                            (key): existing|merge({
+                                'label': label,
+                                'color': color,
+                                'order': orderValue,
+                                'types': existing.types|merge([t])
+                            })
+                        }) %}
                     {% endfor %}
-
-                    {% set order = ['Accueil','Liturgie de la Parole','Liturgie du Mariage','Liturgie Eucharistique','Envoi','Autres'] %}
+                    {% set orderedGroupKeys = groups|keys|sort %}
 
                     {% if groups is empty %}
                         <div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
@@ -442,70 +449,70 @@
                         </div>
 
                         <div class="deroule-groups">
-                            {% for label in order %}
-                                {% if groups[label] is defined %}
-                                    <div class="deroule-group">
-                                        <div class="deroule-group-header">{{ label }}</div> 
-                                        <div class="deroule-group-body">
-                                            {% for type in groups[label] %}
-                                                {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
-                                                {% set selectionState = songSelectionsByType[type.id]|default({}) %}
-                                                {% set selectedSongId = selectionState.songId ?? null %}
-                                                {% set validatedMusician = selectionState.validatedByMusician ?? false %}
-                                                {% set validatedParish = selectionState.validatedByParish ?? false %}
-                                                <div class="deroule-row">
-                                                    <div>
-                                                        <span class="deroule-type-badge">{{ type.name }}</span>
-                                                    </div>
-                                                    <div class="d-flex gap-2 align-items-center">
-                                                        <select name="deroule[{{ label|replace({' ':'_'}) }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
-                                                            <option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
-                                                            {% if songsForType|length > 0 %}
-                                                                {% for song in songsForType %}
-                                                                    <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
-                                                                        {% if song.suggestion %}✨ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                <option disabled>Pas de chants disponibles</option>
-                                                            {% endif %}
-                                                        </select>
-                                                        <button type="button" class="btn btn-sm btn-outline-primary js-suggest-song" data-song-type="{{ type.id }}" title="Suggérer un nouveau chant">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div>
-                                                        <input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
-                                                        <button type="button" class="btn btn-validation js-validation-toggle {{ validatedMusician ? 'is-active' : '' }}" data-role="musician" data-type="{{ type.id }}">MUS</button>
-                                                    </div>
-                                                    <div>
-                                                        <input type="hidden" name="deroule_validation_parish[{{ type.id }}]" value="{{ validatedParish ? '1' : '0' }}" data-validation-input="parish-{{ type.id }}">
-                                                        <button type="button" class="btn btn-validation js-validation-toggle {{ validatedParish ? 'is-active' : '' }}" data-role="parish" data-type="{{ type.id }}">PAR</button>
-                                                    </div>
-                                                    <div>
-                                                        {% if wedding.id %}
-                                                            {% set commentsCount = selectionState.commentsCount|default(0) %}
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
-                                                                    <i class="bi bi-chat-dots"></i>
-                                                                </button>
-                                                                {% if commentsCount > 0 %}
-                                                                    <span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
-                                                                        {{ commentsCount }}
-                                                                    </span>
-                                                                {% endif %}
-                                                            </div>
+                            {% for groupKey in orderedGroupKeys %}
+                                {% set group = groups[groupKey] %}
+                                {% set sanitizedLabel = group.label ? group.label|replace({' ': '_'}) : 'Autres' %}
+                                <div class="deroule-group">
+                                    <div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}"{% endif %}>{{ group.label }}</div> 
+                                    <div class="deroule-group-body">
+                                        {% for type in group.types %}
+                                            {% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
+                                            {% set selectionState = songSelectionsByType[type.id]|default({}) %}
+                                            {% set selectedSongId = selectionState.songId ?? null %}
+                                            {% set validatedMusician = selectionState.validatedByMusician ?? false %}
+                                            {% set validatedParish = selectionState.validatedByParish ?? false %}
+                                            <div class="deroule-row">
+                                                <div>
+                                                    <span class="deroule-type-badge">{{ type.name }}</span>
+                                                </div>
+                                                <div class="d-flex gap-2 align-items-center">
+                                                    <select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
+                                                        <option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
+                                                        {% if songsForType|length > 0 %}
+                                                            {% for song in songsForType %}
+                                                                <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
+                                                                    {% if song.suggestion %}✨ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
+                                                                </option>
+                                                            {% endfor %}
                                                         {% else %}
-                                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
+                                                            <option disabled>Pas de chants disponibles</option>
+                                                        {% endif %}
+                                                    </select>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary js-suggest-song" data-song-type="{{ type.id }}" title="Suggérer un nouveau chant">
+                                                        <i class="bi bi-plus-circle"></i>
+                                                    </button>
+                                                </div>
+                                                <div>
+                                                    <input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
+                                                    <button type="button" class="btn btn-validation js-validation-toggle {{ validatedMusician ? 'is-active' : '' }}" data-role="musician" data-type="{{ type.id }}">MUS</button>
+                                                </div>
+                                                <div>
+                                                    <input type="hidden" name="deroule_validation_parish[{{ type.id }}]" value="{{ validatedParish ? '1' : '0' }}" data-validation-input="parish-{{ type.id }}">
+                                                    <button type="button" class="btn btn-validation js-validation-toggle {{ validatedParish ? 'is-active' : '' }}" data-role="parish" data-type="{{ type.id }}">PAR</button>
+                                                </div>
+                                                <div>
+                                                    {% if wedding.id %}
+                                                        {% set commentsCount = selectionState.commentsCount|default(0) %}
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
                                                                 <i class="bi bi-chat-dots"></i>
                                                             </button>
-                                                        {% endif %}
-                                                    </div>
+                                                            {% if commentsCount > 0 %}
+                                                                <span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
+                                                                    {{ commentsCount }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% else %}
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
+                                                            <i class="bi bi-chat-dots"></i>
+                                                        </button>
+                                                    {% endif %}
                                                 </div>
-                                            {% endfor %}
-                                        </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                {% endif %}
+                                </div>
                             {% endfor %}
                         </div>
                     {% endif %}

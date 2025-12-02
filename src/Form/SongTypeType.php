@@ -2,10 +2,11 @@
 
 namespace App\Form;
 
+use App\Entity\CelebrationPeriod;
 use App\Entity\SongType;
-use App\Enum\CelebrationPeriod;
+use App\Repository\CelebrationPeriodRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,12 +28,17 @@ class SongTypeType extends AbstractType
                 ],
                 'expanded' => true,
             ])
-            ->add('celebrationPeriod', EnumType::class, [
+            ->add('celebrationPeriod', EntityType::class, [
                 'class' => CelebrationPeriod::class,
                 'label' => 'Période de célébration',
                 'required' => false,
-                'placeholder' => 'Aucune',
-                'choice_label' => function(CelebrationPeriod $c) { return $c->value; },
+                'placeholder' => 'Aucune période',
+                'choice_label' => 'fullName',
+                'query_builder' => function (CelebrationPeriodRepository $repo) {
+                    return $repo->createQueryBuilder('cp')
+                        ->orderBy('cp.periodOrder', 'ASC')
+                        ->addOrderBy('cp.fullName', 'ASC');
+                },
                 'attr' => ['class' => 'form-select']
             ]);
     }
