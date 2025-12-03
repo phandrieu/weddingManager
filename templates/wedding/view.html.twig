@@ -8,40 +8,11 @@
 	{% endif %}
 {% endblock %}
 
-{% block stylesheets %}
-	{{ parent() }}
-{% endblock %}
-
 {% block body %}
 	{% set songSelectionsByType = songSelectionsByType|default({}) %}
 	{% set commentCountsByType = commentCountsByType|default({}) %}
-	{% set types = [] %}
-	{% for type in songTypes %}
-		{% if wedding.isMesse or not type.isMesse %}
-			{% set types = types|merge([type]) %}
-		{% endif %}
-	{% endfor %}
-
-	{% set groups = {} %}
-	{% for t in types %}
-		{% set groupKey = t.celebrationPeriod is not null ? t.celebrationPeriod.value : 'Autres' %}
-		{% if groups[groupKey] is defined %}
-			{% set groups = groups|merge({ (groupKey): groups[groupKey]|merge([t]) }) %}
-		{% else %}
-			{% set groups = groups|merge({ (groupKey): [t] }) %}
-		{% endif %}
-	{% endfor %}
-
-	{% set orderedLabels = groups|keys|sort((a, b) => a <=> b) %}
-	{% set selectionMap = {} %}
-	{% for selection in wedding.songSelections %}
-		{% if selection.songType %}
-			{% set selectionMap = selectionMap|merge({ ('id_' ~ selection.songType.id): selection }) %}
-		{% endif %}
-	{% endfor %}
-
 	<div class="container-xl py-5">
-		<div class="wizard-layout wizard-layout--full" id="weddingWizardView" data-default-step="{{ initialStep|default(0) }}">
+		<div class="wizard-layout wizard-layout--full" id="weddingWizardView" data-default-step="0">
 			<section class="wizard-panel">
 				<header class="wizard-header">
 					<div class="wizard-header__intro">
@@ -97,9 +68,9 @@
 						Répertoire<br><small>Déroulé &amp; validations</small>
 					</button>
 					{% if not isCouple %}
-						<button type="button" class="wizard-stepper__item" data-step="4">
-							Suivi<br><small>Finances &amp; archive</small>
-						</button>
+					<button type="button" class="wizard-stepper__item" data-step="4">
+						Suivi<br><small>Finances &amp; archive</small>
+					</button>
 					{% endif %}
 				</div>
 
@@ -159,39 +130,252 @@
 							</div>
 						</div>
 					</div>
-								{% include 'wedding/_view_participant.html.twig' with {
-									'label': 'Futur marié',
-									'user': wedding.marie,
-									'userEmail': wedding.marie ? wedding.marie.email : wedding.marieEmail,
-									'firstName': wedding.marie ? wedding.marie.firstName : wedding.marieFirstName,
-									'lastName': wedding.marie ? wedding.marie.name : wedding.marieName,
-									'telephone': wedding.marie ? wedding.marie.telephone : wedding.marieTelephone,
-									'addressLine1': wedding.marie ? wedding.marie.addressLine1 : wedding.marieAddressLine1,
-									'addressLine2': wedding.marie ? wedding.marie.addressLine2 : wedding.marieAddressLine2,
-									'addressPostalCodeAndCity': wedding.marie ? wedding.marie.addressPostalCodeAndCity : wedding.marieAddressPostalCodeAndCity
-								} only %}
+
+					<div class="wizard-step" data-step="1">
+						<div class="participant-grid">
+							<div>
+								{% if wedding.marie %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Futur marié</h3>
+											<span class="badge rounded-pill bg-success text-white">
+												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+											</span>
+											{% if wedding.marie.email %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											<div>
+												<span class="form-label-sm">Nom complet</span>
+												<div class="fw-semibold">{{ wedding.marie.fullName ?? '-' }}</div>
+											</div>
+											{% if wedding.marie.telephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marie.telephone }}</div>
+											{% endif %}
+											{% if wedding.marie.addressLine1 or wedding.marie.addressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.marie.addressLine1 %}{{ wedding.marie.addressLine1 }}<br>{% endif %}
+													{% if wedding.marie.addressLine2 %}{{ wedding.marie.addressLine2 }}<br>{% endif %}
+													{% if wedding.marie.addressPostalCodeAndCity %}{{ wedding.marie.addressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elseif wedding.marieFirstName or wedding.marieName or wedding.marieEmail %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Futur marié</h3>
+											<span class="badge rounded-pill bg-warning text-dark">
+												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+											</span>
+											{% if wedding.marieEmail %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieEmail }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											{% if wedding.marieFirstName or wedding.marieName %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}</div>
+												</div>
+											{% endif %}
+											{% if wedding.marieTelephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieTelephone }}</div>
+											{% endif %}
+											{% if wedding.marieAddressLine1 or wedding.marieAddressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.marieAddressLine1 %}{{ wedding.marieAddressLine1 }}<br>{% endif %}
+													{% if wedding.marieAddressLine2 %}{{ wedding.marieAddressLine2 }}<br>{% endif %}
+													{% if wedding.marieAddressPostalCodeAndCity %}{{ wedding.marieAddressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% else %}
+									<div class="participant-empty">
+										<h3 class="mb-1">Futur marié manquant</h3>
+										<p class="mb-0">Aucune information renseignée pour le futur marié.</p>
+									</div>
+								{% endif %}
 							</div>
 
 							<div>
-								{% include 'wedding/_view_participant.html.twig' with {
-									'label': 'Future mariée',
-									'user': wedding.mariee,
-									'userEmail': wedding.mariee ? wedding.mariee.email : wedding.marieeEmail,
-									'firstName': wedding.mariee ? wedding.mariee.firstName : wedding.marieeFirstName,
-									'lastName': wedding.mariee ? wedding.mariee.name : wedding.marieeName,
-									'telephone': wedding.mariee ? wedding.mariee.telephone : wedding.marieeTelephone,
-									'addressLine1': wedding.mariee ? wedding.mariee.addressLine1 : wedding.marieeAddressLine1,
-									'addressLine2': wedding.mariee ? wedding.mariee.addressLine2 : wedding.marieeAddressLine2,
-									'addressPostalCodeAndCity': wedding.mariee ? wedding.mariee.addressPostalCodeAndCity : wedding.marieeAddressPostalCodeAndCity
-								} only %}
+								{% if wedding.mariee %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Future mariée</h3>
+											<span class="badge rounded-pill bg-success text-white">
+												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+											</span>
+											{% if wedding.mariee.email %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											<div>
+												<span class="form-label-sm">Nom complet</span>
+												<div class="fw-semibold">{{ wedding.mariee.fullName ?? '-' }}</div>
+											</div>
+											{% if wedding.mariee.telephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.mariee.telephone }}</div>
+											{% endif %}
+											{% if wedding.mariee.addressLine1 or wedding.mariee.addressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.mariee.addressLine1 %}{{ wedding.mariee.addressLine1 }}<br>{% endif %}
+													{% if wedding.mariee.addressLine2 %}{{ wedding.mariee.addressLine2 }}<br>{% endif %}
+													{% if wedding.mariee.addressPostalCodeAndCity %}{{ wedding.mariee.addressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elseif wedding.marieeFirstName or wedding.marieeName or wedding.marieeEmail %}
+									<div class="participant-card">
+										<div class="participant-card__header">
+											<h3 class="mb-0">Future mariée</h3>
+											<span class="badge rounded-pill bg-warning text-dark">
+												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+											</span>
+											{% if wedding.marieeEmail %}
+												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieeEmail }}</span>
+											{% endif %}
+										</div>
+										<div class="participant-card__body d-flex flex-column gap-2">
+											{% if wedding.marieeFirstName or wedding.marieeName %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}</div>
+												</div>
+											{% endif %}
+											{% if wedding.marieeTelephone %}
+												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieeTelephone }}</div>
+											{% endif %}
+											{% if wedding.marieeAddressLine1 or wedding.marieeAddressPostalCodeAndCity %}
+												<div class="text-muted small">
+													{% if wedding.marieeAddressLine1 %}{{ wedding.marieeAddressLine1 }}<br>{% endif %}
+													{% if wedding.marieeAddressLine2 %}{{ wedding.marieeAddressLine2 }}<br>{% endif %}
+													{% if wedding.marieeAddressPostalCodeAndCity %}{{ wedding.marieeAddressPostalCodeAndCity }}{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% else %}
+									<div class="participant-empty">
+										<h3 class="mb-1">Future mariée manquante</h3>
+										<p class="mb-0">Aucune information renseignée pour la future mariée.</p>
+									</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+
+					<div class="wizard-step" data-step="2">
+						<div class="form-grid">
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Musiciens</span>
+									<h3 class="mb-0">Coordonner les musiciens</h3>
+								</div>
+								<div class="d-flex align-items-center gap-2 text-muted small mb-3">
+									<span class="badge text-bg-light">{{ wedding.musicians|length }}</span>
+									<span>Musicien(s)</span>
+								</div>
+								{% if wedding.musicians|length > 0 %}
+									<ul class="list-group list-group-flush">
+										{% for musician in wedding.musicians %}
+											<li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+												<div>
+													<span class="fw-semibold">{{ musician.fullName ?? musician.email }}</span>
+													<div class="text-muted small">{{ musician.email }}</div>
+													{% if musician.telephone %}
+														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ musician.telephone }}</div>
+													{% endif %}
+												</div>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="text-muted small mb-0">Aucun musicien n'est encore associé pour le moment.</p>
+								{% endif %}
+							</div>
+
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Paroisse</span>
+									<h3 class="mb-0">Collaborer avec la paroisse</h3>
+								</div>
+								<div class="d-flex align-items-center gap-2 text-muted small mb-3">
+									<span class="badge text-bg-light">{{ wedding.parishUsers|length }}</span>
+									<span>Contact(s)</span>
+								</div>
+								{% if wedding.parishUsers|length > 0 %}
+									<ul class="list-group list-group-flush">
+										{% for parishUser in wedding.parishUsers %}
+											<li class="list-group-item px-0 border-0 py-3 d-flex justify-content-between align-items-start gap-3">
+												<div>
+													<span class="fw-semibold">{{ parishUser.fullName ?? parishUser.email }}</span>
+													<div class="text-muted small">{{ parishUser.email }}</div>
+													{% if parishUser.telephone %}
+														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ parishUser.telephone }}</div>
+													{% endif %}
+												</div>
+											</li>
+										{% endfor %}
+									</ul>
+								{% else %}
+									<p class="text-muted small mb-0">Aucun contact paroissial n'est encore associé à ce mariage.</p>
+								{% endif %}
+							</div>
+
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Célébrant</span>
+									<h3 class="mb-0">Coordonnées du prêtre</h3>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Prénom</span>
+									<div class="fw-semibold">{{ wedding.priestFirstName ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Nom</span>
+									<div class="fw-semibold">{{ wedding.priestLastName ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Téléphone</span>
+									<div class="fw-semibold">{{ wedding.priestPhoneNumber ?? '-' }}</div>
+								</div>
+								<div class="form-group-sm">
+									<span class="form-label-sm">Email</span>
+									<div class="fw-semibold">{{ wedding.priestEMail ?? '-' }}</div>
+								</div>
 							</div>
 						</div>
 					</div>
 
 					<div class="wizard-step" data-step="3">
 						<div class="deroule-container">
+							{% set types = songTypes is defined ? songTypes : [] %}
+							{% set groups = {} %}
+							{% for t in types %}
+								{% set period = t.celebrationPeriod %}
+								{% set label = period ? period.fullName : 'Autres' %}
+								{% set color = period ? period.color : null %}
+								{% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
+								{% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
+								{% set existing = groups[key]|default({ 'label': label, 'color': color, 'order': orderValue, 'types': [] }) %}
+								{% set groups = groups|merge({
+									(key): existing|merge({
+										'label': label,
+										'color': color,
+										'order': orderValue,
+										'types': existing.types|merge([t])
+									})
+								}) %}
+							{% endfor %}
+							{% set orderedGroupKeys = groups|keys|sort %}
+
 							{% if groups is empty %}
-								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoutez des types dans l'administration.</div>
+								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
 							{% else %}
 								<div class="deroule-print-action d-print-none mb-3">
 									<button type="button" id="printDerouleBtn" class="btn btn-outline-primary btn-rounded">
@@ -199,6 +383,7 @@
 										Imprimer le déroulé
 									</button>
 								</div>
+
 								<div class="deroule-print-header d-none d-print-block">
 									<h1 class="deroule-print-title">Déroulé de la célébration</h1>
 									<div class="deroule-print-info">
@@ -212,11 +397,10 @@
 											</strong>
 										</p>
 										{% if wedding.date %}
-											<p class="mb-1">
-												{{ wedding.date|date('d/m/Y') }}
-												{% if wedding.time %}
-													à {{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
-												{% endif %}
+											<p class="mb-1">{{ wedding.date|date('d/m/Y') }}
+											{% if wedding.time %}
+												à {{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
+											{% endif %}
 											</p>
 										{% endif %}
 										{% if wedding.church %}
@@ -226,57 +410,72 @@
 								</div>
 								<div class="deroule-header d-none d-lg-flex">
 									<div class="deroule-col-type">TYPE</div>
-									<div class="deroule-col-choice">CHOIX RETENU</div>
+									<div class="deroule-col-choice">VOTRE CHOIX</div>
 									<div class="deroule-col-check">VALIDATION MUSICIEN</div>
 									<div class="deroule-col-check">VALIDATION PAROISSE</div>
 									<div class="deroule-col-comments">COM.</div>
 								</div>
 
 								<div class="deroule-groups">
-									{% for label in orderedLabels %}
-										{% set group = groups[label] %}
+									{% for groupKey in orderedGroupKeys %}
+										{% set group = groups[groupKey] %}
+										{% set sanitizedLabel = group.label ? group.label|replace({' ': '_'}) : 'Autres' %}
 										<div class="deroule-group">
-											<div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}"{% endif %}>{{ group.label }}</div>
+											<div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}"{% endif %}>{{ group.label }}</div> 
 											<div class="deroule-group-body">
 												{% for type in group.types %}
-													{% set selection = selectionMap['id_' ~ type.id]|default(null) %}
-													{% set selectedSong = selection ? selection.song : null %}
-													{% set validatedMusician = selection ? selection.validatedByMusician : false %}
-													{% set validatedParish = selection ? selection.validatedByParish : false %}
+													{% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
 													{% set selectionState = songSelectionsByType[type.id]|default({}) %}
+													{% set selectedSongId = selectionState.songId ?? null %}
+													{% set validatedMusician = selectionState.validatedByMusician ?? false %}
+													{% set validatedParish = selectionState.validatedByParish ?? false %}
 													<div class="deroule-row">
 														<div>
 															<span class="deroule-type-badge">{{ type.name }}</span>
 														</div>
-														<div>
-															<span class="deroule-label">Votre choix</span>
-															{% if selectedSong %}
-																<div class="fw-semibold">{{ selectedSong.name ?? 'Titre inconnu' }}</div>
-																{% if selectedSong.textRef %}
-																	<div class="text-muted small">{{ selectedSong.textRef }}</div>
+														<div class="d-flex gap-2 align-items-center">
+															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
+																<option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
+																{% if songsForType|length > 0 %}
+																	{% for song in songsForType %}
+																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
+																			{% if song.suggestion %}✨ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
+																		</option>
+																	{% endfor %}
+																{% else %}
+																	<option disabled>Pas de chants disponibles</option>
 																{% endif %}
-															{% else %}
-																<div class="text-muted">Aucun chant sélectionné</div>
-															{% endif %}
-														</div>
-														<div class="text-center">
-															<span class="btn btn-validation {{ validatedMusician ? 'is-active' : '' }} disabled" role="presentation">MUS</span>
-														</div>
-														<div class="text-center">
-															<span class="btn btn-validation {{ validatedParish ? 'is-active' : '' }} disabled" role="presentation">PAR</span>
+															</select>
+															<button type="button" class="btn btn-sm btn-outline-primary js-suggest-song" data-song-type="{{ type.id }}" title="Suggérer un nouveau chant">
+																<i class="bi bi-plus-circle"></i>
+															</button>
 														</div>
 														<div>
-															{% set commentsCount = selectionState.commentsCount|default(commentCountsByType[type.id]|default(0)) %}
-															<div class="d-flex align-items-center gap-2">
-																<button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+															<input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
+															<button type="button" class="btn btn-validation js-validation-toggle {{ validatedMusician ? 'is-active' : '' }}" data-role="musician" data-type="{{ type.id }}">MUS</button>
+														</div>
+														<div>
+															<input type="hidden" name="deroule_validation_parish[{{ type.id }}]" value="{{ validatedParish ? '1' : '0' }}" data-validation-input="parish-{{ type.id }}">
+															<button type="button" class="btn btn-validation js-validation-toggle {{ validatedParish ? 'is-active' : '' }}" data-role="parish" data-type="{{ type.id }}">PAR</button>
+														</div>
+														<div>
+															{% if wedding.id %}
+																{% set commentsCount = selectionState.commentsCount|default(commentCountsByType[type.id]|default(0)) %}
+																<div class="d-flex align-items-center gap-2">
+																	<button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
+																		<i class="bi bi-chat-dots"></i>
+																	</button>
+																	{% if commentsCount > 0 %}
+																		<span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
+																			{{ commentsCount }}
+																		</span>
+																	{% endif %}
+																</div>
+															{% else %}
+																<button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Sauvegardez le mariage pour activer les commentaires">
 																	<i class="bi bi-chat-dots"></i>
 																</button>
-																{% if commentsCount > 0 %}
-																	<span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
-																		{{ commentsCount }}
-																	</span>
-																{% endif %}
-															</div>
+															{% endif %}
 														</div>
 													</div>
 												{% endfor %}
@@ -286,158 +485,9 @@
 								</div>
 							{% endif %}
 						</div>
-					</div>
-
-					{% if not isCouple %}
-				</div>
-
-				<div class="wizard-actions">
-					<div class="wizard-actions__nav">
-						<button type="button" class="btn btn-outline-secondary wizard-prev d-none" data-action="prev-step">
-							<i class="bi bi-arrow-left"></i>
-							Retour
-						</button>
-						<button type="button" class="btn btn-primary wizard-next" data-action="next-step">
-							Continuer
-							<i class="bi bi-arrow-right ms-2"></i>
-						</button>
-					</div>
-					<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" class="btn btn-cta btn-rounded btn-icon js-edit-wedding-btn">
-						<i class="bi bi-pencil-square"></i>
-						Modifier
-					</a>
-				</div>
-			</section>
-		</div>
-	</div>
-
-	<div class="modal fade" id="commentsModal" tabindex="-1" aria-hidden="true">
-		<div class="modal-dialog modal-lg modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Commentaires</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-				</div>
-				<div class="modal-body">
-					<div class="text-center py-4" id="commentsModalSpinner">
-						<div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
-					</div>
-				</div>
-				<div class="modal-footer"></div>
-			</div>
-		</div>
-	</div>
-
-	<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="inviteModalLabel">Inviter quelqu'un</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-				</div>
-				<form action="{{ path('app_wedding_invite', {'id': wedding.id}) }}" method="POST">
-					<div class="modal-body">
-						<div class="mb-3">
-							<label for="email" class="form-label">Email</label>
-							<input type="email" class="form-control" id="email" name="email" required>
-						</div>
-						<div class="mb-3">
-							<label for="role" class="form-label">Rôle</label>
-							<select class="form-select" id="role" name="role" required>
-								<option value="paroisse">Paroisse</option>
-								<option value="musicien">Musicien</option>
-								<option value="marie">Marié</option>
-								<option value="mariee">Mariée</option>
-							</select>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-						<button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-{% endblock %}
-											</p>
-										{% endif %}
-										{% if wedding.church %}
-											<p class="mb-0">{{ wedding.church }}{% if wedding.parish %} - {{ wedding.parish }}{% endif %}</p>
-										{% endif %}
-									</div>
-								</div>
-								<div class="deroule-header d-none d-lg-flex">
-									<div class="deroule-col-type">TYPE</div>
-									<div class="deroule-col-choice">CHOIX RETENU</div>
-									<div class="deroule-col-check">VALIDATION MUSICIEN</div>
-									<div class="deroule-col-check">VALIDATION PAROISSE</div>
-									<div class="deroule-col-comments">COM.</div>
-								</div>
-
-								<div class="deroule-groups">
-									{% for label in order %}
-										{% if groups[label] is defined %}
-											<div class="deroule-group">
-												<div class="deroule-group-header">{{ label }}</div>
-												<div class="deroule-group-body">
-													{% for type in groups[label] %}
-														{% set selection = selectionMap['id_' ~ type.id]|default(null) %}
-														{% if selection %}
-															{% set selectedSong = selection.song %}
-															{% set validatedMusician = selection.validatedByMusician %}
-															{% set validatedParish = selection.validatedByParish %}
-														{% else %}
-															{% set selectedSong = null %}
-															{% set validatedMusician = false %}
-															{% set validatedParish = false %}
-														{% endif %}
-														{% set selectionState = songSelectionsByType[type.id]|default({}) %}
-														<div class="deroule-row">
-															<div>
-																<span class="deroule-type-badge">{{ type.name }}</span>
-															</div>
-															<div>
-																<span class="deroule-label">Votre choix</span>
-																{% if selectedSong %}
-																	<div class="fw-semibold">{{ selectedSong.name ?? 'Titre inconnu' }}</div>
-																	{% if selectedSong.textRef %}
-																		<div class="text-muted small">{{ selectedSong.textRef }}</div>
-																	{% endif %}
-																{% else %}
-																	<div class="text-muted">Aucun chant sélectionné</div>
-																{% endif %}
-															</div>
-															<div class="text-center">
-																<span class="btn btn-validation {{ validatedMusician ? 'is-active' : '' }} disabled" role="presentation">MUS</span>
-															</div>
-															<div class="text-center">
-																<span class="btn btn-validation {{ validatedParish ? 'is-active' : '' }} disabled" role="presentation">PAR</span>
-															</div>
-															<div>
-								
-							                                                            {% set commentsCount = selectionState.commentsCount|default(commentCountsByType[type.id]|default(0)) %}
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <button type="button" class="btn btn-sm btn-outline-secondary open-comments" data-wedding="{{ wedding.id }}" data-songtype="{{ type.id }}" aria-haspopup="dialog" aria-controls="commentsModal">
-                                                                    <i class="bi bi-chat-dots"></i>
-                                                                </button>
-                                                                {% if commentsCount > 0 %}
-                                                                    <span class="badge rounded-pill text-bg-secondary" aria-label="{{ commentsCount }} commentaire{{ commentsCount > 1 ? 's' : '' }}">
-                                                                        {{ commentsCount }}
-                                                                    </span>
-                                                                {% endif %}
-                                                            </div>
-                                                        
-															</div>
-														</div>
-													{% endfor %}
-												</div>
-											</div>
-										{% endif %}
-									{% endfor %}
-								</div>
-							{% endif %}
-						</div>
+						{% if form is defined %}
+							{{ form_widget(form.songs, {'attr': {'class': 'd-none'}}) }}
+						{% endif %}
 					</div>
 					
 					{% if not isCouple %}
