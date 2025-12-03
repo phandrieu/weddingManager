@@ -6,7 +6,7 @@ use App\Repository\PasskeyCredentialRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Webauthn\PublicKeyCredentialSource;
-use Webauthn\TrustPath\TrustPath;
+use Webauthn\TrustPath\EmptyTrustPath;
 
 #[ORM\Entity(repositoryClass: PasskeyCredentialRepository::class)]
 #[ORM\Table(name: 'passkey_credential')]
@@ -18,8 +18,9 @@ class PasskeyCredential
     #[ORM\Column]
     private ?int $id = null;
 
+    /** @var string|resource */
     #[ORM\Column(type: Types::BINARY, length: 255)]
-    private string $publicKeyCredentialId;
+    private mixed $publicKeyCredentialId;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $type;
@@ -33,14 +34,17 @@ class PasskeyCredential
     #[ORM\Column(type: Types::JSON)]
     private array $trustPath = [];
 
+    /** @var string|resource */
     #[ORM\Column(type: Types::BINARY)]
-    private string $aaguid;
+    private mixed $aaguid;
 
+    /** @var string|resource */
     #[ORM\Column(type: Types::BINARY)]
-    private string $credentialPublicKey;
+    private mixed $credentialPublicKey;
 
+    /** @var string|resource */
     #[ORM\Column(type: Types::BINARY)]
-    private string $userHandle;
+    private mixed $userHandle;
 
     #[ORM\Column(type: Types::INTEGER)]
     private int $counter;
@@ -82,9 +86,11 @@ class PasskeyCredential
 
     public function getPublicKeyCredentialId(): string
     {
-        return is_resource($this->publicKeyCredentialId) 
-            ? stream_get_contents($this->publicKeyCredentialId) 
-            : $this->publicKeyCredentialId;
+        if (is_resource($this->publicKeyCredentialId)) {
+            rewind($this->publicKeyCredentialId);
+            return stream_get_contents($this->publicKeyCredentialId);
+        }
+        return $this->publicKeyCredentialId ?? '';
     }
 
     public function setPublicKeyCredentialId(string $publicKeyCredentialId): static
@@ -139,9 +145,11 @@ class PasskeyCredential
 
     public function getAaguid(): string
     {
-        return is_resource($this->aaguid) 
-            ? stream_get_contents($this->aaguid) 
-            : $this->aaguid;
+        if (is_resource($this->aaguid)) {
+            rewind($this->aaguid);
+            return stream_get_contents($this->aaguid);
+        }
+        return $this->aaguid ?? '';
     }
 
     public function setAaguid(string $aaguid): static
@@ -152,9 +160,11 @@ class PasskeyCredential
 
     public function getCredentialPublicKey(): string
     {
-        return is_resource($this->credentialPublicKey) 
-            ? stream_get_contents($this->credentialPublicKey) 
-            : $this->credentialPublicKey;
+        if (is_resource($this->credentialPublicKey)) {
+            rewind($this->credentialPublicKey);
+            return stream_get_contents($this->credentialPublicKey);
+        }
+        return $this->credentialPublicKey ?? '';
     }
 
     public function setCredentialPublicKey(string $credentialPublicKey): static
@@ -165,9 +175,11 @@ class PasskeyCredential
 
     public function getUserHandle(): string
     {
-        return is_resource($this->userHandle) 
-            ? stream_get_contents($this->userHandle) 
-            : $this->userHandle;
+        if (is_resource($this->userHandle)) {
+            rewind($this->userHandle);
+            return stream_get_contents($this->userHandle);
+        }
+        return $this->userHandle ?? '';
     }
 
     public function setUserHandle(string $userHandle): static
@@ -279,7 +291,7 @@ class PasskeyCredential
             $this->type,
             $this->transports,
             $this->attestationType,
-            TrustPath\EmptyTrustPath::create(),
+            EmptyTrustPath::create(),
             \Symfony\Component\Uid\Uuid::fromBinary($this->getAaguid()),
             $this->getCredentialPublicKey(),
             $this->getUserHandle(),

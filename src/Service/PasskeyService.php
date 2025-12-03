@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\PasskeyCredentialRepository;
 use App\Repository\UserRepository;
 use App\Repository\WebAuthnUserRepository;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
@@ -66,9 +67,8 @@ class PasskeyService
 
         $authenticatorSelection = AuthenticatorSelectionCriteria::create(
             null, // authenticatorAttachment
-            AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_PREFERRED,
             AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED,
-            true // requireResidentKey
+            AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_PREFERRED
         );
 
         $options = PublicKeyCredentialCreationOptions::create(
@@ -89,6 +89,87 @@ class PasskeyService
         $this->requestStack->getSession()->set(self::SESSION_REGISTRATION_OPTIONS, $options);
 
         return $options;
+    }
+
+    /**
+     * Serialize registration options to array for JSON response
+     */
+    public function serializeCreationOptions(PublicKeyCredentialCreationOptions $options): array
+    {
+        $excludeCredentials = [];
+        foreach ($options->excludeCredentials as $credential) {
+            $cred = [
+                'type' => $credential->type,
+                'id' => Base64UrlSafe::encodeUnpadded($credential->id),
+            ];
+            // Ajouter transports seulement si non-vide (iOS/Safari compatibilité)
+            if (!empty($credential->transports)) {
+                $cred['transports'] = $credential->transports;
+            }
+            $excludeCredentials[] = $cred;
+        }
+
+        $result = [
+            'rp' => [
+                'name' => $options->rp->name,
+                'id' => $options->rp->id,
+            ],
+            'user' => [
+                'id' => Base64UrlSafe::encodeUnpadded($options->user->id),
+                'name' => $options->user->name,
+                'displayName' => $options->user->displayName,
+            ],
+            'challenge' => Base64UrlSafe::encodeUnpadded($options->challenge),
+            'pubKeyCredParams' => array_map(fn($p) => [
+                'type' => $p->type,
+                'alg' => $p->alg,
+            ], $options->pubKeyCredParams),
+            'timeout' => $options->timeout ?? 60000,
+            'attestation' => $options->attestation ?? 'none',
+        ];
+
+        // Ajouter excludeCredentials seulement si non-vide
+        if (!empty($excludeCredentials)) {
+            $result['excludeCredentials'] = $excludeCredentials;
+        }
+
+        // Ajouter authenticatorSelection sans valeurs null (iOS/Safari compatibilité)
+        if ($options->authenticatorSelection) {
+            $authSelection = array_filter([
+                'authenticatorAttachment' => $options->authenticatorSelection->authenticatorAttachment,
+                'residentKey' => $options->authenticatorSelection->residentKey,
+                'userVerification' => $options->authenticatorSelection->userVerification,
+            ], fn($v) => $v !== null);
+            
+            if (!empty($authSelection)) {
+                $result['authenticatorSelection'] = $authSelection;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Serialize request options to array for JSON response  
+     */
+    public function serializeRequestOptions(PublicKeyCredentialRequestOptions $options): array
+    {
+        $allowCredentials = [];
+        foreach ($options->allowCredentials as $credential) {
+            $allowCredentials[] = [
+                'type' => $credential->type,
+                'id' => Base64UrlSafe::encodeUnpadded($credential->id),
+                'transports' => $credential->transports,
+            ];
+        }
+
+        return [
+            'challenge' => Base64UrlSafe::encodeUnpadded($options->challenge),
+            'timeout' => $options->timeout,
+            'rpId' => $options->rpId,
+            'allowCredentials' => $allowCredentials,
+            'userVerification' => $options->userVerification ?? 'preferred',
+        ];
     }
 
     /**
@@ -165,11 +246,20 @@ class PasskeyService
             $user = $this->userRepository->findOneBy(['email' => $email]);
             if ($user) {
                 $credentials = $this->credentialRepository->findByUser($user);
+                $this->logger->debug('PassKey auth options - found credentials', [
+                    'email' => $email,
+                    'count' => count($credentials)
+                ]);
                 foreach ($credentials as $credential) {
+                    $credId = $credential->getPublicKeyCredentialId();
+                    $this->logger->debug('PassKey auth options - credential', [
+                        'id_hex' => bin2hex($credId),
+                        'id_length' => strlen($credId)
+                    ]);
                     $allowCredentials[] = PublicKeyCredentialDescriptor::create(
                         PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY,
-                        $credential->getPublicKeyCredentialId(),
-                        $credential->getTransports()
+                        $credId,
+                        $credential->getTransports() ?: []
                     );
                 }
             }
@@ -210,6 +300,11 @@ class PasskeyService
         // Deserialize the response
         $publicKeyCredential = $serializer->deserialize($responseJson, PublicKeyCredential::class, 'json');
 
+        $this->logger->debug('PassKey authentication - credential received', [
+            'rawId_hex' => bin2hex($publicKeyCredential->rawId),
+            'type' => $publicKeyCredential->type
+        ]);
+
         if (!$publicKeyCredential->response instanceof AuthenticatorAssertionResponse) {
             throw new \RuntimeException('Invalid response type');
         }
@@ -220,8 +315,21 @@ class PasskeyService
         );
 
         if (!$credentialSource) {
+            $this->logger->error('PassKey credential not found', [
+                'rawId_hex' => bin2hex($publicKeyCredential->rawId)
+            ]);
             throw new \RuntimeException('Credential not found');
         }
+
+        // Debug: compare IDs
+        $debugInfo = [
+            'credential_from_db_hex' => bin2hex($credentialSource->publicKeyCredentialId),
+            'credential_from_browser_hex' => bin2hex($publicKeyCredential->rawId),
+            'allowCredentials_count' => count($options->allowCredentials),
+            'allowCredentials_ids' => array_map(fn($c) => bin2hex($c->id), $options->allowCredentials)
+        ];
+        file_put_contents('/tmp/passkey_debug.log', date('Y-m-d H:i:s') . ' - ' . json_encode($debugInfo) . "\n", FILE_APPEND);
+        $this->logger->debug('PassKey auth verify - comparing IDs', $debugInfo);
 
         // Validate the response
         $ceremonyStepManagerFactory = new CeremonyStepManagerFactory();

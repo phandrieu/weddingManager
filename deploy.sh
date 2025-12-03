@@ -7,9 +7,9 @@ APP_DIR=/var/www/weddingManager       # Chemin vers ton projet sur le serveur
 BRANCH=main                           # Branche Git à déployer
 PHP_BIN=php                           # Binaire PHP (php ou php8.2)
 COMPOSER_BIN=composer                 # Chemin vers composer
-ENV=dev
-APP_ENV=dev
-APP_DEBUG=1
+ENV=prod
+APP_ENV=prod
+APP_DEBUG=0
 # -------------------------------
 # ARRÊT EN CAS D'ERREUR
 # -------------------------------

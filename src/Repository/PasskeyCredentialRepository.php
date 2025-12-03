@@ -43,13 +43,17 @@ class PasskeyCredentialRepository extends ServiceEntityRepository implements Pub
      */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {
-        $credential = $this->createQueryBuilder('c')
-            ->where('c.publicKeyCredentialId = :id')
-            ->setParameter('id', $publicKeyCredentialId)
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        return $credential?->toPublicKeyCredentialSource();
+        // PostgreSQL BYTEA comparison - need to use the entity directly
+        $credentials = $this->findAll();
+        
+        foreach ($credentials as $credential) {
+            $storedId = $credential->getPublicKeyCredentialId();
+            if ($storedId === $publicKeyCredentialId) {
+                return $credential->toPublicKeyCredentialSource();
+            }
+        }
+        
+        return null;
     }
 
     /**

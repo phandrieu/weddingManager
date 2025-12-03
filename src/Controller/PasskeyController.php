@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
@@ -21,8 +20,7 @@ class PasskeyController extends AbstractController
     public function __construct(
         private readonly PasskeyService $passkeyService,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger,
-        private readonly SerializerInterface $serializer
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -63,8 +61,7 @@ class PasskeyController extends AbstractController
 
             $options = $this->passkeyService->generateAuthenticationOptions($email);
 
-            $json = $this->serializer->serialize($options, 'json');
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+            return new JsonResponse($this->passkeyService->serializeRequestOptions($options));
         } catch (\Throwable $e) {
             $this->logger->error('Error generating authentication options', [
                 'error' => $e->getMessage()
@@ -100,7 +97,8 @@ class PasskeyController extends AbstractController
             ]);
             return new JsonResponse([
                 'success' => false,
-                'error' => 'Échec de l\'authentification PassKey'
+                'error' => 'Échec de l\'authentification PassKey',
+                'details' => $e->getMessage()
             ], Response::HTTP_UNAUTHORIZED);
         }
     }
@@ -123,8 +121,7 @@ class PasskeyController extends AbstractController
         try {
             $options = $this->passkeyService->generateRegistrationOptions($user);
 
-            $json = $this->serializer->serialize($options, 'json');
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+            return new JsonResponse($this->passkeyService->serializeCreationOptions($options));
         } catch (\Throwable $e) {
             $this->logger->error('Error generating registration options', [
                 'error' => $e->getMessage(),

@@ -727,7 +727,7 @@
 
                     const options = await optionsResponse.json();
 
-                    // 2. Préparer les options pour WebAuthn
+                    // 2. Préparer les options pour WebAuthn (compatible iOS/Safari)
                     const publicKeyCredentialCreationOptions = {
                         challenge: base64UrlDecode(options.challenge),
                         rp: {
@@ -740,18 +740,43 @@
                             displayName: options.user.displayName
                         },
                         pubKeyCredParams: options.pubKeyCredParams,
-                        timeout: options.timeout,
-                        attestation: options.attestation || 'none',
-                        authenticatorSelection: options.authenticatorSelection || {
-                            userVerification: 'preferred',
-                            residentKey: 'preferred'
-                        },
-                        excludeCredentials: (options.excludeCredentials || []).map(cred => ({
-                            type: cred.type,
-                            id: base64UrlDecode(cred.id),
-                            transports: cred.transports
-                        }))
+                        timeout: options.timeout || 60000,
+                        attestation: options.attestation || 'none'
                     };
+
+                    // Ajouter authenticatorSelection seulement si présent et non-null
+                    if (options.authenticatorSelection) {
+                        const authSelection = {};
+                        if (options.authenticatorSelection.authenticatorAttachment) {
+                            authSelection.authenticatorAttachment = options.authenticatorSelection.authenticatorAttachment;
+                        }
+                        if (options.authenticatorSelection.residentKey) {
+                            authSelection.residentKey = options.authenticatorSelection.residentKey;
+                        }
+                        if (options.authenticatorSelection.userVerification) {
+                            authSelection.userVerification = options.authenticatorSelection.userVerification;
+                        }
+                        if (Object.keys(authSelection).length > 0) {
+                            publicKeyCredentialCreationOptions.authenticatorSelection = authSelection;
+                        }
+                    }
+
+                    // Ajouter excludeCredentials seulement si présent et non-vide
+                    if (options.excludeCredentials && options.excludeCredentials.length > 0) {
+                        publicKeyCredentialCreationOptions.excludeCredentials = options.excludeCredentials.map(cred => {
+                            const excluded = {
+                                type: cred.type,
+                                id: base64UrlDecode(cred.id)
+                            };
+                            // Ajouter transports seulement si défini et non-vide
+                            if (cred.transports && cred.transports.length > 0) {
+                                excluded.transports = cred.transports;
+                            }
+                            return excluded;
+                        });
+                    }
+
+                    console.log('WebAuthn options:', publicKeyCredentialCreationOptions);
 
                     // 3. Créer le credential via WebAuthn
                     const credential = await navigator.credentials.create({

@@ -515,6 +515,7 @@
                     const optionsResponse = await fetch('{{ path('api_passkey_authenticate_options') }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
                         body: JSON.stringify({ email: email })
                     });
 
@@ -559,6 +560,7 @@
                     const verifyResponse = await fetch('{{ path('api_passkey_authenticate_verify') }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
                         body: JSON.stringify(assertionResponse)
                     });
 
@@ -568,7 +570,8 @@
                         // Rediriger vers la page d'accueil
                         window.location.href = verifyData.redirect || '{{ path('home') }}';
                     } else {
-                        throw new Error(verifyData.error || 'Échec de l\'authentification');
+                        console.error('PassKey verify error:', verifyData);
+                        throw new Error(verifyData.details || verifyData.error || 'Échec de l\'authentification');
                     }
                 } catch (error) {
                     console.error('Erreur PassKey:', error);
@@ -578,6 +581,8 @@
                         errorMessage = 'Authentification annulée ou non autorisée';
                     } else if (error.name === 'SecurityError') {
                         errorMessage = 'Erreur de sécurité. Vérifiez que vous êtes sur une connexion sécurisée.';
+                    } else if (error.message) {
+                        errorMessage = error.message;
                     }
                     
                     alert(errorMessage);
