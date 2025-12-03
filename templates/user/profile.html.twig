@@ -399,6 +399,15 @@
             <div class="row g-3">
                 <div class="col-12">
                     <div class="form-group">
+                        {{ form_label(form.currentPassword, 'Mot de passe actuel', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.currentPassword, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe actuel'}}) }}
+                        {{ form_help(form.currentPassword) }}
+                        {{ form_errors(form.currentPassword) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-group">
                         {{ form_label(form.password, 'Nouveau mot de passe', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                         {{ form_widget(form.password, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
                         {{ form_help(form.password) }}
