@@ -43,7 +43,7 @@ sudo chmod -R 775 var/ 2>/dev/null || true
 # 4. Installer les dépendances Composer (sans exécuter les scripts auto)
 # -------------------------------
 echo "Installation des dépendances..."
-$COMPOSER_BIN install --no-dev --optimize-autoloader --no-scripts
+$COMPOSER_BIN install --optimize-autoloader --no-scripts
 
 # -------------------------------
 # 5. Installer les assets (si Webpack Encore)
@@ -57,7 +57,7 @@ fi
 # 6. Cache et migrations
 # -------------------------------
 echo "Clear et warmup du cache..."
-sudo -u $HTTP_USER $PHP_BIN bin/console cache:clear --env=$ENV --no-debug
+sudo -u $HTTP_USER $PHP_BIN bin/console cache:clear --env=$ENV 
 sudo -u $HTTP_USER $PHP_BIN bin/console cache:warmup --env=$ENV
 
 echo "Exécution des migrations (si nécessaire)..."
