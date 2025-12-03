@@ -6,6 +6,10 @@
 <header class="page-header">
     <h1>Types de chants</h1>
     <div class="app-actions">
+        <button type="button" class="btn btn-outline-secondary btn-rounded btn-icon" data-bs-toggle="modal" data-bs-target="#reorderSongTypesModal" {% if songTypes is empty %}disabled{% endif %}>
+            <i class="bi bi-arrow-down-up"></i>
+            Modifier l'ordre
+        </button>
         <a href="{{ path('app_songtype_edit') }}" class="btn btn-primary btn-rounded btn-icon">
             <i class="bi bi-plus-lg"></i>
             Ajouter un type
@@ -51,4 +55,122 @@
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="reorderSongTypesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier l'ordre des types</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                {% if songTypes is empty %}
+                    <p class="text-muted mb-0">Ajoute d'abord des types pour les ordonner.</p>
+                {% else %}
+                    <p class="text-muted">Utilise les flèches pour réordonner les types de chants.</p>
+                    <ul class="list-group" id="songTypeReorderList">
+                        {% for type in songTypes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ type.id }}">
+                                <span>{{ type.name }}</span>
+                                <span class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-light reorder-up" title="Monter">
+                                        <i class="bi bi-arrow-up"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-light reorder-down" title="Descendre">
+                                        <i class="bi bi-arrow-down"></i>
+                                    </button>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveSongTypeOrderBtn" {% if songTypes is empty %}disabled{% endif %}>
+                    Sauvegarder l'ordre
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalEl = document.getElementById('reorderSongTypesModal');
+            const listEl = document.getElementById('songTypeReorderList');
+            const saveBtn = document.getElementById('saveSongTypeOrderBtn');
+            const reorderToken = "{{ csrf_token('songtype_reorder') }}";
+
+            if (!modalEl || !listEl || !saveBtn) {
+                return;
+            }
+
+            const moveItem = (item, direction) => {
+                if (!item) {
+                    return;
+                }
+                if (direction === 'up') {
+                    const prev = item.previousElementSibling;
+                    if (prev) {
+                        listEl.insertBefore(item, prev);
+                    }
+                } else if (direction === 'down') {
+                    const next = item.nextElementSibling;
+                    if (next) {
+                        listEl.insertBefore(item, next.nextElementSibling);
+                    }
+                }
+            };
+
+            listEl.addEventListener('click', function (event) {
+                const button = event.target.closest('.reorder-up, .reorder-down');
+                if (!button) {
+                    return;
+                }
+                const item = button.closest('li');
+                if (button.classList.contains('reorder-up')) {
+                    moveItem(item, 'up');
+                } else {
+                    moveItem(item, 'down');
+                }
+            });
+
+            saveBtn.addEventListener('click', async function () {
+                const ids = Array.from(listEl.children).map((li) => parseInt(li.dataset.id, 10)).filter(Boolean);
+                if (ids.length === 0) {
+                    return;
+                }
+
+                const originalLabel = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sauvegarde...';
+
+                try {
+                    const response = await fetch("{{ path('app_songtype_reorder') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order: ids, csrf: reorderToken })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Erreur inconnue');
+                    }
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.hide();
+                    window.location.reload();
+                } catch (error) {
+                    console.error(error);
+                    alert('Impossible de sauvegarder le nouvel ordre.');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalLabel;
+                }
+            });
+        });
+    </script>
 {% endblock %}
