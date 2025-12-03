@@ -31,10 +31,13 @@
         }
 
         .profile-picture-preview {
-            max-width: 200px;
+            width: 100%;
+            max-width: 220px;
+            height: auto;
             margin-top: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
         }
 
         .role-badges {
@@ -208,7 +211,7 @@
                 
                 {% if user.profilePictureName %}
                     <div class="mb-3">
-                        <img src="{{ vich_uploader_asset(user, 'profilePictureFile') }}" 
+                            <img src="{{ vich_uploader_asset(user, 'profilePictureFile') | imagine_filter('profile_large') }}" 
                              alt="Photo de profil de {{ user.fullName }}" 
                              class="img-fluid profile-picture-preview">
                     </div>

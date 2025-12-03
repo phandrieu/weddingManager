@@ -67,19 +67,16 @@
                 {% if songTypes is empty %}
                     <p class="text-muted mb-0">Ajoute d'abord des types pour les ordonner.</p>
                 {% else %}
-                    <p class="text-muted">Utilise les flèches pour réordonner les types de chants.</p>
+                    <p class="text-muted">Fais glisser les éléments pour réordonner la liste.</p>
                     <ul class="list-group" id="songTypeReorderList">
                         {% for type in songTypes %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ type.id }}">
-                                <span>{{ type.name }}</span>
-                                <span class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-light reorder-up" title="Monter">
-                                        <i class="bi bi-arrow-up"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-light reorder-down" title="Descendre">
-                                        <i class="bi bi-arrow-down"></i>
-                                    </button>
-                                </span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ type.id }}" draggable="true">
+                                <div class="d-flex align-items-center" style="gap:0.75rem;">
+                                    <span class="text-muted drag-handle" aria-hidden="true" style="cursor:grab;">
+                                        <i class="bi bi-grip-vertical"></i>
+                                    </span>
+                                    <span>{{ type.name }}</span>
+                                </div>
                             </li>
                         {% endfor %}
                     </ul>
@@ -109,33 +106,43 @@
                 return;
             }
 
-            const moveItem = (item, direction) => {
+            const getDragAfterElement = (container, y) => {
+                const items = [...container.querySelectorAll('li:not(.dragging)')];
+
+                return items.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset, element: child };
+                    }
+                    return closest;
+                }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+            };
+
+            listEl.addEventListener('dragstart', (event) => {
+                const item = event.target.closest('li');
                 if (!item) {
                     return;
                 }
-                if (direction === 'up') {
-                    const prev = item.previousElementSibling;
-                    if (prev) {
-                        listEl.insertBefore(item, prev);
-                    }
-                } else if (direction === 'down') {
-                    const next = item.nextElementSibling;
-                    if (next) {
-                        listEl.insertBefore(item, next.nextElementSibling);
-                    }
-                }
-            };
+                item.classList.add('dragging');
+                event.dataTransfer.effectAllowed = 'move';
+            });
 
-            listEl.addEventListener('click', function (event) {
-                const button = event.target.closest('.reorder-up, .reorder-down');
-                if (!button) {
+            listEl.addEventListener('dragend', (event) => {
+                event.target.classList.remove('dragging');
+            });
+
+            listEl.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                const dragging = listEl.querySelector('.dragging');
+                if (!dragging) {
                     return;
                 }
-                const item = button.closest('li');
-                if (button.classList.contains('reorder-up')) {
-                    moveItem(item, 'up');
+                const afterElement = getDragAfterElement(listEl, event.clientY);
+                if (!afterElement) {
+                    listEl.appendChild(dragging);
                 } else {
-                    moveItem(item, 'down');
+                    listEl.insertBefore(dragging, afterElement);
                 }
             });
 

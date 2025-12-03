@@ -33,7 +33,7 @@
                         <li class="dashboard-list__item">
                             <div>
                                 <div class="fw-semibold">{{ wedding.title }}</div>
-                                <div class="text-muted small">{{ wedding.date ?? 'Date à définir' }}</div>
+                                <div class="text-muted small">{{ wedding.date ?? 'Date à définir' }} {% if wedding.church %} - {{ wedding.church }}{%if wedding.addressPostalCodeAndCity %} - {{ wedding.addressPostalCodeAndCity }}{% endif %}{% endif %}</div>
                             </div>
                             <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm">Ouvrir</a>
                         </li>

@@ -24,8 +24,7 @@ class UserProfileType extends AbstractType
                 'delete_label' => 'Supprimer la photo',
                 'download_label' => 'Télécharger',
                 'download_uri' => false,
-                'image_uri' => true,
-                'imagine_pattern' => 'profile_thumb',
+                'image_uri' => false,
                 'attr' => [
                     'accept' => 'image/*'
                 ]
