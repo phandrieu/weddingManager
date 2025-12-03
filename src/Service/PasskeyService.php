@@ -66,8 +66,8 @@ class PasskeyService
 
         $authenticatorSelection = AuthenticatorSelectionCriteria::create(
             null, // authenticatorAttachment
-            AuthenticatorSelectionCriteria::RESIDENT_KEY_PREFERRED,
-            AuthenticatorSelectionCriteria::USER_VERIFICATION_PREFERRED,
+            AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_PREFERRED,
+            AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED,
             true // requireResidentKey
         );
 

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
@@ -20,7 +21,8 @@ class PasskeyController extends AbstractController
     public function __construct(
         private readonly PasskeyService $passkeyService,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly SerializerInterface $serializer
     ) {
     }
 
@@ -61,7 +63,8 @@ class PasskeyController extends AbstractController
 
             $options = $this->passkeyService->generateAuthenticationOptions($email);
 
-            return new JsonResponse($options->jsonSerialize());
+            $json = $this->serializer->serialize($options, 'json');
+            return new JsonResponse($json, Response::HTTP_OK, [], true);
         } catch (\Throwable $e) {
             $this->logger->error('Error generating authentication options', [
                 'error' => $e->getMessage()
@@ -120,14 +123,17 @@ class PasskeyController extends AbstractController
         try {
             $options = $this->passkeyService->generateRegistrationOptions($user);
 
-            return new JsonResponse($options->jsonSerialize());
+            $json = $this->serializer->serialize($options, 'json');
+            return new JsonResponse($json, Response::HTTP_OK, [], true);
         } catch (\Throwable $e) {
             $this->logger->error('Error generating registration options', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'user_id' => $user->getId()
             ]);
             return new JsonResponse([
-                'error' => 'Erreur lors de la génération des options d\'enregistrement'
+                'error' => 'Erreur lors de la génération des options d\'enregistrement',
+                'details' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
