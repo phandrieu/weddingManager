@@ -285,6 +285,20 @@
                     </div>
                 </div>
 
+                <!-- Bouton PassKey (affiché si disponible) -->
+                <div id="passkey-login-container" class="d-none mb-3">
+                    <button type="button" class="btn btn-outline-primary btn-lg w-100" id="passkey-login-btn">
+                        <i class="bi bi-fingerprint me-2"></i>
+                        <span id="passkey-btn-text">Se connecter avec PassKey</span>
+                        <span id="passkey-btn-loading" class="d-none">
+                            <span class="loading-spinner me-2"></span>Vérification...
+                        </span>
+                    </button>
+                    <div class="text-center mt-2">
+                        <span class="text-muted small">ou</span>
+                    </div>
+                </div>
+
                 <form method="post" id="password-form" class="d-flex flex-column gap-3">
                     <input type="hidden" name="_username" id="username-hidden">
                     
@@ -406,8 +420,10 @@
                 const data = await response.json();
 
                 if (data.exists) {
-                    // L'utilisateur existe, passer à l'étape 2
-                    showPasswordStep(email);
+                    // L'utilisateur existe, vérifier s'il a des passkeys
+                    const hasPasskeys = await checkUserPasskeys(email);
+                    // Passer à l'étape 2
+                    showPasswordStep(email, hasPasskeys);
                 } else {
                     // L'utilisateur n'existe pas, rediriger vers l'inscription
                     window.location.href = '{{ path('app_register') }}?email=' + encodeURIComponent(email);
@@ -423,7 +439,29 @@
             }
         });
 
-        function showPasswordStep(email) {
+        // Vérifier si l'utilisateur a des PassKeys
+        async function checkUserPasskeys(email) {
+            try {
+                const response = await fetch('{{ path('api_passkey_check') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const data = await response.json();
+                return data.hasPasskeys === true;
+            } catch (error) {
+                console.error('Erreur vérification PassKey:', error);
+                return false;
+            }
+        }
+
+        // Vérifier si WebAuthn est disponible
+        function isWebAuthnAvailable() {
+            return window.PublicKeyCredential !== undefined &&
+                   typeof window.PublicKeyCredential === 'function';
+        }
+
+        function showPasswordStep(email, hasPasskeys = false) {
             // Animer la sortie de l'étape email
             stepEmail.classList.add('fade-slide-exit');
             
@@ -442,12 +480,135 @@
                 // Mettre à jour les indicateurs d'étapes
                 stepDot1.classList.remove('active');
                 stepDot2.classList.add('active');
+
+                // Afficher le bouton PassKey si disponible
+                const passkeyContainer = document.getElementById('passkey-login-container');
+                if (hasPasskeys && isWebAuthnAvailable()) {
+                    passkeyContainer.classList.remove('d-none');
+                } else {
+                    passkeyContainer.classList.add('d-none');
+                }
                 
                 // Focus sur le champ password
                 setTimeout(() => {
                     document.getElementById('password').focus();
                 }, 100);
             }, 300);
+        }
+
+        // Authentification PassKey
+        const passkeyLoginBtn = document.getElementById('passkey-login-btn');
+        const passkeyBtnText = document.getElementById('passkey-btn-text');
+        const passkeyBtnLoading = document.getElementById('passkey-btn-loading');
+
+        if (passkeyLoginBtn) {
+            passkeyLoginBtn.addEventListener('click', async function() {
+                const email = usernameHidden.value;
+                
+                // Afficher le loading
+                passkeyLoginBtn.disabled = true;
+                passkeyBtnText.classList.add('d-none');
+                passkeyBtnLoading.classList.remove('d-none');
+
+                try {
+                    // 1. Obtenir les options d'authentification
+                    const optionsResponse = await fetch('{{ path('api_passkey_authenticate_options') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+
+                    if (!optionsResponse.ok) {
+                        throw new Error('Erreur lors de la récupération des options');
+                    }
+
+                    const options = await optionsResponse.json();
+
+                    // 2. Préparer les options pour WebAuthn
+                    const publicKeyCredentialRequestOptions = {
+                        challenge: base64UrlDecode(options.challenge),
+                        timeout: options.timeout,
+                        rpId: options.rpId,
+                        allowCredentials: (options.allowCredentials || []).map(cred => ({
+                            type: cred.type,
+                            id: base64UrlDecode(cred.id),
+                            transports: cred.transports
+                        })),
+                        userVerification: options.userVerification || 'preferred'
+                    };
+
+                    // 3. Appeler l'API WebAuthn
+                    const credential = await navigator.credentials.get({
+                        publicKey: publicKeyCredentialRequestOptions
+                    });
+
+                    // 4. Préparer la réponse pour le serveur
+                    const assertionResponse = {
+                        id: credential.id,
+                        rawId: base64UrlEncode(credential.rawId),
+                        type: credential.type,
+                        response: {
+                            clientDataJSON: base64UrlEncode(credential.response.clientDataJSON),
+                            authenticatorData: base64UrlEncode(credential.response.authenticatorData),
+                            signature: base64UrlEncode(credential.response.signature),
+                            userHandle: credential.response.userHandle ? base64UrlEncode(credential.response.userHandle) : null
+                        }
+                    };
+
+                    // 5. Vérifier sur le serveur
+                    const verifyResponse = await fetch('{{ path('api_passkey_authenticate_verify') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(assertionResponse)
+                    });
+
+                    const verifyData = await verifyResponse.json();
+
+                    if (verifyData.success) {
+                        // Rediriger vers la page d'accueil
+                        window.location.href = verifyData.redirect || '{{ path('home') }}';
+                    } else {
+                        throw new Error(verifyData.error || 'Échec de l\'authentification');
+                    }
+                } catch (error) {
+                    console.error('Erreur PassKey:', error);
+                    
+                    let errorMessage = 'Échec de l\'authentification PassKey';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage = 'Authentification annulée ou non autorisée';
+                    } else if (error.name === 'SecurityError') {
+                        errorMessage = 'Erreur de sécurité. Vérifiez que vous êtes sur une connexion sécurisée.';
+                    }
+                    
+                    alert(errorMessage);
+                } finally {
+                    // Restaurer le bouton
+                    passkeyLoginBtn.disabled = false;
+                    passkeyBtnText.classList.remove('d-none');
+                    passkeyBtnLoading.classList.add('d-none');
+                }
+            });
+        }
+
+        // Fonctions utilitaires pour base64url
+        function base64UrlDecode(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const padding = '='.repeat((4 - base64.length % 4) % 4);
+            const binary = atob(base64 + padding);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function base64UrlEncode(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
         }
 
         // Bouton pour revenir à l'étape email
@@ -457,6 +618,10 @@
             setTimeout(() => {
                 stepPassword.classList.add('d-none');
                 stepPassword.classList.remove('fade-slide-exit', 'fade-slide-enter');
+                
+                // Cacher le conteneur PassKey
+                const passkeyContainer = document.getElementById('passkey-login-container');
+                passkeyContainer.classList.add('d-none');
                 
                 // Réafficher l'étape email
                 stepEmail.classList.remove('d-none');

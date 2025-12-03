@@ -42,6 +42,8 @@ security:
         - { path: ^/register, roles : PUBLIC_ACCESS}
         - { path: ^/invitation, roles : PUBLIC_ACCESS }
         - { path: ^/api/check-email, roles: PUBLIC_ACCESS }
+        - { path: ^/api/passkey/check, roles: PUBLIC_ACCESS }
+        - { path: ^/api/passkey/authenticate, roles: PUBLIC_ACCESS }
 
         # --- ROLE_USER ---
         - { path: ^/logout, roles: ROLE_USER }
@@ -73,6 +75,11 @@ security:
 
         # --- Notifications (accessible à tous les utilisateurs connectés) ---
         - { path: ^/notification, roles: ROLE_USER }
+
+        # --- PassKey management (authenticated users) ---
+        - { path: ^/api/passkey/register, roles: ROLE_USER }
+        - { path: ^/api/passkey/list, roles: ROLE_USER }
+        - { path: ^/api/passkey/delete, roles: ROLE_USER }
 
         # --- ROLE_ADMIN (accès total) ---
         - { path: ^/mariages, roles: ROLE_ADMIN }

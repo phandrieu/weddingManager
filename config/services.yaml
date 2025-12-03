@@ -38,3 +38,14 @@ services:
             $level: !php/const Monolog\Level::Error
         tags:
             - { name: monolog.logger, channel: ms_teams }
+
+    # PassKey Service
+    App\Service\PasskeyService:
+        arguments:
+            $rpId: '%env(WEBAUTHN_RP_ID)%'
+            $rpName: '%env(WEBAUTHN_RP_NAME)%'
+
+    # WebAuthn User Repository
+    App\Repository\WebAuthnUserRepository:
+        arguments:
+            $userRepository: '@App\Repository\UserRepository'
