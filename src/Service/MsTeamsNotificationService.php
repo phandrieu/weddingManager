@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class MsTeamsNotificationService
 {
@@ -25,6 +26,10 @@ class MsTeamsNotificationService
         array $context = [],
         ?\Throwable $exception = null
     ): void {
+        if (!$this->shouldSendNotification($exception, $context)) {
+            return;
+        }
+
         if (!$this->webhookUrl) {
             $this->logger->warning('MS Teams webhook URL is not configured');
             return;
@@ -44,6 +49,18 @@ class MsTeamsNotificationService
                 'original_message' => $message,
             ]);
         }
+    }
+
+    /**
+     * Filtre l'envoi vers Teams suivant le type d'exception et le contexte
+     */
+    private function shouldSendNotification(?\Throwable $exception, array $context): bool
+    {
+        if ($exception instanceof NotFoundHttpException) {
+            return !empty($context['user_id']);
+        }
+
+        return true;
     }
 
     /**
