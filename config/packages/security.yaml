@@ -66,13 +66,12 @@ security:
         - { path: ^/song/approve, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
 
         # --- ROLE_MUSICIAN ---
-        - { path: ^/songs, roles: ROLE_MUSICIAN }
-        - { path: ^/celebration-period, roles: ROLE_MUSICIAN }
-        - { path: ^/mariages/edit, roles: ROLE_MUSICIAN }
-        - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
-        - { path: ^/mariages, roles: ROLE_MUSICIAN }
-        - { path: ^/repertoire, roles: ROLE_MUSICIAN }
-        - { path: ^/comments, roles: ROLE_MUSICIAN}
+        - { path: ^/songs, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/mariages/edit, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/mariages/view, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/mariages, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/repertoire, roles: [ROLE_MUSICIAN, ROLE_PARISH] }
+        - { path: ^/comments, roles: [ROLE_MUSICIAN, ROLE_PARISH]}
 
         # --- Notifications (accessible à tous les utilisateurs connectés) ---
         - { path: ^/notification, roles: ROLE_USER }
