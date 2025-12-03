@@ -11,6 +11,8 @@
 {% block body %}
 	{% set songSelectionsByType = songSelectionsByType|default({}) %}
 	{% set commentCountsByType = commentCountsByType|default({}) %}
+	{% set availableSongsByType = availableSongsByType|default({}) %}
+	{% set availableSongsByTypeInMusiciansRepo = availableSongsByTypeInMusiciansRepo|default({}) %}
 	<div class="container-xl py-5">
 		<div class="wizard-layout wizard-layout--full" id="weddingWizardView" data-default-step="0">
 			<section class="wizard-panel">
