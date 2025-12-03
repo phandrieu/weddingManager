@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ period.id ? 'Modifier' : 'Ajouter' }} une période{% endblock %}
+
+{% block body %}
+<header class="page-header">
+    <h1>{{ period.id ? 'Modifier' : 'Ajouter' }} une période liturgique</h1>
+    <div class="app-actions">
+        <button type="submit" form="celebrationPeriodForm" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-check-lg"></i>
+            Enregistrer
+        </button>
+        <a href="{{ path('app_celebration_period_index') }}" class="btn btn-outline-secondary btn-rounded">Annuler</a>
+    </div>
+</header>
+
+{{ form_start(form, {'attr': {'id': 'celebrationPeriodForm'}}) }}
+
+<div class="app-card">
+    <div class="row g-4">
+        <div class="col-12 col-md-6">
+            <div class="form-group">
+                {{ form_label(form.fullName, 'Nom complet', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.fullName, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Ex: Temps de l\'Avent'}}) }}
+                {{ form_errors(form.fullName) }}
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="form-group">
+                {{ form_label(form.periodOrder, 'Ordre d\'affichage', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.periodOrder, {'attr': {'class': 'form-control', 'min': 0}}) }}
+                {{ form_errors(form.periodOrder) }}
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="form-group">
+                {{ form_label(form.color, 'Couleur (optionnel)', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.color, {'attr': {'class': 'form-control form-control-color'}}) }}
+                {{ form_errors(form.color) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_end(form) }}
+{% endblock %}

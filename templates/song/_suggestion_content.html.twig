@@ -1,0 +1,297 @@
+{#
+  Shared suggestion form content used across the wedding edit modal
+  and the dedicated suggestion page. When a Symfony form is provided,
+  the widgets are rendered to keep validation and CSRF wiring; otherwise
+  we fall back to plain inputs (used inside the wedding wizard modal).
+#}
+{% set useForm = form is defined and form is not null %}
+{% set typesOptions = songTypes|default([]) %}
+
+<div class="alert alert-info mb-3">
+    <i class="bi bi-info-circle"></i>
+    Cette bibliothèque vit grâce aux apports de la communauté : musiciens, paroisses et futurs mariés.
+    Chacun peut proposer ses versions de chants, partitions ou textes pour enrichir la préparation des célébrations.
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <section>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Type d'élément <span class="text-danger">*</span></label>
+                <div class="d-flex gap-4">
+                    {% if useForm and form.song is defined %}
+                        {% for option in form.song %}
+                            {% set isSongValue = option.vars.value == 1 %}
+                            {% set optionId = isSongValue ? 'suggestion-type-song' : 'suggestion-type-text' %}
+                            <div class="form-check">
+                                {{ form_widget(option, {
+                                    attr: {
+                                        class: (option.vars.attr.class|default('') ~ ' form-check-input suggestion-type-radio')|trim,
+                                        id: optionId
+                                    }
+                                }) }}
+                                <label class="form-check-label" for="{{ optionId }}">
+                                    {{ option.vars.label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="form-check">
+                            <input class="form-check-input suggestion-type-radio" type="radio" name="suggestion-song-type" id="suggestion-type-text" value="0">
+                            <label class="form-check-label" for="suggestion-type-text">
+                                Lecture et Prière
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input suggestion-type-radio" type="radio" name="suggestion-song-type" id="suggestion-type-song" value="1" checked>
+                            <label class="form-check-label" for="suggestion-type-song">
+                                Chant
+                            </label>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if useForm and form.song is defined %}
+                {% do form.song.setRendered %}
+            {% endif %}
+
+            <div class="mb-3">
+                {% if useForm and form.name is defined %}
+                    {{ form_label(form.name, 'Titre', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    <span class="text-danger">*</span>
+                    {{ form_widget(form.name, {
+                        attr: {
+                            class: (form.name.vars.attr.class|default('') ~ ' form-control form-control-lg')|trim,
+                            id: 'suggestion-name',
+                            placeholder: 'Écrire le titre ici'
+                        }
+                    }) }}
+                    {{ form_errors(form.name) }}
+                {% else %}
+                    <label for="suggestion-name" class="form-label fw-bold">Titre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control form-control-lg" id="suggestion-name" required placeholder="Écrire le titre ici">
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {% if useForm and form.types is defined %}
+                    {{ form_label(form.types, 'Catégorie(s)', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.types, {
+                        attr: {
+                            class: (form.types.vars.attr.class|default('') ~ ' form-select')|trim,
+                            id: 'suggestion-types',
+                            'data-placeholder': form.types.vars.attr['data-placeholder']|default('Rechercher et sélectionner')
+                        }
+                    }) }}
+                    {{ form_errors(form.types) }}
+                {% else %}
+                    <label for="suggestion-types" class="form-label fw-bold">Catégorie(s)</label>
+                    <select class="form-select" id="suggestion-types" multiple data-placeholder="Rechercher et sélectionner">
+                        {% for type in typesOptions %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {% if useForm and form.lyrics is defined %}
+                    {{ form_label(form.lyrics, 'Paroles', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.lyrics, {
+                        attr: {
+                            class: (form.lyrics.vars.attr.class|default('') ~ ' form-control')|trim,
+                            id: 'suggestion-lyrics',
+                            rows: 12,
+                            placeholder: 'Écrire le texte ici (Pour les chants, mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)'
+                        }
+                    }) }}
+                    {{ form_errors(form.lyrics) }}
+                {% else %}
+                    <label for="suggestion-lyrics" class="form-label fw-bold">Paroles</label>
+                    <textarea class="form-control" id="suggestion-lyrics" rows="12" placeholder="Écrire le texte ici (Mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)"></textarea>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section id="suggestion-song-specific">
+            {% if useForm and form.previewUrl is defined %}
+                <div class="mb-4">
+                    <h6 class="fw-bold border-bottom pb-2">Prévisualisation</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.previewUrl, 'URL de prévisualisation (lien Youtube)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.previewUrl, {
+                            attr: {
+                                class: (form.previewUrl.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-preview-url',
+                                placeholder: 'Coller l\'URL Youtube ici'
+                            }
+                        }) }}
+                        {{ form_errors(form.previewUrl) }}
+                    </div>
+                    <div id="suggestion-youtube-preview" class="d-none">
+                        <div class="ratio ratio-16x9">
+                            <iframe id="suggestion-youtube-iframe" src="about:blank" title="Prévisualisation vidéo" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="mb-4">
+                    <h6 class="fw-bold border-bottom pb-2">Prévisualisation</h6>
+                    <div class="mb-3">
+                        <label for="suggestion-preview-url" class="form-label">URL de prévisualisation (lien Youtube)</label>
+                        <input type="url" class="form-control" id="suggestion-preview-url" placeholder="Coller l'URL Youtube ici">
+                    </div>
+                    <div id="suggestion-youtube-preview" class="d-none">
+                        <div class="ratio ratio-16x9">
+                            <iframe id="suggestion-youtube-iframe" src="about:blank" title="Prévisualisation vidéo" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2">Crédits</h6>
+                {% if useForm and form.musicAuthorName is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.musicAuthorName, 'Compositeur(s)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.musicAuthorName, {
+                            attr: {
+                                class: (form.musicAuthorName.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-music-author',
+                                placeholder: 'Écrire le(s) Nom(s) et Prénom(s) ici'
+                            }
+                        }) }}
+                        {{ form_errors(form.musicAuthorName) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-music-author" class="form-label">Compositeur(s)</label>
+                        <input type="text" class="form-control" id="suggestion-music-author" placeholder="Écrire le(s) Nom(s) et Prénom(s) ici">
+                    </div>
+                {% endif %}
+
+                {% if useForm and form.lyricsAuthorName is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.lyricsAuthorName, 'Écriture des paroles', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.lyricsAuthorName, {
+                            attr: {
+                                class: (form.lyricsAuthorName.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-lyrics-author',
+                                placeholder: 'Écrire le(s) Nom(s) et Prénom(s)'
+                            }
+                        }) }}
+                        {{ form_errors(form.lyricsAuthorName) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-lyrics-author" class="form-label">Écriture des paroles</label>
+                        <input type="text" class="form-control" id="suggestion-lyrics-author" placeholder="Écrire le(s) Nom(s) et Prénom(s)">
+                    </div>
+                {% endif %}
+
+                {% if useForm and form.interpretName is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.interpretName, 'Interprète(s)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.interpretName, {
+                            attr: {
+                                class: (form.interpretName.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-interpret',
+                                placeholder: 'Écrire le(s) Nom(s) et Prénom(s)'
+                            }
+                        }) }}
+                        {{ form_errors(form.interpretName) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-interpret" class="form-label">Interprète(s)</label>
+                        <input type="text" class="form-control" id="suggestion-interpret" placeholder="Écrire le(s) Nom(s) et Prénom(s)">
+                    </div>
+                {% endif %}
+
+                {% if useForm and form.editorName is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.editorName, 'Éditeur(s)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.editorName, {
+                            attr: {
+                                class: (form.editorName.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-editor',
+                                placeholder: 'Écrire le(s) Nom(s) ou organisme'
+                            }
+                        }) }}
+                        {{ form_errors(form.editorName) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-editor" class="form-label">Éditeur(s)</label>
+                        <input type="text" class="form-control" id="suggestion-editor" placeholder="Écrire le(s) Nom(s) ou organisme">
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if useForm and form.partitionPDFFile is defined %}
+                <div class="mb-4">
+                    <h6 class="fw-bold border-bottom pb-2">Partition</h6>
+                    <div class="mb-3">
+                        {{ form_label(form.partitionPDFFile, 'Partition PDF', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.partitionPDFFile, {
+                            attr: {
+                                class: (form.partitionPDFFile.vars.attr.class|default('') ~ ' form-control')|trim
+                            }
+                        }) }}
+                        {{ form_errors(form.partitionPDFFile) }}
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <section id="suggestion-text-specific" class="d-none">
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2">Informations sur le texte</h6>
+                {% if useForm and form.textRef is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.textRef, 'Référence du texte (ex : Jean 3:16)', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.textRef, {
+                            attr: {
+                                class: (form.textRef.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-text-ref',
+                                placeholder: 'Référence du texte'
+                            }
+                        }) }}
+                        {{ form_errors(form.textRef) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-text-ref" class="form-label">Référence du texte (ex : Jean 3:16)</label>
+                        <input type="text" class="form-control" id="suggestion-text-ref" placeholder="Référence du texte">
+                    </div>
+                {% endif %}
+
+                {% if useForm and form.textTranslationName is defined %}
+                    <div class="mb-3">
+                        {{ form_label(form.textTranslationName, 'Nom de la traduction', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.textTranslationName, {
+                            attr: {
+                                class: (form.textTranslationName.vars.attr.class|default('') ~ ' form-control')|trim,
+                                id: 'suggestion-text-translation',
+                                placeholder: 'Nom de la traduction'
+                            }
+                        }) }}
+                        {{ form_errors(form.textTranslationName) }}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label for="suggestion-text-translation" class="form-label">Nom de la traduction</label>
+                        <input type="text" class="form-control" id="suggestion-text-translation" placeholder="Nom de la traduction">
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="alert alert-secondary small mt-3 mb-0">
+    <strong>Note légale :</strong> Ce site agit en tant qu'hébergeur (LCEN, 21 juin 2004).
+    Les publications restent sous la responsabilité de chaque contributeur.
+</div>

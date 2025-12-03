@@ -1,0 +1,179 @@
+<script>
+    (function() {
+        const attachHandlers = () => {
+            const songSpecific = document.getElementById('suggestion-song-specific');
+            const textSpecific = document.getElementById('suggestion-text-specific');
+
+            if (!songSpecific && !textSpecific) {
+                return;
+            }
+
+            const alreadyInitialised = songSpecific?.dataset.suggestionUiInit === '1'
+                || textSpecific?.dataset.suggestionUiInit === '1';
+            if (alreadyInitialised) {
+                return;
+            }
+            if (songSpecific) {
+                songSpecific.dataset.suggestionUiInit = '1';
+            }
+            if (textSpecific) {
+                textSpecific.dataset.suggestionUiInit = '1';
+            }
+
+            const state = {
+                songSpecific,
+                textSpecific,
+                previewInput: document.getElementById('suggestion-preview-url'),
+                previewWrapper: document.getElementById('suggestion-youtube-preview'),
+                iframe: document.getElementById('suggestion-youtube-iframe'),
+                typesSelectElement: document.getElementById('suggestion-types'),
+                tomSelect: null,
+            };
+
+            const ensureTomSelect = () => {
+                if (!state.typesSelectElement || !window.TomSelect) {
+                    return;
+                }
+                if (state.typesSelectElement.tomselect) {
+                    state.tomSelect = state.typesSelectElement.tomselect;
+                    return;
+                }
+                state.tomSelect = new TomSelect(state.typesSelectElement, {
+                    plugins: ['remove_button'],
+                    placeholder: state.typesSelectElement.dataset.placeholder || 'Rechercher et sélectionner',
+                    create: false,
+                    maxOptions: 500,
+                    closeAfterSelect: false,
+                });
+            };
+
+            ensureTomSelect();
+
+            const toggleSections = (isSong) => {
+                if (state.songSpecific) {
+                    state.songSpecific.classList.toggle('d-none', !isSong);
+                }
+                if (state.textSpecific) {
+                    state.textSpecific.classList.toggle('d-none', isSong);
+                }
+            };
+
+            const syncSections = () => {
+                const songRadio = document.getElementById('suggestion-type-song');
+                const isSong = songRadio ? songRadio.checked : true;
+                toggleSections(isSong);
+            };
+
+            document.querySelectorAll('.suggestion-type-radio').forEach((radio) => {
+                radio.addEventListener('change', syncSections);
+            });
+            syncSections();
+
+            const extractYouTubeVideoId = (url) => {
+                if (!url) {
+                    return '';
+                }
+                const patterns = [
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+                    /youtube\.com\/embed\/([^&\s]+)/,
+                ];
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+                if (url.includes('v=')) {
+                    return url.split('v=')[1].split('&')[0];
+                }
+                return '';
+            };
+
+            const updatePreview = () => {
+                if (!state.previewInput || !state.previewWrapper) {
+                    return;
+                }
+                const url = state.previewInput.value.trim();
+                const videoId = extractYouTubeVideoId(url);
+                if (videoId && state.iframe) {
+                    state.iframe.src = `https://www.youtube.com/embed/${videoId}`;
+                    state.previewWrapper.classList.remove('d-none');
+                } else {
+                    state.previewWrapper.classList.add('d-none');
+                    if (state.iframe) {
+                        state.iframe.src = 'about:blank';
+                    }
+                }
+            };
+
+            if (state.previewInput) {
+                state.previewInput.addEventListener('input', updatePreview);
+                updatePreview();
+            }
+
+            state.clearTypeSelection = () => {
+                if (state.tomSelect) {
+                    state.tomSelect.clear();
+                    return;
+                }
+                if (state.typesSelectElement) {
+                    Array.from(state.typesSelectElement.options).forEach((opt) => {
+                        opt.selected = false;
+                    });
+                }
+            };
+
+            state.setTypeSelection = (values) => {
+                const normalized = Array.isArray(values) ? values : [values].filter(Boolean);
+                if (state.tomSelect) {
+                    state.tomSelect.clear();
+                    normalized.forEach((value) => state.tomSelect.addItem(value));
+                    return;
+                }
+                if (state.typesSelectElement) {
+                    const valueSet = new Set(normalized.map(String));
+                    Array.from(state.typesSelectElement.options).forEach((opt) => {
+                        opt.selected = valueSet.has(opt.value);
+                    });
+                }
+            };
+
+            state.resetPreview = () => {
+                if (state.previewInput) {
+                    state.previewInput.value = '';
+                }
+                if (state.previewWrapper) {
+                    state.previewWrapper.classList.add('d-none');
+                }
+                if (state.iframe) {
+                    state.iframe.src = 'about:blank';
+                }
+            };
+
+            state.toggleSections = toggleSections;
+            state.updatePreview = updatePreview;
+
+            window.suggestionForm = state;
+        };
+
+        const init = () => {
+            if (document.readyState === 'loading') {
+                return;
+            }
+            attachHandlers();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init, { once: true });
+        } else {
+            init();
+        }
+
+        if ('addEventListener' in document) {
+            document.addEventListener('turbo:load', () => {
+                // Turbo remonte parfois DOM et relance les scripts
+                attachHandlers();
+            });
+        }
+    })();
+</script>

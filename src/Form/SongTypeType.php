@@ -18,7 +18,7 @@ class SongTypeType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nom du type de chant',
+                'label' => 'Nom du type d\'élément',
                 'attr' => ['class' => 'form-control']
             ])
             ->add('messe', ChoiceType::class, [

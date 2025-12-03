@@ -421,7 +421,7 @@
 										{% set group = groups[groupKey] %}
 										{% set sanitizedLabel = group.label ? group.label|replace({' ': '_'}) : 'Autres' %}
 										<div class="deroule-group">
-											<div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}"{% endif %}>{{ group.label }}</div> 
+											<div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}; background-color: {{ group.color }};"{% endif %}>{{ group.label }}</div> 
 											<div class="deroule-group-body">
 												{% for type in group.types %}
 													{% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
@@ -431,7 +431,7 @@
 													{% set validatedParish = selectionState.validatedByParish ?? false %}
 													<div class="deroule-row">
 														<div>
-															<span class="deroule-type-badge">{{ type.name }}</span>
+															<span class="deroule-type-badge" {% if group.color %}style="background-color: {{ group.color }}; color: #FFFFFF;"{% endif %}>{{ type.name }}</span>
 														</div>
 														<div class="d-flex gap-2 align-items-center">
 															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">

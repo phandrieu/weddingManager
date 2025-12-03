@@ -19,10 +19,10 @@
                 <span>Ajouter un élément</span>
             </a>
         {% elseif 'ROLE_USER' in app.user.roles %}
-            <a href="{{ path('app_song_suggest') }}" class="btn btn-outline-secondary btn-rounded">
+            <button type="button" class="btn btn-outline-secondary btn-rounded js-open-suggestion-modal">
                 <i class="bi bi-lightbulb"></i>
                 Suggérer un élément
-            </a>
+            </button>
         {% endif %}
     </div>
 </header>
@@ -266,6 +266,24 @@
     </div>
 {% endif %}
 
+<div class="modal fade" id="suggestSongModal" tabindex="-1" aria-labelledby="suggestSongModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suggestSongModalLabel">Ajouter un nouvel élément</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'song/_suggestion_content.html.twig' with { songTypes: songTypes|default([]) } %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirm-song-suggestion">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {# Notice légale #}
 <div class="container-fluid mt-5" role="note" aria-label="Information légale">
     <div class="mx-auto" style="max-width:1100px; margin-bottom:2rem;">
@@ -280,4 +298,144 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ include('song/_suggestion_ui_script.html.twig') }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalEl = document.getElementById('suggestSongModal');
+            const confirmBtn = document.getElementById('confirm-song-suggestion');
+
+            if (!modalEl || typeof bootstrap === 'undefined' || !confirmBtn) {
+                return;
+            }
+
+            const modal = new bootstrap.Modal(modalEl);
+            const openButtons = document.querySelectorAll('.js-open-suggestion-modal');
+            const getState = () => window.suggestionForm || {};
+
+            const resetFields = () => {
+                const songRadio = document.getElementById('suggestion-type-song');
+                const textRadio = document.getElementById('suggestion-type-text');
+                if (songRadio) {
+                    songRadio.checked = true;
+                }
+                if (textRadio) {
+                    textRadio.checked = false;
+                }
+
+                const ids = [
+                    'suggestion-name',
+                    'suggestion-lyrics',
+                    'suggestion-preview-url',
+                    'suggestion-music-author',
+                    'suggestion-lyrics-author',
+                    'suggestion-interpret',
+                    'suggestion-editor',
+                    'suggestion-text-ref',
+                    'suggestion-text-translation'
+                ];
+                ids.forEach((id) => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.value = '';
+                    }
+                });
+
+                const state = getState();
+                if (state.clearTypeSelection) {
+                    state.clearTypeSelection();
+                }
+                if (state.resetPreview) {
+                    state.resetPreview();
+                }
+                if (state.toggleSections) {
+                    state.toggleSections(true);
+                }
+            };
+
+            openButtons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    resetFields();
+                    modal.show();
+                    setTimeout(() => document.getElementById('suggestion-name')?.focus(), 250);
+                });
+            });
+
+            confirmBtn.addEventListener('click', async function () {
+                const songName = document.getElementById('suggestion-name')?.value.trim();
+                if (!songName) {
+                    alert('Veuillez saisir un titre.');
+                    return;
+                }
+
+                const isSong = document.getElementById('suggestion-type-song')?.checked ?? true;
+                const state = getState();
+                let selectedTypes = [];
+                if (state.tomSelect) {
+                    selectedTypes = state.tomSelect.getValue();
+                    if (typeof selectedTypes === 'string') {
+                        selectedTypes = selectedTypes ? [selectedTypes] : [];
+                    }
+                } else if (state.typesSelectElement) {
+                    selectedTypes = Array.from(state.typesSelectElement.selectedOptions).map((opt) => opt.value);
+                }
+
+                const originalLabel = confirmBtn.innerHTML;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+                try {
+                    const toValue = (id) => document.getElementById(id)?.value.trim() || '';
+                    const formData = new FormData();
+                    formData.append('name', songName);
+                    formData.append('isSong', isSong ? '1' : '0');
+                    formData.append('lyrics', toValue('suggestion-lyrics'));
+                    formData.append('previewUrl', toValue('suggestion-preview-url'));
+                    formData.append('lyricsAuthorName', toValue('suggestion-lyrics-author'));
+                    formData.append('musicAuthorName', toValue('suggestion-music-author'));
+                    formData.append('interpretName', toValue('suggestion-interpret'));
+                    formData.append('editorName', toValue('suggestion-editor'));
+                    formData.append('textRef', toValue('suggestion-text-ref'));
+                    formData.append('textTranslationName', toValue('suggestion-text-translation'));
+                    selectedTypes.forEach((typeId) => formData.append('typeIds[]', typeId));
+
+                    const response = await fetch('{{ path("song_suggestion_create") }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const contentType = response.headers.get('content-type') || '';
+                    let data;
+
+                    if (contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        const rawResponse = await response.text();
+                        console.error('Unexpected response payload', rawResponse);
+                        throw new Error('Réponse inattendue du serveur. Merci de réessayer plus tard.');
+                    }
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Erreur lors de la création.');
+                    }
+
+                    modal.hide();
+                    resetFields();
+                    alert('Suggestion enregistrée ! Elle sera examinée prochainement.');
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message || 'Impossible de créer la suggestion pour le moment.');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalLabel;
+                }
+            });
+        });
+    </script>
 {% endblock %}

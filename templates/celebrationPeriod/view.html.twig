@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Période : {{ period.fullName }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">{{ period.fullName }}</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_celebration_period_edit', {'id': period.id}) }}" class="btn btn-primary btn-rounded">
+                <i class="bi bi-pencil"></i>
+                Modifier
+            </a>
+            <a href="{{ path('app_celebration_period_index') }}" class="btn btn-outline-secondary btn-rounded">Retour</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="app-card h-100">
+                <h2 class="h5">Informations</h2>
+                <dl class="row mb-0 small mt-3">
+                    <dt class="col-sm-5 text-muted">Nom complet</dt>
+                    <dd class="col-sm-7">{{ period.fullName }}</dd>
+                    <dt class="col-sm-5 text-muted">Ordre</dt>
+                    <dd class="col-sm-7">{{ period.periodOrder is not null ? period.periodOrder : '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Couleur liturgique</dt>
+                    <dd class="col-sm-7">
+                        {% if period.color %}
+                            <span class="badge" style="background-color: {{ period.color }}; color:#111;">{{ period.color }}</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="app-card h-100">
+                <h2 class="h5">Chants associés</h2>
+                {% if period.songTypes|length > 0 %}
+                    <ul class="list-group list-group-flush mt-3">
+                        {% for type in period.songTypes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ type.name }}</span>
+                                <a href="{{ path('app_songtype_view', {'id': type.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    Voir le type
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mt-3 mb-0">Aucun type de chant associé à cette période.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

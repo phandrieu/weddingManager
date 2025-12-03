@@ -16,6 +16,25 @@ class CelebrationPeriodRepository extends ServiceEntityRepository
         parent::__construct($registry, CelebrationPeriod::class);
     }
 
+    public function save(CelebrationPeriod $entity, bool $flush = false): void
+    {
+        $em = $this->getEntityManager();
+        $em->persist($entity);
+
+        if ($flush) {
+            $em->flush();
+        }
+    }
+
+    public function remove(CelebrationPeriod $entity, bool $flush = false): void
+    {
+        $this->_em->remove($entity);
+
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
     //    /**
     //     * @return CelebrationPeriod[] Returns an array of CelebrationPeriod objects
     //     */

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Song;
 use App\Form\SongFormType;
 use App\Repository\SongRepository;
+use App\Repository\SongTypeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 class SongController extends AbstractController
 {
     #[Route('/', name: 'app_song_index')]
-    public function index(Request $request, SongRepository $repo): Response
+    public function index(Request $request, SongRepository $repo, SongTypeRepository $songTypeRepo): Response
     {
         // Filtres
         $search = trim((string) $request->query->get('q', ''));
@@ -40,7 +41,6 @@ class SongController extends AbstractController
         } elseif ($kindFilter === 'textes') {
             $qb->andWhere('s.song = false');
         }
-
         // Filtre par type de chant
         if ($typeFilter !== '') {
             $qb->andWhere('t.name = :typeName')
@@ -93,6 +93,9 @@ class SongController extends AbstractController
         }
         sort($allTypes);
 
+        $includeMesseTypes = true;
+        $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
+
         return $this->render('song/index.html.twig', [
             'songs' => $songs,
             'suggestions' => $suggestions,
@@ -100,6 +103,7 @@ class SongController extends AbstractController
             'search' => $search,
             'typeFilter' => $typeFilter,
             'kindFilter' => $kindFilter,
+            'songTypes' => $songTypes,
             'pagination' => [
                 'page' => $page,
                 'pages' => $pages,
@@ -115,10 +119,8 @@ class SongController extends AbstractController
             'song' => $song,
         ]);
     }
-    #[Route('/song/approve/{id}', name: 'app_song_approve_suggestion', methods: ['POST'])]
-#[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
-#[Route('/song/{id}/approve', name: 'app_song_approve_suggestion', methods: ['POST'])]
-public function approveSong(Song $song, Request $request, EntityManagerInterface $em): Response
+    #[Route('/approve/{id}', name: 'app_song_approve_suggestion', methods: ['POST'])]
+    public function approveSong(Song $song, Request $request, EntityManagerInterface $em): Response
     {
         if (!$this->isCsrfTokenValid('approve_song_' . $song->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF invalide.');
@@ -132,15 +134,15 @@ public function approveSong(Song $song, Request $request, EntityManagerInterface
         return $this->redirectToRoute('app_song_index');
     }
     #[Route('/delete/{id}', name: 'app_song_delete', methods: ['POST'])]
-public function delete(Request $request, Song $song, SongRepository $repo): Response
-{
-    if ($this->isCsrfTokenValid('delete'.$song->getId(), $request->request->get('_token'))) {
-        $repo->remove($song, true);
-        $this->addFlash('success', 'Chant supprimé avec succès.');
-    }
+    public function delete(Request $request, Song $song, SongRepository $repo): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $song->getId(), $request->request->get('_token'))) {
+            $repo->remove($song, true);
+            $this->addFlash('success', 'Chant supprimé avec succès.');
+        }
 
-    return $this->redirectToRoute('app_song_index');
-}
+        return $this->redirectToRoute('app_song_index');
+    }
 
     #[Route('/edit/{id?0}', name: 'app_song_edit')]
     public function edit(Request $request, Song $song = null, SongRepository $repo): Response

@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Périodes de célébration{% endblock %}
+
+{% block body %}
+<header class="page-header">
+    <h1>Périodes de célébration</h1>
+    <div class="app-actions">
+        <a href="{{ path('app_celebration_period_edit') }}" class="btn btn-primary btn-rounded btn-icon">
+            <i class="bi bi-plus-lg"></i>
+            Ajouter une période
+        </a>
+    </div>
+</header>
+
+<div class="app-table-wrapper">
+    <table class="app-table">
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Ordre</th>
+                <th>Couleur</th>
+                <th style="text-align:center;">Chants associés</th>
+                <th style="text-align:center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for period in periods %}
+                <tr>
+                    <td>{{ period.fullName }}</td>
+                    <td>{{ period.periodOrder is not null ? period.periodOrder : '—' }}</td>
+                    <td>
+                        {% if period.color %}
+                            <span class="badge d-inline-flex align-items-center gap-2" style="background-color: {{ period.color }}; color: #111;">
+                                <span class="rounded-circle" style="display:inline-block;width:0.8rem;height:0.8rem;background:#fff;mix-blend-mode:screen;"></span>
+                                {{ period.color }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center;">{{ period.songTypes|length }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center align-items-center" style="gap: 0.5rem;">
+                            <a href="{{ path('app_celebration_period_view', {'id': period.id}) }}" class="btn btn-sm btn-light" title="Voir">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ path('app_celebration_period_edit', {'id': period.id}) }}" class="btn btn-sm btn-light" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_celebration_period_delete', {'id': period.id}) }}" style="display:inline-block;"
+                                  onsubmit="return confirm('Supprimer cette période ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ period.id) }}">
+                                <button class="btn btn-sm btn-danger" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Aucune période définie.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

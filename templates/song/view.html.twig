@@ -1,55 +1,171 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détail du chant{% endblock %}
+{% block title %}{{ song.name }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1>Détails du chant {{ song.name }}</h1>
+{% set isSong = song.song %}
+{% set previewValue = song.previewUrl ?: '' %}
+{% set previewVideoId = '' %}
+{% if previewValue %}
+	{% if 'v=' in previewValue %}
+		{% set previewVideoId = previewValue|split('v=')|last|split('&')|first %}
+	{% elseif previewValue matches '~youtu\\.be/(.+)$~' %}
+		{% set previewVideoId = previewValue|replace({'https://youtu.be/':'','http://youtu.be/':''}) %}
+	{% endif %}
+{% endif %}
+{% set previewInitialSrc = previewVideoId ? 'https://www.youtube.com/embed/' ~ previewVideoId : (previewValue ?: 'about:blank') %}
 
-    <ul class="list-group">
-        <li class="list-group-item"><strong>Titre :</strong> {{ song.name }}</li>
-        <li class="list-group-item">
-    <strong>Catégories :</strong>
-    {% if song.types is not empty %}
-        {% for t in song.types %}
-            <span class="badge bg-primary me-1">{{ t.name }}</span>
-        {% endfor %}
-    {% else %}
-        Aucune
-    {% endif %}
-</li>
-        <li class="list-group-item">
-            <strong>Preview :</strong>
-            {% if song.previewUrl %}
-                {% set youtubeId = song.previewUrl 
-                    |replace({'https://youtu.be/':'', 
-                              'https://www.youtube.com/watch?v=':'', 
-                              '&feature=youtu.be':'', 
-                              '&si=':''}) 
-                %}
-                <div class="ratio ratio-16x9">
-                    <iframe src="https://www.youtube.com/embed/{{ youtubeId }}" 
-                            title="{{ song.name }}" allowfullscreen></iframe>
-                </div>
-            {% else %}
-                Aucune
-            {% endif %}
-        </li>
-        <li class="list-group-item"><strong>Paroles :</strong><br>{{ song.lyrics|nl2br }}</li>
-        <li class="list-group-item">
-            <strong>Partition PDF :</strong>
-            {% if song.partitionPDFName %}
-                <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank">
-                    Télécharger le PDF
-                </a>
-            {% else %}
-                Aucune
-            {% endif %}
-        </li>
-        <li class="list-group-item"><strong>Ajouté par :</strong> {{ song.addedBy ? song.addedBy.fullName : '—' }}</li>
-        <li class="list-group-item"><strong>Dernière modification par :</strong> {{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}</li>
-    </ul>
+<section class="song-edit song-view" aria-labelledby="song-view-title">
+	<header class="song-edit__header">
+		<div>
+			<h1 id="song-view-title" class="mb-0">{{ isSong ? 'Chant' : 'Lecture / Prière' }} - {{ song.name }}</h1>
+		</div>
+		<div class="song-edit__actions" role="group" aria-label="Actions">
+			{% if is_granted('ROLE_MUSICIAN') or is_granted('ROLE_ADMIN') %}
+				<a href="{{ path('app_song_edit', {'id': song.id}) }}" class="btn btn-primary">
+					Modifier
+				</a>
+			{% endif %}
+			<a href="{{ app.request.headers.get('referer') ?: path('app_song_index') }}" class="btn btn-outline-secondary">
+				Retour
+			</a>
+		</div>
+	</header>
 
-    <a href="{{ path('app_song_index') }}" class="btn btn-secondary mt-3">Retour</a>
-</div>
+	<div class="song-edit__intro" role="note" aria-label="Présentation de la bibliothèque">
+		<p class="mb-0">
+			Cette bibliothèque vit grâce à la communauté : musiciens, paroisses et futurs mariés. Chaque fiche publique reste sous la responsabilité de son auteur.
+		</p>
+	</div>
+
+	<div class="song-edit__layout">
+		<div class="song-edit__main">
+			<section class="song-edit__panel" aria-label="Informations principales">
+				<div class="song-edit__type mb-4">
+					<span class="badge {{ isSong ? 'text-bg-primary' : 'text-bg-info' }} song-edit__type-label">
+						{{ isSong ? 'Chant' : 'Lecture / Prière' }}
+					</span>
+				</div>
+
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Titre</label>
+					<div class="song-view__field-value">{{ song.name }}</div>
+				</div>
+
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Catégorie(s)</label>
+					{% if song.types is not empty %}
+						<div class="d-flex flex-wrap gap-2">
+							{% for type in song.types %}
+								<span class="badge text-bg-secondary">{{ type.name }}</span>
+							{% endfor %}
+						</div>
+					{% else %}
+						<p class="text-muted mb-0">Aucune catégorie renseignée.</p>
+					{% endif %}
+				</div>
+
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Paroles / Texte</label>
+					{% if song.lyrics %}
+						<div class="song-edit__textarea song-view__field-value" style="white-space: pre-wrap;">{{ song.lyrics }}</div>
+					{% else %}
+						<p class="text-muted mb-0">Aucun texte fourni pour le moment.</p>
+					{% endif %}
+				</div>
+
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Statut</label>
+					<span class="badge {{ song.suggestion ? 'text-bg-warning' : 'text-bg-success' }}">
+						{{ song.suggestion ? 'Suggestion en attente' : 'Disponible dans la bibliothèque' }}
+					</span>
+				</div>
+			</section>
+		</div>
+
+		<aside class="song-edit__sidebar" aria-label="Informations complémentaires">
+			<section id="song-specific" class="song-edit__panel {{ isSong ? '' : 'd-none' }}" aria-live="polite">
+				<div class="song-edit__panel-group">
+					<h2 class="song-edit__section-title">Prévisualisation</h2>
+					{% if previewValue %}
+						<div class="song-edit__field-group">
+							<p class="text-muted small mb-2">Lien original :</p>
+							<a href="{{ previewValue }}" target="_blank" rel="noopener" class="link-primary">{{ previewValue }}</a>
+						</div>
+					{% endif %}
+					<div id="youtube-preview" class="song-edit__video {{ previewVideoId or previewValue ? '' : 'd-none' }}">
+						<div class="ratio ratio-16x9">
+							<iframe src="{{ previewInitialSrc }}" title="Prévisualisation vidéo" allowfullscreen></iframe>
+						</div>
+					</div>
+				</div>
+
+				<div class="song-edit__panel-group">
+					<h2 class="song-edit__section-title">Ressources</h2>
+					{% if song.partitionPDFName %}
+						<div class="song-edit__field-group">
+							<p class="mb-1">Partition actuelle :</p>
+							<a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+								Télécharger {{ song.partitionPDFName }}
+							</a>
+						</div>
+					{% else %}
+						<p class="text-muted mb-0">Aucune partition disponible.</p>
+					{% endif %}
+				</div>
+
+				<div class="song-edit__panel-group">
+					<h2 class="song-edit__section-title">Crédits</h2>
+					<dl class="row mb-0">
+						<dt class="col-sm-5 small text-muted">Compositeur(s)</dt>
+						<dd class="col-sm-7">{{ song.musicAuthorName ?: '—' }}</dd>
+						<dt class="col-sm-5 small text-muted">Auteur des paroles</dt>
+						<dd class="col-sm-7">{{ song.lyricsAuthorName ?: '—' }}</dd>
+						<dt class="col-sm-5 small text-muted">Interprète(s)</dt>
+						<dd class="col-sm-7">{{ song.interpretName ?: '—' }}</dd>
+						<dt class="col-sm-5 small text-muted">Éditeur(s)</dt>
+						<dd class="col-sm-7">{{ song.editorName ?: '—' }}</dd>
+					</dl>
+				</div>
+			</section>
+
+			<section id="text-specific" class="song-edit__panel {{ isSong ? 'd-none' : '' }}" aria-live="polite">
+				<h2 class="song-edit__section-title">Informations sur le texte</h2>
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Référence</label>
+					<div class="song-view__field-value">{{ song.textRef ?: '—' }}</div>
+				</div>
+				<div class="song-edit__field-group">
+					<label class="form-label song-edit__field-label">Traduction</label>
+					<div class="song-view__field-value">{{ song.textTranslationName ?: '—' }}</div>
+				</div>
+			</section>
+
+			<section class="song-edit__panel">
+				<h2 class="song-edit__section-title">Historique</h2>
+				<dl class="row mb-0 small">
+					<dt class="col-sm-5 text-muted">Ajouté par</dt>
+					<dd class="col-sm-7">
+						{{ song.addedBy ? song.addedBy.fullName : '—' }}
+						{% if song.addedAt %}<br><span class="text-muted">{{ song.addedAt|date('d/m/Y H:i') }}</span>{% endif %}
+					</dd>
+					<dt class="col-sm-5 text-muted">Dernière modification</dt>
+					<dd class="col-sm-7">
+						{{ song.lastEditBy ? song.lastEditBy.fullName : '—' }}
+						{% if song.lastEditAt %}<br><span class="text-muted">{{ song.lastEditAt|date('d/m/Y H:i') }}</span>{% endif %}
+					</dd>
+				</dl>
+			</section>
+		</aside>
+	</div>
+
+	<div class="song-edit__legal" role="note" aria-label="Information légale">
+		<p class="mb-0">
+			Ce site agit en tant qu’hébergeur (LCEN, 21 juin 2004). Les publications restent sous la responsabilité de chaque contributeur.
+			Toute personne peut notifier un contenu illicite via
+			<a href="mailto:contact@notremessedemariage.fr">contact@notremessedemariage.fr</a>.
+			Les contenus signalés sont retirés promptement.
+		</p>
+	</div>
+</section>
 {% endblock %}

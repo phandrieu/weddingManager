@@ -655,7 +655,10 @@
                         </li>
                         {% if 'ROLE_ADMIN' in app.user.roles %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ path('app_songtype_index') }}">Types de chants</a>
+                                <a class="nav-link" href="{{ path('app_songtype_index') }}">Types d'éléments</a>
+                            </li>
+                            <li> class="nav-item">
+                                <a class="nav-link" href="{{ path('app_celebration_period_index') }}">Périodes de Célébration</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('app_user_index') }}">Utilisateurs</a>

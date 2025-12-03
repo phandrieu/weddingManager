@@ -12,13 +12,15 @@
         {% set previewVideoId = previewValue|replace({'https://youtu.be/':'','http://youtu.be/':''}) %}
     {% endif %}
 {% endif %}
+
 {% set previewInitialSrc = previewVideoId ? 'https://www.youtube.com/embed/' ~ previewVideoId : (previewValue ?: 'about:blank') %}
+        <h1 id="song-edit-title">
+            {{ song.id ? 'Modifier l\'élément' : 'Ajouter un nouvel élément' }}
+        </h1>
 
 <section class="song-edit" aria-labelledby="song-edit-title">
     <header class="song-edit__header">
-        <h1 id="song-edit-title" class="song-edit__title">
-            {{ song.id ? 'Modifier le chant' : 'Ajouter un nouvel élément' }}
-        </h1>
+
         <div class="song-edit__actions" role="group" aria-label="Actions rapides">
             <button type="submit" form="songForm" class="btn btn-primary song-edit__submit">
                 Enregistrer
@@ -45,7 +47,7 @@
                 </div>
 
                 <div class="song-edit__field-group">
-                    {{ form_label(form.name, 'Titre du chant', {'label_attr': {'class':'form-label song-edit__field-label'}}) }}
+                    {{ form_label(form.name, 'Titre', {'label_attr': {'class':'form-label song-edit__field-label'}}) }}
                     {{ form_widget(form.name, {'attr': {'class':'form-control form-control-lg', 'placeholder':'Écrire le titre ici'}}) }}
                     {{ form_errors(form.name) }}
                 </div>
@@ -67,7 +69,7 @@
                         'attr': {
                             'class':'form-control song-edit__textarea',
                             'rows': 16,
-                            'placeholder':'Écrire le texte ici (Mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)'
+                            'placeholder':'Écrire le texte ici (Pour les chants, mettre « R. » devant les refrains et « 1. » puis suites de nombres devant les couplets)'
                         }
                     }) }}
                     {{ form_errors(form.lyrics) }}

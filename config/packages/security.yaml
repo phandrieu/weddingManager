@@ -49,6 +49,7 @@ security:
         - { path: ^/users/profile, roles: ROLE_USER }
         - { path: ^/songs/$, roles: ROLE_USER }
         - { path: ^/songs/view, roles: ROLE_USER }
+        - { path: ^/songs/suggestion, roles: ROLE_USER }
         - { path: ^/mariages, roles: ROLE_USER }
         - { path: ^/mariages/view, roles: ROLE_USER }
         - { path: ^/mariages/edit, roles: ROLE_USER }
@@ -63,6 +64,7 @@ security:
 
         # --- ROLE_MUSICIAN ---
         - { path: ^/songs, roles: ROLE_MUSICIAN }
+        - { path: ^/celebration-period, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/edit, roles: ROLE_MUSICIAN }
         - { path: ^/mariages/view, roles: ROLE_MUSICIAN }
         - { path: ^/mariages, roles: ROLE_MUSICIAN }
