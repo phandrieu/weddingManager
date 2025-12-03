@@ -473,7 +473,7 @@
                                                         {% if songsForType|length > 0 %}
                                                             {% for song in songsForType %}
                                                                 <option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
-                                                                    {% if song.suggestion %}✨ {% else if song in availableSongsByTypeInMusiciansRepo%}🎹 {% else %}⚠️ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
+                                                                    {% if song.suggestion %}✨ {% elseif song in availableSongsByTypeInMusiciansRepo%}🎹 {% else %}⚠️ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
                                                                 </option>
                                                             {% endfor %}
                                                         {% else %}
