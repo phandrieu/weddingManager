@@ -45,6 +45,8 @@ security:
         - { path: ^/api/passkey/check, roles: PUBLIC_ACCESS }
         - { path: ^/api/passkey/authenticate/options, roles: PUBLIC_ACCESS }
         - { path: ^/api/passkey/authenticate/verify, roles: PUBLIC_ACCESS }
+        - { path: ^/media/cache, roles: PUBLIC_ACCESS }
+        - { path: ^/uploads, roles: PUBLIC_ACCESS }
 
         # --- ROLE_USER ---
         - { path: ^/logout, roles: ROLE_USER }
