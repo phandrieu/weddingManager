@@ -73,6 +73,11 @@
                 Suivi<br><small>Finances &amp; archive</small>
             </button>
             {% endif %}
+            {% if isMusician|default(false) %}
+            <button type="button" class="wizard-stepper__item" data-step="5">
+                Notes<br><small>Espace musicien</small>
+            </button>
+            {% endif %}
         </div>
 
         <div class="wizard-steps">
@@ -651,6 +656,169 @@
                             {{ form_errors(form.archive) }}
                         </div>
                         <p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Step 5: Notes Musiciens (réservé aux musiciens) #}
+            {% if isMusician|default(false) %}
+            <div class="wizard-step" data-step="5">
+                <div class="form-grid form-grid--single">
+                    <div class="form-card">
+                        <div class="form-card__title">
+                            <span>Espace Musicien</span>
+                            <h3 class="mb-0">Notes pour les musiciens</h3>
+                        </div>
+                        <p class="text-muted mb-3">
+                            Cet espace vous permet de rédiger des notes en <strong>Markdown</strong> pour préparer la célébration. 
+                            Ces notes sont visibles uniquement par les musiciens associés à ce mariage.
+                        </p>
+                        
+                        <div class="markdown-container">
+                            <div class="markdown-tabs">
+                                <button type="button" class="markdown-tab active" data-tab="edit">
+                                    <i class="bi bi-pencil me-1"></i> Éditer
+                                </button>
+                                <button type="button" class="markdown-tab" data-tab="preview">
+                                    <i class="bi bi-eye me-1"></i> Aperçu
+                                </button>
+                            </div>
+                            
+                            <div class="markdown-toolbar" id="markdownToolbar">
+                                <div class="markdown-toolbar__group">
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="h1" title="Titre 1 (Ctrl+1)">
+                                        <span class="markdown-toolbar__icon">H1</span>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="h2" title="Titre 2 (Ctrl+2)">
+                                        <span class="markdown-toolbar__icon">H2</span>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="h3" title="Titre 3 (Ctrl+3)">
+                                        <span class="markdown-toolbar__icon">H3</span>
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar__separator"></div>
+                                <div class="markdown-toolbar__group">
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="bold" title="Gras (Ctrl+B)">
+                                        <i class="bi bi-type-bold"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="italic" title="Italique (Ctrl+I)">
+                                        <i class="bi bi-type-italic"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="strikethrough" title="Barré">
+                                        <i class="bi bi-type-strikethrough"></i>
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar__separator"></div>
+                                <div class="markdown-toolbar__group">
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="ul" title="Liste à puces">
+                                        <i class="bi bi-list-ul"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="ol" title="Liste numérotée">
+                                        <i class="bi bi-list-ol"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="checklist" title="Checklist">
+                                        <i class="bi bi-check2-square"></i>
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar__separator"></div>
+                                <div class="markdown-toolbar__group">
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="quote" title="Citation">
+                                        <i class="bi bi-quote"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="code" title="Code en ligne">
+                                        <i class="bi bi-code"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="codeblock" title="Bloc de code">
+                                        <i class="bi bi-code-square"></i>
+                                    </button>
+                                </div>
+                                <div class="markdown-toolbar__separator"></div>
+                                <div class="markdown-toolbar__group">
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="link" title="Lien">
+                                        <i class="bi bi-link-45deg"></i>
+                                    </button>
+                                    <button type="button" class="markdown-toolbar__btn" data-md-action="hr" title="Ligne horizontale">
+                                        <i class="bi bi-hr"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="markdown-content">
+                                <div class="markdown-edit-pane active" data-pane="edit">
+                                    {{ form_widget(form.notesMusiciens, {
+                                        'attr': {
+                                            'class': 'form-control markdown-editor',
+                                            'rows': 15,
+                                            'placeholder': '# Titre de section
+
+## Sous-titre
+
+Texte normal avec **gras** et *italique*.
+
+- Élément de liste 1
+- Élément de liste 2
+
+### Exemple de checklist
+- [ ] Tâche à faire
+- [x] Tâche terminée
+
+> Citation ou note importante
+
+```
+Bloc de code ou partition
+```'
+                                        }
+                                    }) }}
+                                    {{ form_errors(form.notesMusiciens) }}
+                                </div>
+                                <div class="markdown-preview-pane" data-pane="preview">
+                                    <div class="markdown-rendered" id="markdownPreview">
+                                        <p class="text-muted fst-italic">L'aperçu apparaîtra ici...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="markdown-help mt-3">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#markdownHelp">
+                                    <i class="bi bi-question-circle me-1"></i> Aide Markdown
+                                </button>
+                                <div class="collapse mt-2" id="markdownHelp">
+                                    <div class="card card-body small">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <strong>Formatage de texte</strong>
+                                                <ul class="mb-2">
+                                                    <li><code>**texte**</code> → <strong>gras</strong></li>
+                                                    <li><code>*texte*</code> → <em>italique</em></li>
+                                                    <li><code>~~texte~~</code> → <del>barré</del></li>
+                                                </ul>
+                                                <strong>Titres</strong>
+                                                <ul class="mb-0">
+                                                    <li><code># Titre 1</code></li>
+                                                    <li><code>## Titre 2</code></li>
+                                                    <li><code>### Titre 3</code></li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Listes</strong>
+                                                <ul class="mb-2">
+                                                    <li><code>- item</code> → liste à puces</li>
+                                                    <li><code>1. item</code> → liste numérotée</li>
+                                                    <li><code>- [ ] tâche</code> → checkbox</li>
+                                                </ul>
+                                                <strong>Autres</strong>
+                                                <ul class="mb-0">
+                                                    <li><code>&gt; texte</code> → citation</li>
+                                                    <li><code>```code```</code> → bloc de code</li>
+                                                    <li><code>[lien](url)</code> → lien</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1790,6 +1958,231 @@
                     alert('Erreur : ' + error.message);
                     confirmBtn.disabled = false;
                     confirmBtn.innerHTML = 'Enregistrer';
+                }
+            });
+        });
+
+        // Gestion de l'éditeur Markdown pour les notes musiciens
+        document.addEventListener('DOMContentLoaded', function() {
+            const markdownContainer = document.querySelector('.markdown-container');
+            if (!markdownContainer) return;
+
+            const tabs = markdownContainer.querySelectorAll('.markdown-tab');
+            const editPane = markdownContainer.querySelector('[data-pane="edit"]');
+            const previewPane = markdownContainer.querySelector('[data-pane="preview"]');
+            const editor = markdownContainer.querySelector('.markdown-editor');
+            const previewEl = document.getElementById('markdownPreview');
+            const toolbar = document.getElementById('markdownToolbar');
+
+            if (!tabs.length || !editPane || !previewPane || !editor || !previewEl) return;
+
+            // Simple parseur Markdown
+            function parseMarkdown(text) {
+                if (!text || !text.trim()) {
+                    return '<p class="text-muted fst-italic">L\'aperçu apparaîtra ici...</p>';
+                }
+
+                let html = text
+                    // Échapper les caractères HTML dangereux
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    // Blocs de code (avant autres transformations)
+                    .replace(/```([\s\S]*?)```/g, '<pre class="markdown-code-block"><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code class="markdown-inline-code">$1</code>')
+                    // Titres
+                    .replace(/^### (.+)$/gm, '<h5 class="markdown-h3">$1</h5>')
+                    .replace(/^## (.+)$/gm, '<h4 class="markdown-h2">$1</h4>')
+                    .replace(/^# (.+)$/gm, '<h3 class="markdown-h1">$1</h3>')
+                    // Gras et italique
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                    .replace(/~~([^~]+)~~/g, '<del>$1</del>')
+                    // Citations
+                    .replace(/^&gt; (.+)$/gm, '<blockquote class="markdown-quote">$1</blockquote>')
+                    // Checkboxes
+                    .replace(/^- \[x\] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" checked disabled> <span>$1</span></div>')
+                    .replace(/^- \[ \] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" disabled> <span>$1</span></div>')
+                    // Listes à puces
+                    .replace(/^- (.+)$/gm, '<li class="markdown-li">$1</li>')
+                    .replace(/^(\d+)\. (.+)$/gm, '<li class="markdown-li-num" value="$1">$2</li>')
+                    // Liens
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+                    // Lignes horizontales
+                    .replace(/^---$/gm, '<hr class="markdown-hr">')
+                    // Paragraphes (lignes vides)
+                    .replace(/\n\n/g, '</p><p class="markdown-p">')
+                    // Sauts de ligne simples
+                    .replace(/\n/g, '<br>');
+
+                // Envelopper les listes
+                html = html.replace(/(<li class="markdown-li">.*?<\/li>(\s*<br>)?)+/g, function(match) {
+                    return '<ul class="markdown-ul">' + match.replace(/<br>/g, '') + '</ul>';
+                });
+                html = html.replace(/(<li class="markdown-li-num".*?<\/li>(\s*<br>)?)+/g, function(match) {
+                    return '<ol class="markdown-ol">' + match.replace(/<br>/g, '') + '</ol>';
+                });
+
+                return '<div class="markdown-body"><p class="markdown-p">' + html + '</p></div>';
+            }
+
+            // Fonction d'insertion dans l'éditeur
+            function insertText(before, after = '', defaultText = '') {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const selectedText = editor.value.substring(start, end) || defaultText;
+                const newText = before + selectedText + after;
+                
+                editor.setRangeText(newText, start, end, 'end');
+                
+                // Positionner le curseur
+                if (!editor.value.substring(start, end) && defaultText) {
+                    editor.selectionStart = start + before.length;
+                    editor.selectionEnd = start + before.length + defaultText.length;
+                }
+                
+                editor.focus();
+            }
+
+            // Fonction d'insertion en début de ligne
+            function insertAtLineStart(prefix) {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const value = editor.value;
+                
+                // Trouver le début de la ligne
+                let lineStart = start;
+                while (lineStart > 0 && value[lineStart - 1] !== '\n') {
+                    lineStart--;
+                }
+                
+                // Insérer le préfixe
+                editor.setRangeText(prefix, lineStart, lineStart, 'end');
+                editor.selectionStart = editor.selectionEnd = start + prefix.length;
+                editor.focus();
+            }
+
+            // Gestion de la barre d'outils
+            if (toolbar) {
+                toolbar.addEventListener('click', function(e) {
+                    const btn = e.target.closest('[data-md-action]');
+                    if (!btn) return;
+
+                    e.preventDefault();
+                    const action = btn.dataset.mdAction;
+
+                    switch(action) {
+                        case 'h1':
+                            insertAtLineStart('# ');
+                            break;
+                        case 'h2':
+                            insertAtLineStart('## ');
+                            break;
+                        case 'h3':
+                            insertAtLineStart('### ');
+                            break;
+                        case 'bold':
+                            insertText('**', '**', 'texte en gras');
+                            break;
+                        case 'italic':
+                            insertText('*', '*', 'texte en italique');
+                            break;
+                        case 'strikethrough':
+                            insertText('~~', '~~', 'texte barré');
+                            break;
+                        case 'ul':
+                            insertAtLineStart('- ');
+                            break;
+                        case 'ol':
+                            insertAtLineStart('1. ');
+                            break;
+                        case 'checklist':
+                            insertAtLineStart('- [ ] ');
+                            break;
+                        case 'quote':
+                            insertAtLineStart('> ');
+                            break;
+                        case 'code':
+                            insertText('`', '`', 'code');
+                            break;
+                        case 'codeblock':
+                            insertText('\n```\n', '\n```\n', 'bloc de code');
+                            break;
+                        case 'link':
+                            const url = prompt('URL du lien :');
+                            if (url) {
+                                insertText('[', '](' + url + ')', 'texte du lien');
+                            }
+                            break;
+                        case 'hr':
+                            insertText('\n---\n', '', '');
+                            break;
+                    }
+                });
+            }
+
+            // Gestion des onglets
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.dataset.tab;
+
+                    // Mettre à jour les classes des onglets
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Afficher le bon panneau
+                    if (targetTab === 'edit') {
+                        editPane.classList.add('active');
+                        previewPane.classList.remove('active');
+                        if (toolbar) toolbar.style.display = '';
+                    } else {
+                        editPane.classList.remove('active');
+                        previewPane.classList.add('active');
+                        if (toolbar) toolbar.style.display = 'none';
+                        // Mettre à jour l'aperçu
+                        previewEl.innerHTML = parseMarkdown(editor.value);
+                    }
+                });
+            });
+
+            // Mettre à jour l'aperçu en temps réel quand on tape
+            editor.addEventListener('input', function() {
+                if (previewPane.classList.contains('active')) {
+                    previewEl.innerHTML = parseMarkdown(this.value);
+                }
+            });
+
+            // Raccourcis clavier pour l'éditeur
+            editor.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    const selectedText = this.value.substring(start, end);
+
+                    switch(e.key) {
+                        case 'b':
+                        case 'B':
+                            e.preventDefault();
+                            insertText('**', '**', 'texte en gras');
+                            break;
+                        case 'i':
+                        case 'I':
+                            e.preventDefault();
+                            insertText('*', '*', 'texte en italique');
+                            break;
+                        case '1':
+                            e.preventDefault();
+                            insertAtLineStart('# ');
+                            break;
+                        case '2':
+                            e.preventDefault();
+                            insertAtLineStart('## ');
+                            break;
+                        case '3':
+                            e.preventDefault();
+                            insertAtLineStart('### ');
+                            break;
+                    }
                 }
             });
         });

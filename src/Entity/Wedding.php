@@ -165,6 +165,9 @@ class Wedding
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $paymentOption = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $notesMusiciens = null;
+
     public function __construct()
     {
         $this->songs = new ArrayCollection();
@@ -787,6 +790,18 @@ class Wedding
     public function setMarieeAddressPostalCodeAndCity(?string $marieeAddressPostalCodeAndCity): static
     {
         $this->marieeAddressPostalCodeAndCity = $marieeAddressPostalCodeAndCity;
+
+        return $this;
+    }
+
+    public function getNotesMusiciens(): ?string
+    {
+        return $this->notesMusiciens;
+    }
+
+    public function setNotesMusiciens(?string $notesMusiciens): static
+    {
+        $this->notesMusiciens = $notesMusiciens;
 
         return $this;
     }

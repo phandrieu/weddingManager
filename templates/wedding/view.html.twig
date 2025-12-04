@@ -74,6 +74,11 @@
 						Suivi<br><small>Finances &amp; archive</small>
 					</button>
 					{% endif %}
+					{% if isMusician|default(false) %}
+					<button type="button" class="wizard-stepper__item" data-step="5">
+						Notes<br><small>Espace musicien</small>
+					</button>
+					{% endif %}
 				</div>
 
 				<div class="wizard-steps">
@@ -604,6 +609,49 @@
 						</div>
 					</div>
 					{% endif %}
+
+					{# Step 5: Notes Musiciens (réservé aux musiciens) #}
+					{% if isMusician|default(false) %}
+					<div class="wizard-step" data-step="5">
+						<div class="form-grid form-grid--single">
+							<div class="form-card">
+								<div class="form-card__title">
+									<span>Espace Musicien</span>
+									<h3 class="mb-0">Notes pour les musiciens</h3>
+								</div>
+								<p class="text-muted mb-3">
+									Ces notes sont partagées entre les musiciens associés à ce mariage.
+								</p>
+								
+								<div class="markdown-preview-view">
+									<div class="markdown-rendered" id="markdownPreviewView">
+										{% if wedding.notesMusiciens %}
+											{# Le contenu sera rendu en JavaScript #}
+											<div class="markdown-source d-none">{{ wedding.notesMusiciens }}</div>
+											<p class="text-muted fst-italic">Chargement de l'aperçu...</p>
+										{% else %}
+											<p class="text-muted fst-italic">
+												<i class="bi bi-info-circle me-2"></i>
+												Aucune note n'a été ajoutée pour le moment.
+												<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="ms-2">
+													<i class="bi bi-pencil me-1"></i>Ajouter des notes
+												</a>
+											</p>
+										{% endif %}
+									</div>
+								</div>
+								
+								{% if wedding.notesMusiciens %}
+								<div class="mt-3">
+									<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="btn btn-outline-primary btn-sm">
+										<i class="bi bi-pencil me-1"></i>Modifier les notes
+									</a>
+								</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					{% endif %}
 				</div>
 
 				<div class="wizard-actions">
@@ -888,6 +936,70 @@
 					});
 				});
 			}
+		});
+
+		// Rendu Markdown pour les notes musiciens (vue)
+		document.addEventListener('DOMContentLoaded', function() {
+			const previewContainer = document.getElementById('markdownPreviewView');
+			if (!previewContainer) return;
+
+			const sourceEl = previewContainer.querySelector('.markdown-source');
+			if (!sourceEl) return;
+
+			const sourceText = sourceEl.textContent;
+			
+			// Simple parseur Markdown (même logique que dans edit)
+			function parseMarkdown(text) {
+				if (!text || !text.trim()) {
+					return '<p class="text-muted fst-italic">Aucune note n\'a été ajoutée.</p>';
+				}
+
+				let html = text
+					// Échapper les caractères HTML dangereux
+					.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;')
+					// Blocs de code (avant autres transformations)
+					.replace(/```([\s\S]*?)```/g, '<pre class="markdown-code-block"><code>$1</code></pre>')
+					.replace(/`([^`]+)`/g, '<code class="markdown-inline-code">$1</code>')
+					// Titres
+					.replace(/^### (.+)$/gm, '<h5 class="markdown-h3">$1</h5>')
+					.replace(/^## (.+)$/gm, '<h4 class="markdown-h2">$1</h4>')
+					.replace(/^# (.+)$/gm, '<h3 class="markdown-h1">$1</h3>')
+					// Gras et italique
+					.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+					.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+					.replace(/~~([^~]+)~~/g, '<del>$1</del>')
+					// Citations
+					.replace(/^&gt; (.+)$/gm, '<blockquote class="markdown-quote">$1</blockquote>')
+					// Checkboxes
+					.replace(/^- \[x\] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" checked disabled> <span>$1</span></div>')
+					.replace(/^- \[ \] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" disabled> <span>$1</span></div>')
+					// Listes à puces
+					.replace(/^- (.+)$/gm, '<li class="markdown-li">$1</li>')
+					.replace(/^(\d+)\. (.+)$/gm, '<li class="markdown-li-num" value="$1">$2</li>')
+					// Liens
+					.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+					// Lignes horizontales
+					.replace(/^---$/gm, '<hr class="markdown-hr">')
+					// Paragraphes (lignes vides)
+					.replace(/\n\n/g, '</p><p class="markdown-p">')
+					// Sauts de ligne simples
+					.replace(/\n/g, '<br>');
+
+				// Envelopper les listes
+				html = html.replace(/(<li class="markdown-li">.*?<\/li>(\s*<br>)?)+/g, function(match) {
+					return '<ul class="markdown-ul">' + match.replace(/<br>/g, '') + '</ul>';
+				});
+				html = html.replace(/(<li class="markdown-li-num".*?<\/li>(\s*<br>)?)+/g, function(match) {
+					return '<ol class="markdown-ol">' + match.replace(/<br>/g, '') + '</ol>';
+				});
+
+				return '<div class="markdown-body"><p class="markdown-p">' + html + '</p></div>';
+			}
+
+			// Remplacer le contenu par le rendu Markdown
+			previewContainer.innerHTML = parseMarkdown(sourceText);
 		});
 	</script>
 {% endblock %}

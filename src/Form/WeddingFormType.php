@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -187,6 +188,15 @@ class WeddingFormType extends AbstractType
                 'label' => 'Code postal & ville',
                 'required' => false,
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('notesMusiciens', TextareaType::class, [
+                'label' => 'Notes pour les musiciens',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control markdown-editor',
+                    'rows' => 10,
+                    'placeholder' => 'Ajoutez ici des notes en Markdown pour les musiciens (supports **gras**, *italique*, listes, etc.)'
+                ]
             ])
         ;
 

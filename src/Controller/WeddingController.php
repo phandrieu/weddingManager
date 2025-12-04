@@ -359,8 +359,19 @@ class WeddingController extends AbstractController
             $isCouple = $isMarie || $isMariee;
         }
 
+        // Vérifier si l'utilisateur actuel est un musicien du mariage
+        $isMusician = false;
+        if ($currentUser instanceof User) {
+            foreach ($wedding->getMusicians() as $musician) {
+                if ($musician->getId() === $currentUser->getId()) {
+                    $isMusician = true;
+                    break;
+                }
+            }
+        }
+
         // Récupérer le step depuis l'URL
-        $maxStepIndex = 4;
+        $maxStepIndex = $isMusician ? 5 : ($isCouple ? 3 : 4);
         $initialStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
 
         $commentCountsByType = $this->countCommentsByType($wedding);
@@ -377,6 +388,7 @@ class WeddingController extends AbstractController
             'availableSongsByType' => $availableSongsByType,
             'availableSongsByTypeInMusiciansRepo' => $availableSongsByTypeInMusiciansRepo,
             'isCouple' => $isCouple,
+            'isMusician' => $isMusician,
             'initialStep' => $initialStep,
             'songSelectionsByType' => $songSelectionsByType,
             'commentCountsByType' => $commentCountsByType,
@@ -842,9 +854,6 @@ class WeddingController extends AbstractController
         $commentCountsByType = $this->countCommentsByType($wedding);
         $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
 
-        $maxStepIndex = 4;
-        $requestedStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
-
         // Vérifier si l'utilisateur actuel est un marié/mariée
         $isCouple = false;
         if ($currentUser instanceof User && !$isNewWedding) {
@@ -852,6 +861,20 @@ class WeddingController extends AbstractController
             $isMariee = $wedding->getMariee() && $wedding->getMariee()->getId() === $currentUser->getId();
             $isCouple = $isMarie || $isMariee;
         }
+
+        // Vérifier si l'utilisateur actuel est un musicien du mariage
+        $isMusician = false;
+        if ($currentUser instanceof User && !$isNewWedding) {
+            foreach ($wedding->getMusicians() as $musician) {
+                if ($musician->getId() === $currentUser->getId()) {
+                    $isMusician = true;
+                    break;
+                }
+            }
+        }
+
+        $maxStepIndex = $isMusician ? 5 : ($isCouple ? 3 : 4);
+        $requestedStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
 
         return $this->render('wedding/edit.html.twig', [
             'form' => $form->createView(),
@@ -866,6 +889,7 @@ class WeddingController extends AbstractController
             'shouldOpenRoleModal' => $shouldOpenRoleModal ?? false,
             'shouldPromptPaymentOption' => $isNewWedding && !$isAdmin && $isParishOrMusician,
             'isCouple' => $isCouple,
+            'isMusician' => $isMusician,
             'initialWizardStep' => $requestedStep,
             'selectedPaymentOption' => $selectedPaymentOption ?? '',
             'paymentOptionError' => $paymentOptionError ?? null,

@@ -1944,3 +1944,291 @@
 		}
 	}
 }
+
+/* ========================================
+   MARKDOWN EDITOR (NOTES MUSICIENS)
+======================================== */
+
+.markdown-container {
+    border: 1px solid rgba(101, 45, 144, 0.2);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.markdown-tabs {
+    display: flex;
+    background: rgba(101, 45, 144, 0.05);
+    border-bottom: 1px solid rgba(101, 45, 144, 0.15);
+}
+
+.markdown-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--color-last);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.markdown-tab:hover {
+    background: rgba(101, 45, 144, 0.08);
+}
+
+.markdown-tab.active {
+    background: #fff;
+    color: var(--color-secondary);
+    border-bottom: 2px solid var(--color-secondary);
+    margin-bottom: -1px;
+}
+
+.markdown-content {
+    min-height: 300px;
+}
+
+.markdown-edit-pane,
+.markdown-preview-pane {
+    display: none;
+    padding: 0;
+}
+
+.markdown-edit-pane.active,
+.markdown-preview-pane.active {
+    display: block;
+}
+
+.markdown-edit-pane .markdown-editor {
+    border: none;
+    border-radius: 0;
+    resize: vertical;
+    min-height: 300px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.markdown-edit-pane .markdown-editor:focus {
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.markdown-preview-pane {
+    padding: 1.25rem;
+}
+
+.markdown-rendered {
+    min-height: 250px;
+}
+
+/* Markdown Rendered Styles */
+.markdown-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-last);
+}
+
+.markdown-body .markdown-p {
+    margin-bottom: 1rem;
+}
+
+.markdown-body .markdown-h1 {
+    font-family: 'Alfarn', serif;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin: 1.5rem 0 0.75rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(255, 129, 0, 0.2);
+}
+
+.markdown-body .markdown-h2 {
+    font-family: 'Alfarn', serif;
+    font-size: 1.25rem;
+    color: var(--color-secondary);
+    margin: 1.25rem 0 0.5rem 0;
+}
+
+.markdown-body .markdown-h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-last);
+    margin: 1rem 0 0.5rem 0;
+}
+
+.markdown-body .markdown-ul,
+.markdown-body .markdown-ol {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+.markdown-body .markdown-li {
+    margin-bottom: 0.35rem;
+}
+
+.markdown-body .markdown-quote {
+    border-left: 4px solid var(--color-secondary);
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: rgba(101, 45, 144, 0.05);
+    border-radius: 0 0.5rem 0.5rem 0;
+    font-style: italic;
+    color: #555;
+}
+
+.markdown-body .markdown-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.35rem 0;
+    padding: 0.35rem 0.5rem;
+    background: rgba(101, 45, 144, 0.03);
+    border-radius: 0.35rem;
+}
+
+.markdown-body .markdown-checkbox input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-secondary);
+}
+
+.markdown-body .markdown-code-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    margin: 1rem 0;
+}
+
+.markdown-body .markdown-inline-code {
+    background: rgba(101, 45, 144, 0.1);
+    color: var(--color-secondary);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+}
+
+.markdown-body .markdown-hr {
+    border: none;
+    border-top: 2px solid rgba(101, 45, 144, 0.15);
+    margin: 1.5rem 0;
+}
+
+.markdown-body a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+}
+
+.markdown-body a:hover {
+    color: var(--color-primary);
+}
+
+.markdown-help {
+    border-top: 1px solid rgba(101, 45, 144, 0.1);
+    padding: 0.75rem 1rem;
+    background: rgba(101, 45, 144, 0.02);
+}
+
+/* Markdown Toolbar */
+.markdown-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(101, 45, 144, 0.03);
+    border-bottom: 1px solid rgba(101, 45, 144, 0.1);
+}
+
+.markdown-toolbar__group {
+    display: flex;
+    gap: 0.15rem;
+}
+
+.markdown-toolbar__separator {
+    width: 1px;
+    height: 1.5rem;
+    background: rgba(101, 45, 144, 0.15);
+    margin: 0 0.35rem;
+}
+
+.markdown-toolbar__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: var(--color-last);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.9rem;
+}
+
+.markdown-toolbar__btn:hover {
+    background: rgba(101, 45, 144, 0.1);
+    color: var(--color-secondary);
+}
+
+.markdown-toolbar__btn:active {
+    background: rgba(101, 45, 144, 0.2);
+    transform: scale(0.95);
+}
+
+.markdown-toolbar__icon {
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media (max-width: 576px) {
+    .markdown-toolbar {
+        gap: 0.15rem;
+        padding: 0.35rem 0.5rem;
+    }
+    
+    .markdown-toolbar__btn {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .markdown-toolbar__separator {
+        margin: 0 0.2rem;
+    }
+}
+
+/* Form grid single column for notes */
+.form-grid--single {
+    display: block;
+}
+
+.form-grid--single .form-card {
+    max-width: none;
+}
+
+/* Markdown Preview View (lecture seule) */
+.markdown-preview-view {
+    background: rgba(101, 45, 144, 0.02);
+    border: 1px solid rgba(101, 45, 144, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    min-height: 150px;
+}
+
+.markdown-preview-view .markdown-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-last);
+}
