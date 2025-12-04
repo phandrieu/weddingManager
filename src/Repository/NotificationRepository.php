@@ -89,4 +89,25 @@ class NotificationRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * Retourne les notifications d'invitation encore actives pour un utilisateur.
+     *
+     * @return Notification[]
+     */
+    public function findPendingInvitationsByUser(User $user): array
+    {
+        return $this->createQueryBuilder('n')
+            ->addSelect('invitation')
+            ->leftJoin('n.invitation', 'invitation')
+            ->where('n.user = :user')
+            ->andWhere('n.type = :type')
+            ->andWhere('invitation IS NOT NULL')
+            ->andWhere('invitation.used = false')
+            ->setParameter('user', $user)
+            ->setParameter('type', 'invitation')
+            ->orderBy('n.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

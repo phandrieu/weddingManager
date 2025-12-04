@@ -4,6 +4,14 @@
         <p class="text-muted mb-0">Suivez l'avancement de chaque dossier et complétez les informations manquantes.</p>
     </div>
 
+    {% include 'home/_pending_invitations_card.html.twig' with {
+        invitations: data.pendingInvitations ?? [],
+        subtitle: 'Invitations à rejoindre',
+        title: 'Invitations en attente',
+        ctaLabel: 'Rejoindre ce mariage',
+        emptyMessage: 'Aucune invitation n\'est en attente pour le moment.'
+    } %}
+
     {% if data.weddings is not empty %}
         <div class="form-grid">
             {% for wedding in data.weddings %}

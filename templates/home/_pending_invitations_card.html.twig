@@ -1,0 +1,52 @@
+<article class="form-card form-card--invitations">
+    <div class="form-card__title">
+        {% if subtitle is defined and subtitle %}
+            <span>{{ subtitle }}</span>
+        {% endif %}
+        <h3 class="mb-0">{{ title|default('Invitations en attente') }}</h3>
+    </div>
+
+    {% if invitations is not empty %}
+        <ul class="list-unstyled mb-0 dashboard-list">
+            {% for invitation in invitations %}
+                <li class="dashboard-list__item">
+                    <div class="dashboard-list__main">
+                        <div class="d-flex flex-column gap-2">
+                            <div>
+                                <div class="fw-semibold">{{ invitation.weddingTitle ?? 'Mariage en attente' }}</div>
+                                <div class="text-muted small">
+                                    {% if invitation.weddingDate %}
+                                        {{ invitation.weddingDate }}
+                                    {% else %}
+                                        Date à définir
+                                    {% endif %}
+                                    {% if invitation.inviterName %}
+                                        • Invité par {{ invitation.inviterName }}
+                                    {% endif %}
+                                    {% if invitation.createdAt %}
+                                        • Reçu le {{ invitation.createdAt }}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if invitation.message %}
+                                <p class="mb-0 text-muted small">{{ invitation.message }}</p>
+                            {% endif %}
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ path('app_invitation_accept', { token: invitation.token }) }}" class="btn btn-cta btn-sm">
+                                    {{ ctaLabel|default('Accepter l\'invitation') }}
+                                </a>
+                                <a href="{{ invitation.link ?? path('app_invitation_accept', { token: invitation.token }) }}" class="btn btn-outline-secondary btn-sm">
+                                    Voir le détail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted mb-0">{{ emptyMessage|default('Aucune invitation en attente pour le moment.') }}</p>
+    {% endif %}
+</article>

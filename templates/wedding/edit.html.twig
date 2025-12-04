@@ -511,7 +511,7 @@
 														</div>
 														<div class="d-flex gap-2 align-items-center">
 															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
-																<option value="" {% if selectedSongId is null %} selected {% endif %}>Aucun chant sélectionné</option>
+																<option value="" {% if selectedSongId is null %} selected {% endif %}>Aucune sélection</option>
 																{% if songsForType|length > 0 %}
 																	{% for song in songsForType %}
 																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %} selected {% endif %}>

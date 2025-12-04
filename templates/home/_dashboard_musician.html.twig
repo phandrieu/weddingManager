@@ -4,6 +4,14 @@
         <p class="text-muted mb-0">Gardez un coup d'œil sur vos mariages à venir, vos validations et votre budget.</p>
     </div>
 
+    {% include 'home/_pending_invitations_card.html.twig' with {
+        invitations: data.pendingInvitations ?? [],
+        subtitle: 'Nouveaux mariages',
+        title: 'Invitations à accepter',
+        ctaLabel: 'Accepter et rejoindre',
+        emptyMessage: 'Aucune invitation de mariage en attente.'
+    } %}
+
     <div class="form-grid">
         <article class="form-card">
             <div class="form-card__title">

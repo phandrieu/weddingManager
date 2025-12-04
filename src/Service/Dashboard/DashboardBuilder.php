@@ -4,6 +4,7 @@ namespace App\Service\Dashboard;
 
 use App\Entity\User;
 use App\Entity\Wedding;
+use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
 use App\Repository\WeddingRepository;
 use App\ViewModel\DashboardContext;
@@ -15,6 +16,7 @@ final class DashboardBuilder
     public function __construct(
         private readonly WeddingRepository $weddingRepository,
         private readonly UserRepository $userRepository,
+        private readonly NotificationRepository $notificationRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -92,7 +94,10 @@ final class DashboardBuilder
             return ($a['date'] ?? '') <=> ($b['date'] ?? '');
         });
 
-        return ['weddings' => $cards];
+        return [
+            'weddings' => $cards,
+            'pendingInvitations' => $this->buildPendingInvitations($user, ['marie', 'mariee']),
+        ];
     }
 
     /**
@@ -156,6 +161,7 @@ final class DashboardBuilder
             'totalAmount' => $totalAmount,
             'weddingCount' => count($musicianWeddings),
             'credits' => $user->getCredits(),
+            'pendingInvitations' => $this->buildPendingInvitations($user, ['musicien']),
         ];
     }
 
@@ -215,6 +221,7 @@ final class DashboardBuilder
             'upcoming' => $summaries,
             'weddingCount' => count($parishWeddings),
             'credits' => $user->getCredits(),
+            'pendingInvitations' => $this->buildPendingInvitations($user, ['paroisse']),
         ];
     }
 
@@ -292,5 +299,43 @@ final class DashboardBuilder
         }
 
         return $user->getEmail() ?? $fallback;
+    }
+
+    /**
+     * @param string[] $allowedRoles
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildPendingInvitations(User $user, array $allowedRoles): array
+    {
+        $notifications = $this->notificationRepository->findPendingInvitationsByUser($user);
+
+        $invitations = [];
+        foreach ($notifications as $notification) {
+            $invitation = $notification->getInvitation();
+            if (!$invitation) {
+                continue;
+            }
+
+            if ($allowedRoles !== [] && !in_array($invitation->getRole(), $allowedRoles, true)) {
+                continue;
+            }
+
+            $wedding = $invitation->getWedding();
+            $createdBy = $wedding?->getCreatedBy();
+            $invitations[] = [
+                'id' => $invitation->getId(),
+                'token' => $invitation->getToken(),
+                'role' => $invitation->getRole(),
+                'message' => $notification->getMessage(),
+                'createdAt' => $notification->getCreatedAt()?->format('d/m/Y'),
+                'weddingTitle' => $wedding ? $this->formatWeddingTitle($wedding) : null,
+                'weddingDate' => $wedding?->getDate()?->format('d/m/Y'),
+                'weddingId' => $wedding?->getId(),
+                'inviterName' => $createdBy ? $this->formatParticipantName($createdBy, 'Organisateur') : null,
+                'link' => $notification->getLink(),
+            ];
+        }
+
+        return $invitations;
     }
 }
