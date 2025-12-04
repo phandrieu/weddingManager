@@ -26,6 +26,7 @@ class WeddingSongSelection
     private ?SongType $songType = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Song $song = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
