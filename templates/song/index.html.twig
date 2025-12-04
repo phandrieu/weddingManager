@@ -207,8 +207,12 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Suggestions de chants</h5>
+                    <h5 class="modal-title">Suggestions</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="alert alert-warning d-flex align-items-center gap-2 rounded-0 mb-0 border-bottom">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Ces suggestions n’ont pas encore été vérifiées. Merci de contrôler leurs informations avant validation et de les compléter le cas échéant. Votre validation sera signée par votre identifiant.</span>
                 </div>
                 <div class="modal-body">
                     {% if suggestions is not empty %}
