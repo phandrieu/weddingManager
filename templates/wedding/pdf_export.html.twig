@@ -10,13 +10,18 @@
         }
 
         :root {
-            --primary: #2b3079;
-            --secondary: #f9f7ff;
-            --text: #202020;
-            --muted: #6c757d;
-            --border: #e2e6f0;
-            --success: #2f9e44;
-            --warning: #c08a00;
+            --primary: #ff8100;
+            --primary-dark: #cc6500;
+            --secondary: #652d90;
+            --secondary-dark: #431664;
+            --accent: #ede3ff;
+            --ink: #2f1f3a;
+            --muted: #7c708d;
+            --border: #e3d6f2;
+            --ghost: #f9f6ff;
+            --card: #ffffff;
+            --success: #20a07a;
+            --warning: #d19a00;
         }
 
         * {
@@ -24,38 +29,74 @@
         }
 
         body {
-            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            color: var(--text);
+            font-family: 'Avenir LT Pro', 'Helvetica Neue', Arial, sans-serif;
+            color: var(--ink);
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.45;
             margin: 0;
             padding: 0;
+            background: var(--ghost);
         }
 
         h1, h2, h3, h4 {
-            color: var(--primary);
-            margin: 0 0 8px;
-            font-weight: 600;
-        }
-
-        h2 {
-            font-size: 16px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 4px;
-            margin-bottom: 12px;
+            font-family: 'Alfarn', 'Georgia', serif;
+            margin: 0 0 6px;
+            letter-spacing: .04em;
         }
 
         p {
             margin: 0 0 6px;
         }
 
-        .pdf-header {
+        .pdf-canvas {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px 22px 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pdf-canvas::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 10% 10%, rgba(255, 129, 0, 0.12), transparent 45%),
+                        radial-gradient(circle at 90% 0%, rgba(101, 45, 144, 0.15), transparent 55%);
+            pointer-events: none;
+        }
+
+        .pdf-canvas > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .pdf-hero {
+            background: linear-gradient(120deg, var(--secondary) 0%, var(--secondary-dark) 45%, var(--primary) 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 20px 22px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pdf-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.18), transparent 45%);
+        }
+
+        .pdf-hero__heading {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--primary);
-            margin-bottom: 20px;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
         }
 
         .pdf-logo {
@@ -64,53 +105,154 @@
             object-fit: contain;
         }
 
-        .pdf-meta {
-            flex: 1;
+        .hero-eyebrow {
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            font-size: 10px;
+            margin: 0 0 4px;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        .pdf-meta h1 {
+        .hero-title {
             font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .hero-names {
+            font-size: 14px;
+            letter-spacing: .08em;
             margin-bottom: 6px;
         }
 
-        .pdf-meta p {
-            color: var(--muted);
-            margin-bottom: 2px;
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 3px 12px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 600;
+        }
+
+        .badge--ghost {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .badge--outline {
+            border: 1px solid rgba(255, 255, 255, 0.65);
+            color: #fff;
+        }
+
+        .hero-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-meta__item {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .hero-meta__item span {
+            display: block;
+            font-size: 9px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .hero-meta__item strong {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .pdf-section {
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 28px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
         }
 
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px 16px;
-            margin-bottom: 12px;
+            gap: 12px;
         }
 
-        .info-item span {
+        .info-card {
+            background: var(--ghost);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 70px;
+        }
+
+        .info-card span {
             display: block;
-            font-size: 10px;
-            letter-spacing: .08em;
-            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: .12em;
             text-transform: uppercase;
-            margin-bottom: 2px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .info-card strong {
+            font-size: 13px;
+            color: var(--ink);
         }
 
         .participants-columns {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
+            gap: 14px;
         }
 
         .participant-card {
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px;
-            background: var(--secondary);
-            min-height: 100px;
+            border-radius: 14px;
+            padding: 12px;
+            background: var(--card);
+            box-shadow: 0 8px 18px rgba(101, 45, 144, 0.08);
+            min-height: 110px;
         }
 
         .participant-card h3 {
             font-size: 13px;
+            color: var(--secondary);
             margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
         }
 
         .participant-card ul {
@@ -123,17 +265,19 @@
         }
 
         .deroule-group {
-            margin-bottom: 18px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 14px;
+            overflow: hidden;
         }
 
         .deroule-group__title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 6px 10px;
-            border-radius: 6px;
-            background: var(--secondary);
-            border: 1px solid var(--border);
-            margin-bottom: 6px;
+            padding: 8px 14px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            border-bottom: 1px solid var(--border);
         }
 
         table.deroule-table {
@@ -144,48 +288,60 @@
 
         table.deroule-table th,
         table.deroule-table td {
-            border: 1px solid var(--border);
-            padding: 6px;
+            padding: 7px 8px;
             vertical-align: top;
         }
 
         table.deroule-table th {
-            background: var(--primary);
+            background: linear-gradient(120deg, var(--secondary), var(--primary));
             color: #fff;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: .05em;
+            letter-spacing: .06em;
             font-size: 10px;
+        }
+
+        table.deroule-table td {
+            border-top: 1px solid var(--border);
+        }
+
+        table.deroule-table tbody tr:nth-child(even) td {
+            background: var(--ghost);
         }
 
         .status-chip {
-            display: inline-block;
-            padding: 2px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
             border-radius: 999px;
             font-size: 10px;
             font-weight: 600;
+            letter-spacing: .04em;
         }
 
         .status-ok {
-            background: rgba(47, 158, 68, .15);
+            background: rgba(32, 160, 122, .18);
             color: var(--success);
         }
 
         .status-pending {
-            background: rgba(192, 138, 0, .15);
+            background: rgba(209, 154, 0, .18);
             color: var(--warning);
         }
 
         .notes {
+            border-radius: 14px;
+            background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            background: #fff;
+            padding: 14px;
+            box-shadow: 0 10px 24px rgba(101, 45, 144, 0.08);
         }
 
         .notes :where(h1, h2, h3, h4, h5, h6) {
             font-size: 14px;
             margin-top: 12px;
+            color: var(--secondary);
         }
 
         .notes ul {
@@ -197,7 +353,7 @@
         }
 
         footer {
-            margin-top: 24px;
+            margin-top: 10px;
             text-align: right;
             font-size: 10px;
             color: var(--muted);
@@ -207,48 +363,66 @@
     </style>
 </head>
 <body>
-<header class="pdf-header">
-    <img src="{{ absolute_url(asset('logos/logo_white_nobg_noborder.png')) }}" alt="Logo" class="pdf-logo">
-    <div class="pdf-meta">
-        <h1>Déroulé de la célébration</h1>
-        <p>
-            {% if wedding.marie or wedding.mariee %}
-                {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
-            {% else %}
-                Mariage
-            {% endif %}
-        </p>
-        <p>
-            {% if wedding.date %}
-                {{ wedding.date|date('d/m/Y') }}
-                {% if wedding.time %}
-                    à {{ wedding.time|date('H\\hi') }}
+<div class="pdf-canvas">
+<header class="pdf-hero">
+    <div class="pdf-hero__heading">
+        <img src="{{ absolute_url(asset('logos/logo_white_nobg_noborder.png')) }}" alt="Logo" class="pdf-logo">
+        <div>
+            <p class="hero-eyebrow">Notre Messe de Mariage</p>
+            <h1 class="hero-title">Déroulé de la célébration</h1>
+            <p class="hero-names">
+                {% if wedding.marie or wedding.mariee %}
+                    {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+                {% else %}
+                    Mariage
                 {% endif %}
-            {% else %}
-                Date à confirmer
-            {% endif %}
-        </p>
-        <p>
-            {% if wedding.church %}
-                {{ wedding.church }}{% if wedding.parish %} — {{ wedding.parish }}{% endif %}
-            {% elseif wedding.parish %}
-                {{ wedding.parish }}
-            {% else %}
-                Lieu à confirmer
-            {% endif %}
-        </p>
-        <p>Document généré le {{ generatedAt|date('d/m/Y à H\\hi') }}</p>
+            </p>
+            <div class="hero-badges">
+                <span class="badge badge--ghost">{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</span>
+                <span class="badge badge--outline">Ref #{{ wedding.id }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-meta">
+        <div class="hero-meta__item">
+            <span>Date &amp; heure</span>
+            <strong>
+                {% if wedding.date %}
+                    {{ wedding.date|date('d/m/Y') }}{% if wedding.time %} à {{ wedding.time|date('H\\hi') }}{% endif %}
+                {% else %}
+                    Date à confirmer
+                {% endif %}
+            </strong>
+        </div>
+        <div class="hero-meta__item">
+            <span>Lieu</span>
+            <strong>
+                {% if wedding.church %}
+                    {{ wedding.church }}{% if wedding.parish %} — {{ wedding.parish }}{% endif %}
+                {% elseif wedding.parish %}
+                    {{ wedding.parish }}
+                {% elseif wedding.addressLine1 %}
+                    {{ wedding.addressLine1 }}
+                {% else %}
+                    Lieu à confirmer
+                {% endif %}
+            </strong>
+        </div>
+        <div class="hero-meta__item">
+            <span>Document généré</span>
+            <strong>{{ generatedAt|date('d/m/Y à H\\hi') }}</strong>
+        </div>
     </div>
 </header>
 
 <section class="pdf-section">
-    <h2>Informations principales</h2>
+    <h2 class="section-title">Informations principales</h2>
     <div class="info-grid">
-        <div class="info-item">
+        <div class="info-card">
             <span>Type</span>
             <strong>{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</strong>
         </div>
-        <div class="info-item">
+        <div class="info-card">
             <span>Adresse</span>
             <strong>
                 {% if wedding.addressLine1 %}{{ wedding.addressLine1 }}{% endif %}
@@ -256,11 +430,11 @@
                 {% if wedding.addressPostalCodeAndCity %}<br>{{ wedding.addressPostalCodeAndCity }}{% endif %}
             </strong>
         </div>
-        <div class="info-item">
+        <div class="info-card">
             <span>Créé par</span>
             <strong>{{ wedding.createdBy ? wedding.createdBy.fullName : '—' }}</strong>
         </div>
-        <div class="info-item">
+        <div class="info-card">
             <span>Référence</span>
             <strong>#{{ wedding.id }}</strong>
         </div>
@@ -268,7 +442,7 @@
 </section>
 
 <section class="pdf-section" style="page-break-inside: avoid;">
-    <h2>Intervenants</h2>
+    <h2 class="section-title">Intervenants</h2>
     <div class="participants-columns">
         <div class="participant-card">
             <h3>Musiciens</h3>
@@ -304,7 +478,7 @@
 </section>
 
 <section class="pdf-section">
-    <h2>Déroulé & validations</h2>
+    <h2 class="section-title">Déroulé & validations</h2>
     {% set groups = {} %}
     {% for t in songTypes %}
         {% set period = t.celebrationPeriod %}
@@ -370,7 +544,7 @@
 
 {% if notesHtml %}
 <section class="pdf-section">
-    <h2>Notes & consignes</h2>
+    <h2 class="section-title">Notes & consignes</h2>
     <div class="notes">
         {{ notesHtml|raw }}
     </div>
@@ -380,5 +554,6 @@
 <footer>
     Notre Messe de Mariage — Export PDF destiné aux intervenants
 </footer>
+</div>
 </body>
 </html>

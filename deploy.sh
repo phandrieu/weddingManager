@@ -76,6 +76,6 @@ sudo chown -R $HTTP_USER:$HTTP_USER public/
 echo "Redémarrage de PHP-FPM..."
 sudo systemctl reload php8.4-fpm || sudo systemctl restart php8.4fpm
 
-
+echo "=== N'oubliez pas d'installer wkhtmltox !! ==="
 
 echo "=== Déploiement terminé ==="
