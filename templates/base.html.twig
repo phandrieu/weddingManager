@@ -377,7 +377,37 @@
                 opacity: 0.3;
             }
 
+            /* Groupe mobile navbar : toggler + notifications + profil */
+            .navbar-mobile-actions {
+                order: 2;
+                margin-left: auto;
+            }
+
+            .navbar-mobile-actions .navbar-toggler {
+                border: none;
+                padding: 0.25rem;
+            }
+
+            .navbar-mobile-actions .notification-bell {
+                width: 36px;
+                height: 36px;
+            }
+
+            .navbar-profile-mobile {
+                padding: 0;
+            }
+
+            .navbar-profile-mobile .navbar-profile-picture,
+            .navbar-profile-mobile .navbar-profile-icon {
+                width: 32px;
+                height: 32px;
+            }
+
             @media (max-width: 991.98px) {
+                .navbar .container {
+                    flex-wrap: nowrap;
+                }
+
                 .navbar-profile {
                     padding: 0.5rem 0;
                 }
@@ -386,6 +416,42 @@
                     border-top: 1px solid rgba(255, 255, 255, 0.2);
                     margin-top: 0.5rem;
                     padding-top: 1rem;
+                    justify-content: center;
+                    width: 100%;
+                }
+
+                #navbarSupportedContent {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background-color: #652D90;
+                    padding: 1rem;
+                    padding-top: 0;
+                    z-index: 1000;
+                    margin-top: 0;
+                }
+
+                #navbarSupportedContent .navbar-nav {
+                    margin-top: 0;
+                    padding-top: 1rem;
+                }
+
+                /* Dropdown notifications mobile - positionnement fixe */
+                .navbar-mobile-actions .notification-dropdown {
+                    position: fixed !important;
+                    top: 60px !important;
+                    right: 0.5rem !important;
+                    left: 0.5rem !important;
+                    width: auto !important;
+                    max-width: none !important;
+                    max-height: 70vh !important;
+                    margin-top: 0 !important;
+                    z-index: 9999 !important;
+                }
+                
+                .navbar-mobile-actions .notification-dropdown.show {
+                    display: block !important;
                 }
             }
 
@@ -629,11 +695,51 @@
                 <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
                     <img src="/logos/logo_white_nobg_noborder.png" alt="Logo" class="me-2">
                     <span class="d-none d-sm-inline">Notre Messe de Mariage</span>
-                </a>  
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                </a>
+
+                {# Groupe mobile : toggler + notifications + profil #}
+                <div class="navbar-mobile-actions d-flex d-lg-none align-items-center gap-2">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
+                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    {# Notifications (mobile) #}
+                    <div class="position-relative" id="notification-container-mobile">
+                        <button class="notification-bell" id="notification-bell-mobile" type="button" title="Notifications">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="notification-badge d-none" id="notification-badge-mobile">0</span>
+                        </button>
+                        
+                        <div class="notification-dropdown" id="notification-dropdown-mobile">
+                            <div class="notification-dropdown-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" id="mark-all-read-mobile">Tout marquer comme lu</button>
+                            </div>
+                            <div class="notification-list" id="notification-list-mobile">
+                                <div class="notification-empty">
+                                    <i class="bi bi-bell"></i>
+                                    <p>Aucune notification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {# Photo de profil (mobile) #}
+                    <a href="{{ path('app_user_profile') }}" class="navbar-profile navbar-profile-mobile" title="Mon compte">
+                        {% if app.user.profilePictureName %}
+                            <img src="{{ vich_uploader_asset(app.user, 'profilePictureFile') }}" 
+                                 alt="{{ app.user.firstName }}" 
+                                 class="navbar-profile-picture">
+                        {% else %}
+                            <div class="navbar-profile-icon">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                </div>
+
+                {# Bouton toggler desktop (caché, car on utilise celui du groupe mobile) #}
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -666,8 +772,8 @@
                         {% endif %}
                     </ul>
                     <div class="d-flex align-items-center gap-3">
-                        {# Notifications #}
-                        <div class="position-relative" id="notification-container">
+                        {# Notifications (desktop) #}
+                        <div class="position-relative d-none d-lg-block" id="notification-container">
                             <button class="notification-bell" id="notification-bell" type="button" title="Notifications">
                                 <i class="bi bi-bell-fill"></i>
                                 <span class="notification-badge d-none" id="notification-badge">0</span>
@@ -687,7 +793,8 @@
                             </div>
                         </div>
                         
-                        <a href="{{ path('app_user_profile') }}" class="navbar-profile" title="Mon compte">
+                        {# Photo de profil (desktop) #}
+                        <a href="{{ path('app_user_profile') }}" class="navbar-profile d-none d-lg-flex" title="Mon compte">
                             {% if app.user.profilePictureName %}
                                 <img src="{{ vich_uploader_asset(app.user, 'profilePictureFile') }}" 
                                      alt="{{ app.user.firstName }}" 

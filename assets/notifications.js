@@ -4,45 +4,84 @@
 class NotificationManager {
     constructor() {
         console.log('NotificationManager: Initialisation...');
+        
+        // Desktop elements
         this.bell = document.getElementById('notification-bell');
         this.badge = document.getElementById('notification-badge');
         this.dropdown = document.getElementById('notification-dropdown');
         this.list = document.getElementById('notification-list');
         this.markAllReadBtn = document.getElementById('mark-all-read');
         
+        // Mobile elements
+        this.bellMobile = document.getElementById('notification-bell-mobile');
+        this.badgeMobile = document.getElementById('notification-badge-mobile');
+        this.dropdownMobile = document.getElementById('notification-dropdown-mobile');
+        this.listMobile = document.getElementById('notification-list-mobile');
+        this.markAllReadBtnMobile = document.getElementById('mark-all-read-mobile');
+        
+        // Check if we have at least one set of elements
+        const hasDesktop = this.bell && this.badge && this.dropdown && this.list;
+        const hasMobile = this.bellMobile && this.badgeMobile && this.dropdownMobile && this.listMobile;
+        
         console.log('NotificationManager: Elements trouvés', {
-            bell: !!this.bell,
-            badge: !!this.badge,
-            dropdown: !!this.dropdown,
-            list: !!this.list
+            desktop: hasDesktop,
+            mobile: hasMobile
         });
         
-        if (!this.bell || !this.badge || !this.dropdown || !this.list) {
+        if (!hasDesktop && !hasMobile) {
             console.warn('Notification elements not found');
             return;
         }
         
-        console.log('NotificationManager: Tous les éléments trouvés, initialisation...');
+        console.log('NotificationManager: Éléments trouvés, initialisation...');
         this.init();
     }
     
     init() {
         console.log('NotificationManager: init() appelé');
-        // Toggle dropdown au clic sur la cloche
-        this.bell.addEventListener('click', (e) => {
+        
+        // Desktop: Toggle dropdown au clic sur la cloche
+        this.bell?.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            this.toggleDropdown();
+            this.toggleDropdown('desktop');
+        });
+        
+        // Mobile: Toggle dropdown au clic et touchend sur la cloche
+        const handleMobileClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('NotificationManager: Clic/Touch sur cloche mobile', e.type);
+            this.toggleDropdown('mobile');
+        };
+        
+        this.bellMobile?.addEventListener('click', handleMobileClick);
+        // Ajouter touchend pour les appareils tactiles qui ne déclenchent pas toujours click
+        this.bellMobile?.addEventListener('touchend', (e) => {
+            // Ne traiter que si c'est un tap simple (pas un scroll)
+            if (e.changedTouches && e.changedTouches.length === 1) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('NotificationManager: TouchEnd sur cloche mobile');
+                this.toggleDropdown('mobile');
+            }
         });
         
         // Fermer le dropdown si on clique ailleurs
         document.addEventListener('click', (e) => {
-            if (!this.dropdown.contains(e.target) && e.target !== this.bell) {
+            const isInsideDesktop = this.dropdown?.contains(e.target) || this.bell?.contains(e.target);
+            const isInsideMobile = this.dropdownMobile?.contains(e.target) || this.bellMobile?.contains(e.target);
+            
+            if (!isInsideDesktop && !isInsideMobile) {
                 this.closeDropdown();
             }
         });
         
-        // Marquer toutes comme lues
+        // Marquer toutes comme lues (desktop et mobile)
         this.markAllReadBtn?.addEventListener('click', () => {
+            this.markAllAsRead();
+        });
+        this.markAllReadBtnMobile?.addEventListener('click', () => {
             this.markAllAsRead();
         });
         
@@ -54,17 +93,26 @@ class NotificationManager {
         setInterval(() => this.loadNotifications(), 30000);
     }
     
-    toggleDropdown() {
-        this.dropdown.classList.toggle('show');
-        
-        // Si on ouvre le dropdown, marquer les notifications comme lues
-        if (this.dropdown.classList.contains('show')) {
-            this.markVisibleAsRead();
+    toggleDropdown(source = 'desktop') {
+        // Fermer l'autre dropdown s'il est ouvert
+        if (source === 'desktop') {
+            this.dropdownMobile?.classList.remove('show');
+            this.dropdown?.classList.toggle('show');
+            if (this.dropdown?.classList.contains('show')) {
+                this.markVisibleAsRead();
+            }
+        } else {
+            this.dropdown?.classList.remove('show');
+            this.dropdownMobile?.classList.toggle('show');
+            if (this.dropdownMobile?.classList.contains('show')) {
+                this.markVisibleAsRead();
+            }
         }
     }
     
     closeDropdown() {
-        this.dropdown.classList.remove('show');
+        this.dropdown?.classList.remove('show');
+        this.dropdownMobile?.classList.remove('show');
     }
     
     async loadNotifications() {
@@ -84,17 +132,31 @@ class NotificationManager {
     }
     
     updateBadge(count) {
-        if (count > 0) {
-            this.badge.textContent = count > 99 ? '99+' : count;
-            this.badge.classList.remove('d-none');
-        } else {
-            this.badge.classList.add('d-none');
-        }
+        // Mettre à jour les deux badges (desktop et mobile)
+        const badges = [this.badge, this.badgeMobile].filter(Boolean);
+        
+        badges.forEach(badge => {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+        });
     }
     
     renderNotifications(notifications) {
+        // Rendre les notifications dans les deux listes (desktop et mobile)
+        const lists = [this.list, this.listMobile].filter(Boolean);
+        
+        lists.forEach(list => {
+            this._renderNotificationsToList(list, notifications);
+        });
+    }
+    
+    _renderNotificationsToList(list, notifications) {
         if (notifications.length === 0) {
-            this.list.innerHTML = `
+            list.innerHTML = `
                 <div class="notification-empty">
                     <i class="bi bi-bell"></i>
                     <p>Aucune notification</p>
@@ -103,10 +165,10 @@ class NotificationManager {
             return;
         }
         
-        this.list.innerHTML = notifications.map(notif => this.renderNotification(notif)).join('');
+        list.innerHTML = notifications.map(notif => this.renderNotification(notif)).join('');
         
         // Ajouter les event listeners
-        this.list.querySelectorAll('.notification-item').forEach(item => {
+        list.querySelectorAll('.notification-item').forEach(item => {
             const notifId = item.dataset.notificationId;
             const notification = notifications.find(n => n.id == notifId);
             

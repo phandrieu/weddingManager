@@ -1217,6 +1217,12 @@
         flex: 0 0 100%;
     }
 
+    /* Badge prend toute la largeur du parent sur mobile */
+    .deroule-type-badge {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
     /* Choix du chant - pleine largeur */
     .deroule-row > div:nth-child(2) {
         flex: 0 0 100%;
