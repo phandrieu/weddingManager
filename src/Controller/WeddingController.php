@@ -16,6 +16,7 @@ use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
 use App\Repository\CommentRepository;
 use App\Service\InvitationWorkflow;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Stripe\StripeClient;
@@ -404,6 +405,7 @@ class WeddingController extends AbstractController
         UserRepository $userRepo,
         EntityManagerInterface $em,
         MailerInterface $mailer,
+        NotificationService $notificationService,
         Wedding $wedding = null
     ): Response {
         if (!$wedding) {
@@ -755,6 +757,7 @@ class WeddingController extends AbstractController
                             ]));
 
                         $mailer->send($emailMessage);
+                        $notificationService->createInvitationNotification($invitation, $existingUser);
                         $this->addFlash('success', 'Une invitation a été envoyée automatiquement au marié.');
                     }
                 }
@@ -796,6 +799,7 @@ class WeddingController extends AbstractController
                             ]));
 
                         $mailer->send($emailMessage);
+                        $notificationService->createInvitationNotification($invitation, $existingUser);
                         $this->addFlash('success', 'Une invitation a été envoyée automatiquement à la mariée.');
                     }
                 }
@@ -1044,6 +1048,8 @@ class WeddingController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         MailerInterface $mailer,
+        UserRepository $userRepo,
+        NotificationService $notificationService,
         SongTypeRepository $songTypeRepo,
         SongRepository $songRepo
     ): Response {
@@ -1097,6 +1103,11 @@ class WeddingController extends AbstractController
                 ]));
 
             $mailer->send($emailMessage);
+
+            $existingUser = $userRepo->findOneBy(['email' => $email]);
+            if ($existingUser) {
+                $notificationService->createInvitationNotification($invitation, $existingUser);
+            }
 
             $this->addFlash('success', 'Invitation envoyée !');
 

@@ -18,10 +18,8 @@ class NotificationService
     ) {}
 
     /**
-     * Crée une notification pour une invitation envoyée
-     * Note : Cette méthode est appelée APRÈS l'acceptation de l'invitation
-     * car les invitations par email ne créent pas de notifications jusqu'à
-     * ce que l'utilisateur s'inscrive/se connecte
+     * Crée une notification pour une invitation envoyée à un utilisateur déjà inscrit.
+     * L'utilisateur peut ensuite accepter ou refuser directement depuis l'application.
      */
     public function createInvitationNotification(Invitation $invitation, User $user): void
     {
@@ -50,8 +48,11 @@ class NotificationService
         
         $notification->setMessage($message);
         
-        // Lien vers la page du mariage
-        $notification->setLink($this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]));
+        // Lien vers l'acceptation de l'invitation (ou la page du mariage si déjà acceptée)
+        $linkRoute = $invitation->isUsed()
+            ? $this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()])
+            : $this->urlGenerator->generate('app_invitation_accept', ['token' => $invitation->getToken()]);
+        $notification->setLink($linkRoute);
 
         $this->entityManager->persist($notification);
         $this->entityManager->flush();
