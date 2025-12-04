@@ -2,7 +2,18 @@
 
 {% block title %}
 	{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
-		Mariage de {% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée{% endif %}
+		Mariage de
+		{% if wedding.marie %}
+			{{ wedding.marie.fullName }}
+		{% elseif wedding.marieFirstName %}
+			{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié
+		{% endif %}
+		&amp;
+		{% if wedding.mariee %}
+			{{ wedding.mariee.fullName }}
+		{% elseif wedding.marieeFirstName %}
+			{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée
+		{% endif %}
 	{% else %}
 		Détails du mariage
 	{% endif %}
@@ -20,7 +31,18 @@
 					<div class="wizard-header__intro">
 						<h2 class="wizard-panel__title">
 							{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
-								Mariage de {% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée{% endif %}
+								Mariage de
+								{% if wedding.marie %}
+									{{ wedding.marie.fullName }}
+								{% elseif wedding.marieFirstName %}
+									{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié
+								{% endif %}
+								&amp;
+								{% if wedding.mariee %}
+									{{ wedding.mariee.fullName }}
+								{% elseif wedding.marieeFirstName %}
+									{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée
+								{% endif %}
 							{% else %}
 								Détails du mariage
 							{% endif %}
@@ -28,16 +50,28 @@
 						<p class="wizard-header__meta mb-0">
 							<span>
 								{% if wedding.marie or wedding.mariee or wedding.marieFirstName or wedding.marieeFirstName %}
-									{% if wedding.marie %}{{ wedding.marie.fullName }}{% elseif wedding.marieFirstName %}{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié à compléter{% endif %} &amp; {% if wedding.mariee %}{{ wedding.mariee.fullName }}{% elseif wedding.marieeFirstName %}{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée à compléter{% endif %}
+									{% if wedding.marie %}
+										{{ wedding.marie.fullName }}
+									{% elseif wedding.marieFirstName %}
+										{{ wedding.marieFirstName ~ ' ' ~ wedding.marieName }}{% else %}Marié à compléter
+									{% endif %}
+									&amp;
+									{% if wedding.mariee %}
+										{{ wedding.mariee.fullName }}
+									{% elseif wedding.marieeFirstName %}
+										{{ wedding.marieeFirstName ~ ' ' ~ wedding.marieeName }}{% else %}Mariée à compléter
+									{% endif %}
 								{% else %}
 									Couple à compléter pour personnaliser la collaboration.
 								{% endif %}
 							</span>
 							{% if wedding.date %}
-								<span>&mdash; {{ wedding.date|date('d/m/Y') }}</span>
+								<span>&mdash;
+									{{ wedding.date|date('d/m/Y') }}</span>
 							{% endif %}
 							{% if wedding.church %}
-								<span>&mdash; {{ wedding.church }}</span>
+								<span>&mdash;
+									{{ wedding.church }}</span>
 							{% endif %}
 						</p>
 					</div>
@@ -70,14 +104,14 @@
 						Répertoire<br><small>Déroulé &amp; validations</small>
 					</button>
 					{% if not isCouple %}
-					<button type="button" class="wizard-stepper__item" data-step="4">
-						Suivi<br><small>Finances &amp; archive</small>
-					</button>
+						<button type="button" class="wizard-stepper__item" data-step="4">
+							Suivi<br><small>Finances &amp; archive</small>
+						</button>
 					{% endif %}
 					{% if isMusician|default(false) %}
-					<button type="button" class="wizard-stepper__item" data-step="5">
-						Notes<br><small>Espace musicien</small>
-					</button>
+						<button type="button" class="wizard-stepper__item" data-step="5">
+							Notes<br><small>Espace musicien</small>
+						</button>
 					{% endif %}
 				</div>
 
@@ -158,13 +192,21 @@
 												<div class="fw-semibold">{{ wedding.marie.fullName ?? '-' }}</div>
 											</div>
 											{% if wedding.marie.telephone %}
-												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marie.telephone }}</div>
+												<div class="text-muted small">
+													<i class="bi bi-telephone me-1"></i>
+													{{ wedding.marie.telephone }}</div>
 											{% endif %}
 											{% if wedding.marie.addressLine1 or wedding.marie.addressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{% if wedding.marie.addressLine1 %}{{ wedding.marie.addressLine1 }}<br>{% endif %}
-													{% if wedding.marie.addressLine2 %}{{ wedding.marie.addressLine2 }}<br>{% endif %}
-													{% if wedding.marie.addressPostalCodeAndCity %}{{ wedding.marie.addressPostalCodeAndCity }}{% endif %}
+													{% if wedding.marie.addressLine1 %}
+														{{ wedding.marie.addressLine1 }}<br>
+													{% endif %}
+													{% if wedding.marie.addressLine2 %}
+														{{ wedding.marie.addressLine2 }}<br>
+													{% endif %}
+													{% if wedding.marie.addressPostalCodeAndCity %}
+														{{ wedding.marie.addressPostalCodeAndCity }}
+													{% endif %}
 												</div>
 											{% endif %}
 										</div>
@@ -188,13 +230,21 @@
 												</div>
 											{% endif %}
 											{% if wedding.marieTelephone %}
-												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieTelephone }}</div>
+												<div class="text-muted small">
+													<i class="bi bi-telephone me-1"></i>
+													{{ wedding.marieTelephone }}</div>
 											{% endif %}
 											{% if wedding.marieAddressLine1 or wedding.marieAddressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{% if wedding.marieAddressLine1 %}{{ wedding.marieAddressLine1 }}<br>{% endif %}
-													{% if wedding.marieAddressLine2 %}{{ wedding.marieAddressLine2 }}<br>{% endif %}
-													{% if wedding.marieAddressPostalCodeAndCity %}{{ wedding.marieAddressPostalCodeAndCity }}{% endif %}
+													{% if wedding.marieAddressLine1 %}
+														{{ wedding.marieAddressLine1 }}<br>
+													{% endif %}
+													{% if wedding.marieAddressLine2 %}
+														{{ wedding.marieAddressLine2 }}<br>
+													{% endif %}
+													{% if wedding.marieAddressPostalCodeAndCity %}
+														{{ wedding.marieAddressPostalCodeAndCity }}
+													{% endif %}
 												</div>
 											{% endif %}
 										</div>
@@ -225,13 +275,21 @@
 												<div class="fw-semibold">{{ wedding.mariee.fullName ?? '-' }}</div>
 											</div>
 											{% if wedding.mariee.telephone %}
-												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.mariee.telephone }}</div>
+												<div class="text-muted small">
+													<i class="bi bi-telephone me-1"></i>
+													{{ wedding.mariee.telephone }}</div>
 											{% endif %}
 											{% if wedding.mariee.addressLine1 or wedding.mariee.addressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{% if wedding.mariee.addressLine1 %}{{ wedding.mariee.addressLine1 }}<br>{% endif %}
-													{% if wedding.mariee.addressLine2 %}{{ wedding.mariee.addressLine2 }}<br>{% endif %}
-													{% if wedding.mariee.addressPostalCodeAndCity %}{{ wedding.mariee.addressPostalCodeAndCity }}{% endif %}
+													{% if wedding.mariee.addressLine1 %}
+														{{ wedding.mariee.addressLine1 }}<br>
+													{% endif %}
+													{% if wedding.mariee.addressLine2 %}
+														{{ wedding.mariee.addressLine2 }}<br>
+													{% endif %}
+													{% if wedding.mariee.addressPostalCodeAndCity %}
+														{{ wedding.mariee.addressPostalCodeAndCity }}
+													{% endif %}
 												</div>
 											{% endif %}
 										</div>
@@ -255,13 +313,21 @@
 												</div>
 											{% endif %}
 											{% if wedding.marieeTelephone %}
-												<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ wedding.marieeTelephone }}</div>
+												<div class="text-muted small">
+													<i class="bi bi-telephone me-1"></i>
+													{{ wedding.marieeTelephone }}</div>
 											{% endif %}
 											{% if wedding.marieeAddressLine1 or wedding.marieeAddressPostalCodeAndCity %}
 												<div class="text-muted small">
-													{% if wedding.marieeAddressLine1 %}{{ wedding.marieeAddressLine1 }}<br>{% endif %}
-													{% if wedding.marieeAddressLine2 %}{{ wedding.marieeAddressLine2 }}<br>{% endif %}
-													{% if wedding.marieeAddressPostalCodeAndCity %}{{ wedding.marieeAddressPostalCodeAndCity }}{% endif %}
+													{% if wedding.marieeAddressLine1 %}
+														{{ wedding.marieeAddressLine1 }}<br>
+													{% endif %}
+													{% if wedding.marieeAddressLine2 %}
+														{{ wedding.marieeAddressLine2 }}<br>
+													{% endif %}
+													{% if wedding.marieeAddressPostalCodeAndCity %}
+														{{ wedding.marieeAddressPostalCodeAndCity }}
+													{% endif %}
 												</div>
 											{% endif %}
 										</div>
@@ -295,7 +361,9 @@
 													<span class="fw-semibold">{{ musician.fullName ?? musician.email }}</span>
 													<div class="text-muted small">{{ musician.email }}</div>
 													{% if musician.telephone %}
-														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ musician.telephone }}</div>
+														<div class="text-muted small">
+															<i class="bi bi-telephone me-1"></i>
+															{{ musician.telephone }}</div>
 													{% endif %}
 												</div>
 											</li>
@@ -323,7 +391,9 @@
 													<span class="fw-semibold">{{ parishUser.fullName ?? parishUser.email }}</span>
 													<div class="text-muted small">{{ parishUser.email }}</div>
 													{% if parishUser.telephone %}
-														<div class="text-muted small"><i class="bi bi-telephone me-1"></i>{{ parishUser.telephone }}</div>
+														<div class="text-muted small">
+															<i class="bi bi-telephone me-1"></i>
+															{{ parishUser.telephone }}</div>
 													{% endif %}
 												</div>
 											</li>
@@ -360,6 +430,17 @@
 					</div>
 
 					<div class="wizard-step" data-step="3">
+					<!-- Petite card de légende pour les sélections -->
+					<div class="mb-4">
+						<div class="alert alert-info mb-0 deroule-legend">
+							<span class="deroule-legend__intro">Les icônes indiquent la disponibilité :</span>
+							<ul class="deroule-legend__list">
+									<li><strong>🎹</strong> <span>Dans le répertoire d'au moins un musicien</span></li>
+									<li><strong>⚠️</strong> <span>Non présent dans le répertoire d'au moins un musicien</span></li>
+									<li><strong>✨</strong> <span>Suggestion</span></li>
+							</ul>
+						</div>
+					</div>
 						<div class="deroule-container">
 							{% set types = songTypes is defined ? songTypes : [] %}
 							{% set groups = {} %}
@@ -397,7 +478,9 @@
 										<p class="mb-1">
 											<strong>
 												{% if wedding.marie or wedding.mariee %}
-													{{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+													{{ wedding.marie ? wedding.marie.fullName : 'Marié' }}
+													&amp;
+													{{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
 												{% else %}
 													Mariage
 												{% endif %}
@@ -405,13 +488,19 @@
 										</p>
 										{% if wedding.date %}
 											<p class="mb-1">{{ wedding.date|date('d/m/Y') }}
-											{% if wedding.time %}
-												à {{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
-											{% endif %}
+												{% if wedding.time %}
+													à
+													{{ wedding.time|date('H') }}h{{ wedding.time|date('i') }}
+												{% endif %}
 											</p>
 										{% endif %}
 										{% if wedding.church %}
-											<p class="mb-0">{{ wedding.church }}{% if wedding.parish %} - {{ wedding.parish }}{% endif %}</p>
+											<p class="mb-0">{{ wedding.church }}
+												{% if wedding.parish %}
+													-
+													{{ wedding.parish }}
+												{% endif %}
+											</p>
 										{% endif %}
 									</div>
 								</div>
@@ -428,7 +517,7 @@
 										{% set group = groups[groupKey] %}
 										{% set sanitizedLabel = group.label ? group.label|replace({' ': '_'}) : 'Autres' %}
 										<div class="deroule-group">
-											<div class="deroule-group-header"{% if group.color %} style="border-left: 4px solid {{ group.color }}; background-color: {{ group.color }};"{% endif %}>{{ group.label }}</div> 
+											<div class="deroule-group-header" {% if group.color %} style="border-left: 4px solid {{ group.color }}; background-color: {{ group.color }};" {% endif %}>{{ group.label }}</div>
 											<div class="deroule-group-body">
 												{% for type in group.types %}
 													{% set songsForType = availableSongsByType[type.id]|default(type.songs) %}
@@ -438,24 +527,28 @@
 													{% set validatedParish = selectionState.validatedByParish ?? false %}
 													<div class="deroule-row">
 														<div>
-															<span class="deroule-type-badge" {% if group.color %}style="background-color: {{ group.color }}; color: #FFFFFF;"{% endif %}>{{ type.name }}</span>
+															<span class="deroule-type-badge" style="{% if group.color %}background-color: {{ group.color }}; color: #FFFFFF;{% endif %}; max-width: 160px; width: 160px;">{{ type.name }}</span>
 														</div>
 														<div class="d-flex gap-2 align-items-center">
-															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
-																<option value="" {% if selectedSongId is null %}selected{% endif %}>Aucun chant sélectionné</option>
-																{% if songsForType|length > 0 %}
-																	{% for song in songsForType %}
-																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %}selected{% endif %}>
-																			{% if song.suggestion %}✨ {% endif %}{{ song.name ?? (song.title ?? 'Titre inconnu') }}{% if song.suggestion %} (suggestion){% endif %}
-																		</option>
-																	{% endfor %}
-																{% else %}
-																	<option disabled>Pas de chants disponibles</option>
+															{% if selectedSongId %}
+																{% set song = songsForType|filter(s => s.id == selectedSongId)|first %}
+															{% else %}
+																{% set song = null %}
+															{% endif %}
+															{% if song is null %}
+																<span class="text-muted">(Pas de sélection)</span>
+															{% else %}
+																{# Display song name with suggestion indicator #}
+																{% if song.suggestion %}✨
+																	{% elseif song in availableSongsByTypeInMusiciansRepo[type.id]|default([]) %}🎹
+																	{% else %}⚠️
 																{% endif %}
-															</select>
-															<button type="button" class="btn btn-sm btn-outline-primary js-suggest-song" data-song-type="{{ type.id }}" title="Suggérer un nouveau chant">
-																<i class="bi bi-plus-circle"></i>
-															</button>
+																{{ song.name ?? (song.title ?? 'Titre inconnu') }}
+
+																<button type="button" class="btn btn-sm btn-outline-secondary js-preview-song" data-song-type="{{ type.id }}" data-song-id="{{ selectedSongId }}" title="Prévisualiser le chant" {% if selectedSongId is null %} disabled {% endif %}>
+																	<i class="bi bi-eye"></i>
+																</button>
+															{% endif %}
 														</div>
 														<div>
 															<input type="hidden" name="deroule_validation_musician[{{ type.id }}]" value="{{ validatedMusician ? '1' : '0' }}" data-validation-input="musician-{{ type.id }}">
@@ -496,161 +589,163 @@
 							{{ form_widget(form.songs, {'attr': {'class': 'd-none'}}) }}
 						{% endif %}
 					</div>
-					
+
 					{% if not isCouple %}
-					<div class="wizard-step" data-step="4">
-						<div class="form-grid">
-							<div class="form-card">
-								<div class="form-card__title">
-									<span>Finances</span>
-									<h3 class="mb-0">Suivi des montants</h3>
-								</div>
-								{% set paymentStatus = {
+						<div class="wizard-step" data-step="4">
+							<div class="form-grid">
+								<div class="form-card">
+									<div class="form-card__title">
+										<span>Finances</span>
+										<h3 class="mb-0">Suivi des montants</h3>
+									</div>
+									{% set paymentStatus = {
 									'label': 'Statut non défini',
 									'badge': 'secondary'
 								} %}
-								{% if wedding.isPaid %}
-									{% set paymentStatus = {
+									{% if wedding.isPaid %}
+										{% set paymentStatus = {
 										'label': 'Mariage réglé',
 										'badge': 'success'
 									} %}
-								{% else %}
-									{% if wedding.paymentOption == 'delegated' %}
-										{% set paymentStatus = {
+									{% else %}
+										{% if wedding.paymentOption == 'delegated' %}
+											{% set paymentStatus = {
 											'label': 'En attente du paiement des mariés',
 											'badge': 'warning'
 										} %}
-									{% elseif wedding.paymentOption == 'card_pending_partner' %}
-										{% set paymentStatus = {
+										{% elseif wedding.paymentOption == 'card_pending_partner' %}
+											{% set paymentStatus = {
 											'label': 'Paiement partenaire en cours',
 											'badge': 'warning'
 										} %}
-									{% elseif wedding.paymentOption == 'card_partner' %}
-										{% set paymentStatus = {
+										{% elseif wedding.paymentOption == 'card_partner' %}
+											{% set paymentStatus = {
 											'label': 'Paiement CB partenaire confirmé',
 											'badge': 'success'
 										} %}
-									{% elseif wedding.paymentOption == 'card_user' %}
-										{% set paymentStatus = {
+										{% elseif wedding.paymentOption == 'card_user' %}
+											{% set paymentStatus = {
 											'label': 'Paiement en ligne à finaliser',
 											'badge': 'info'
 										} %}
-									{% elseif wedding.paymentOption == 'credit' %}
-										{% set paymentStatus = {
+										{% elseif wedding.paymentOption == 'credit' %}
+											{% set paymentStatus = {
 											'label': 'Réglé via crédits',
 											'badge': 'success'
 										} %}
+										{% endif %}
 									{% endif %}
-								{% endif %}
 
-								<div class="wizard-finance-grid">
-									<div class="wizard-finance-item">
-										<div class="wizard-finance-label">Montant de la prestation</div>
-										<div class="wizard-finance-value">{{ wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
-									</div>
-									<div class="wizard-finance-item">
-										<div class="wizard-finance-label">Montant déjà versé</div>
-										<div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
-									</div>
-									<div class="wizard-finance-item">
-										<div class="wizard-finance-label">Statut du paiement</div>
-										<div class="wizard-finance-value">
-											<span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
+									<div class="wizard-finance-grid">
+										<div class="wizard-finance-item">
+											<div class="wizard-finance-label">Montant de la prestation</div>
+											<div class="wizard-finance-value">{{ wedding.montantTotal is not null ? (wedding.montantTotal ~ ' €') : '-' }}</div>
+										</div>
+										<div class="wizard-finance-item">
+											<div class="wizard-finance-label">Montant déjà versé</div>
+											<div class="wizard-finance-value">{{ wedding.montantPaye is not null ? (wedding.montantPaye ~ ' €') : '-' }}</div>
+										</div>
+										<div class="wizard-finance-item">
+											<div class="wizard-finance-label">Statut du paiement</div>
+											<div class="wizard-finance-value">
+												<span class="badge text-bg-{{ paymentStatus.badge }}">{{ paymentStatus.label }}</span>
+											</div>
+										</div>
+										<div class="wizard-finance-item">
+											<div class="wizard-finance-label">Acompte</div>
+											<div class="wizard-finance-value">
+												{% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
+													{{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }}
+													%
+												{% else %}
+													-
+												{% endif %}
+											</div>
+										</div>
+										<div class="wizard-finance-item">
+											<div class="wizard-finance-label">Reste dû</div>
+											<div class="wizard-finance-value">
+												{% if wedding.montantTotal is not null and wedding.montantPaye is not null %}
+													{{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }}
+													€
+												{% else %}
+													-
+												{% endif %}
+											</div>
 										</div>
 									</div>
-									<div class="wizard-finance-item">
-										<div class="wizard-finance-label">Acompte</div>
-										<div class="wizard-finance-value">
-											{% if wedding.montantTotal and wedding.montantPaye is not null and wedding.montantTotal > 0 %}
-												{{ ((wedding.montantPaye / wedding.montantTotal) * 100)|round(0) }} %
-											{% else %}
-												-
-											{% endif %}
+
+									<div class="wizard-finance-inputs">
+										<div class="wizard-finance-field">
+											<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Créé avec un crédit ?</span>
+											<div class="fw-semibold">{{ wedding.createdWithCredit ? 'Oui' : 'Non' }}</div>
 										</div>
-									</div>
-									<div class="wizard-finance-item">
-										<div class="wizard-finance-label">Reste dû</div>
-										<div class="wizard-finance-value">
-											{% if wedding.montantTotal is not null and wedding.montantPaye is not null %}
-												{{ (wedding.montantTotal - wedding.montantPaye)|number_format(2, '.', ' ') }} €
-											{% else %}
-												-
-											{% endif %}
+										<div class="wizard-finance-field">
+											<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Paiement exigé des mariés ?</span>
+											<div class="fw-semibold">{{ wedding.requiresCouplePayment ? 'Oui' : 'Non' }}</div>
 										</div>
 									</div>
 								</div>
 
-								<div class="wizard-finance-inputs">
-									<div class="wizard-finance-field">
-										<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Créé avec un crédit ?</span>
-										<div class="fw-semibold">{{ wedding.createdWithCredit ? 'Oui' : 'Non' }}</div>
+								<div class="form-card">
+									<div class="form-card__title">
+										<span>Clôture</span>
+										<h3 class="mb-0">Archive &amp; options</h3>
 									</div>
-									<div class="wizard-finance-field">
-										<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Paiement exigé des mariés ?</span>
-										<div class="fw-semibold">{{ wedding.requiresCouplePayment ? 'Oui' : 'Non' }}</div>
+									<div class="mb-3">
+										<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Statut du dossier</span>
+										<div class="d-flex flex-wrap gap-2">
+											<span class="btn btn-validation {{ not wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Actif</span>
+											<span class="btn btn-validation {{ wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Archivé</span>
+										</div>
 									</div>
+									<p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
 								</div>
-							</div>
-
-							<div class="form-card">
-								<div class="form-card__title">
-									<span>Clôture</span>
-									<h3 class="mb-0">Archive &amp; options</h3>
-								</div>
-								<div class="mb-3">
-									<span class="form-label-sm text-uppercase text-muted fw-semibold d-block mb-2">Statut du dossier</span>
-									<div class="d-flex flex-wrap gap-2">
-										<span class="btn btn-validation {{ not wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Actif</span>
-										<span class="btn btn-validation {{ wedding.archive ? 'is-active' : '' }} disabled" role="presentation">Archivé</span>
-									</div>
-								</div>
-								<p class="mb-0 small text-muted">Archivez un mariage une fois la célébration passée pour conserver un historique propre.</p>
 							</div>
 						</div>
-					</div>
 					{% endif %}
 
 					{# Step 5: Notes Musiciens (réservé aux musiciens) #}
 					{% if isMusician|default(false) %}
-					<div class="wizard-step" data-step="5">
-						<div class="form-grid form-grid--single">
-							<div class="form-card">
-								<div class="form-card__title">
-									<span>Espace Musicien</span>
-									<h3 class="mb-0">Notes pour les musiciens</h3>
-								</div>
-								<p class="text-muted mb-3">
-									Ces notes sont partagées entre les musiciens associés à ce mariage.
-								</p>
-								
-								<div class="markdown-preview-view">
-									<div class="markdown-rendered" id="markdownPreviewView">
-										{% if wedding.notesMusiciens %}
-											{# Le contenu sera rendu en JavaScript #}
-											<div class="markdown-source d-none">{{ wedding.notesMusiciens }}</div>
-											<p class="text-muted fst-italic">Chargement de l'aperçu...</p>
-										{% else %}
-											<p class="text-muted fst-italic">
-												<i class="bi bi-info-circle me-2"></i>
-												Aucune note n'a été ajoutée pour le moment.
-												<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="ms-2">
-													<i class="bi bi-pencil me-1"></i>Ajouter des notes
-												</a>
-											</p>
-										{% endif %}
+						<div class="wizard-step" data-step="5">
+							<div class="form-grid form-grid--single">
+								<div class="form-card">
+									<div class="form-card__title">
+										<span>Espace Musicien</span>
+										<h3 class="mb-0">Notes pour les musiciens</h3>
 									</div>
+									<p class="text-muted mb-3">
+										Ces notes sont partagées entre les musiciens associés à ce mariage.
+									</p>
+
+									<div class="markdown-preview-view">
+										<div class="markdown-rendered" id="markdownPreviewView">
+											{% if wedding.notesMusiciens %}
+												{# Le contenu sera rendu en JavaScript #}
+												<div class="markdown-source d-none">{{ wedding.notesMusiciens }}</div>
+												<p class="text-muted fst-italic">Chargement de l'aperçu...</p>
+											{% else %}
+												<p class="text-muted fst-italic">
+													<i class="bi bi-info-circle me-2"></i>
+													Aucune note n'a été ajoutée pour le moment.
+													<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="ms-2">
+														<i class="bi bi-pencil me-1"></i>Ajouter des notes
+													</a>
+												</p>
+											{% endif %}
+										</div>
+									</div>
+
+									{% if wedding.notesMusiciens %}
+										<div class="mt-3">
+											<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="btn btn-outline-primary btn-sm">
+												<i class="bi bi-pencil me-1"></i>Modifier les notes
+											</a>
+										</div>
+									{% endif %}
 								</div>
-								
-								{% if wedding.notesMusiciens %}
-								<div class="mt-3">
-									<a href="{{ path('app_wedding_edit', {'id': wedding.id, 'step': 5}) }}" class="btn btn-outline-primary btn-sm">
-										<i class="bi bi-pencil me-1"></i>Modifier les notes
-									</a>
-								</div>
-								{% endif %}
 							</div>
 						</div>
-					</div>
 					{% endif %}
 				</div>
 
@@ -683,7 +778,9 @@
 				</div>
 				<div class="modal-body">
 					<div class="text-center py-4" id="commentsModalSpinner">
-						<div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div>
+						<div class="spinner-border text-secondary" role="status">
+							<span class="visually-hidden">Chargement...</span>
+						</div>
 					</div>
 				</div>
 				<div class="modal-footer"></div>
@@ -722,284 +819,362 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal de prévisualisation d'un chant -->
+	<div class="modal fade" id="songPreviewModal" tabindex="-1" aria-labelledby="songPreviewModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="songPreviewModalLabel">Prévisualisation du chant</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body" id="songPreviewModalBody">
+					<div class="text-center py-4" id="songPreviewSpinner">
+						<div class="spinner-border text-secondary" role="status">
+							<span class="visually-hidden">Chargement...</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
 	{{ parent() }}
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			console.log('=== DEBUT SCRIPT VIEW ===');
-			const wizardLayout = document.getElementById('weddingWizardView');
-			console.log('wizardLayout:', wizardLayout);
-			const steps = Array.from(document.querySelectorAll('.wizard-step'));
-			console.log('Steps trouvés:', steps.length);
-			const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
-			console.log('Stepper items:', stepperItems.length);
-			const prevBtn = document.querySelector('.wizard-prev');
-			const nextBtn = document.querySelector('.wizard-next');
-			
-			// Initialiser avec le step passé en paramètre URL
-			let currentStep = {{ initialStep|default(0) }};
-			console.log('Step initial depuis le serveur:', currentStep);
-
-			if (wizardLayout) {
-				const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
-				if (!Number.isNaN(defaultStep)) {
-					currentStep = Math.max(0, Math.min(steps.length - 1, defaultStep));
+	 <script>
+			document.addEventListener('DOMContentLoaded', function () {
+				console.log('=== DEBUT SCRIPT VIEW ===');
+				const wizardLayout = document.getElementById('weddingWizardView');
+				console.log('wizardLayout:', wizardLayout);
+				const steps = Array.from(document.querySelectorAll('.wizard-step'));
+				console.log('Steps trouvés:', steps.length);
+				const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+				console.log('Stepper items:', stepperItems.length);
+				const prevBtn = document.querySelector('.wizard-prev');
+				const nextBtn = document.querySelector('.wizard-next');
+				
+				// Initialiser avec le step passé en paramètre URL
+				let currentStep = {{ initialStep|default(0) }};
+				console.log('Step initial depuis le serveur:', currentStep);
+	
+				if (wizardLayout) {
+					const defaultStep = parseInt(wizardLayout.dataset.defaultStep || '0', 10);
+					if (!Number.isNaN(defaultStep)) {
+						currentStep = Math.max(0, Math.min(steps.length - 1, defaultStep));
+					}
 				}
-			}
-
-			function syncUI() {
-				console.log('syncUI appelé, currentStep =', currentStep);
-				steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
-				stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
+	
+				function syncUI() {
+					console.log('syncUI appelé, currentStep =', currentStep);
+					steps.forEach((step, index) => step.classList.toggle('active', index === currentStep));
+					stepperItems.forEach((item, index) => item.classList.toggle('active', index === currentStep));
+					if (prevBtn) {
+						prevBtn.classList.toggle('d-none', currentStep === 0);
+					}
+					if (nextBtn) {
+						nextBtn.classList.toggle('d-none', currentStep >= steps.length - 1);
+					}
+				}
+	
 				if (prevBtn) {
-					prevBtn.classList.toggle('d-none', currentStep === 0);
-				}
-				if (nextBtn) {
-					nextBtn.classList.toggle('d-none', currentStep >= steps.length - 1);
-				}
-			}
-
-			if (prevBtn) {
-				prevBtn.addEventListener('click', function () {
-					if (currentStep > 0) {
-						currentStep -= 1;
-						syncUI();
-					}
-				});
-			}
-
-			if (nextBtn) {
-				nextBtn.addEventListener('click', function () {
-					if (currentStep < steps.length - 1) {
-						currentStep += 1;
-						syncUI();
-					}
-				});
-			}
-
-			stepperItems.forEach((item) => {
-				item.addEventListener('click', function () {
-					const target = parseInt(item.dataset.step, 10);
-					console.log('Clic sur stepper item, étape:', target);
-					if (!Number.isNaN(target)) {
-						currentStep = target;
-						syncUI();
-					}
-				});
-			});
-
-			console.log('Appel initial de syncUI');
-			syncUI();
-
-			// Intercepter le clic sur les boutons "Modifier" pour ajouter l'étape actuelle
-			const editButtons = document.querySelectorAll('.js-edit-wedding-btn');
-			console.log('=== RECHERCHE BOUTONS MODIFIER ===');
-			console.log('Boutons Modifier trouvés:', editButtons.length);
-			console.log('currentStep actuel:', currentStep);
-			
-			if (editButtons.length > 0) {
-				console.log('Installation des listeners sur', editButtons.length, 'bouton(s) Modifier');
-				editButtons.forEach((editButton, index) => {
-					console.log('Bouton', index + 1, '- Href actuel:', editButton.href);
-					editButton.addEventListener('click', function(e) {
-						e.preventDefault();
-						e.stopPropagation();
-						const baseUrl = '{{ path('app_wedding_edit', {'id': wedding.id}) }}';
-						const finalUrl = baseUrl + '?step=' + currentStep;
-						console.log('!!! CLIC DETECTE sur bouton', index + 1, '!!! Redirection vers:', finalUrl, 'currentStep=', currentStep);
-						window.location.href = finalUrl;
-						return false;
-					}, true);
-				});
-			} else {
-				console.error('ERREUR: Aucun bouton Modifier trouvé !');
-			}
-
-			// Gestion du bouton d'impression
-			const printBtn = document.getElementById('printDerouleBtn');
-			if (printBtn) {
-				printBtn.addEventListener('click', function() {
-					// S'assurer d'être sur l'étape du répertoire avant d'imprimer
-					if (currentStep !== 3) {
-						currentStep = 3;
-						syncUI();
-					}
-					
-					// Attendre un court instant pour que l'affichage se mette à jour
-					setTimeout(() => {
-						window.print();
-					}, 100);
-				});
-			}
-
-			const modalEl = document.getElementById('commentsModal');
-			if (modalEl && typeof bootstrap !== 'undefined') {
-				const bsModal = new bootstrap.Modal(modalEl);
-				const bindCommentForm = (formEl, url) => {
-					if (!formEl) {
-						return;
-					}
-
-					formEl.addEventListener('submit', async function (evt) {
-						evt.preventDefault();
-						const fd = new FormData(formEl);
-						const action = formEl.getAttribute('action') || url;
-						const method = (formEl.getAttribute('method') || 'POST').toUpperCase();
-
-						try {
-							const response = await fetch(action, {
-								method: method,
-								body: fd,
-								headers: { 'X-Requested-With': 'XMLHttpRequest' },
-							});
-							if (!response.ok) {
-								throw new Error('Requête invalide');
-							}
-
-							const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-							const refreshedText = await refreshed.text();
-							const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
-							const newComments = refreshedDoc.querySelector('#comments-box');
-							const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
-
-							modalEl.querySelector('.modal-body').querySelector('h2')?.remove();
-							if (newComments) {
-								const body = modalEl.querySelector('.modal-body');
-								const old = body.querySelector('#comments-box');
-								if (old) {
-									old.replaceWith(newComments.cloneNode(true));
-								} else {
-									body.appendChild(newComments.cloneNode(true));
-								}
-							}
-
-							const footer = modalEl.querySelector('.modal-footer');
-							if (newForm) {
-								footer.innerHTML = '';
-								const clonedForm = newForm.cloneNode(true);
-								footer.appendChild(clonedForm);
-								bindCommentForm(clonedForm, url);
-							}
-						} catch (err) {
-							console.error(err);
-							alert('Erreur lors de l\'envoi du commentaire.');
+					prevBtn.addEventListener('click', function () {
+						if (currentStep > 0) {
+							currentStep -= 1;
+							syncUI();
 						}
-					}, { once: true });
-				};
-				document.querySelectorAll('.open-comments').forEach((btn) => {
-					btn.addEventListener('click', async function () {
-						const weddingId = this.dataset.wedding;
-						const songTypeId = this.dataset.songtype;
-						const url = `/comments/${weddingId}/${songTypeId}`;
-
-						const body = modalEl.querySelector('.modal-body');
-						const footer = modalEl.querySelector('.modal-footer');
-						body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
-						footer.innerHTML = '';
-						bsModal.show();
-
-						try {
-							const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-							const text = await res.text();
-							const parser = new DOMParser();
-							const doc = parser.parseFromString(text, 'text/html');
-
-							const header = doc.querySelector('h2');
-							const commentsBox = doc.querySelector('#comments-box');
-							const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
-
-							body.innerHTML = '';
-							if (header) {
-								body.appendChild(header.cloneNode(true));
-							}
-							if (commentsBox) {
-								body.appendChild(commentsBox.cloneNode(true));
-							} else {
-								body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
-							}
-
-							footer.innerHTML = '';
-							if (form) {
-								const injectedForm = form.cloneNode(true);
-								footer.appendChild(injectedForm);
-								bindCommentForm(injectedForm, url);
-							} else {
-								footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
-							}
-						} catch (err) {
-							console.error(err);
-							modalEl.querySelector('.modal-body').innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
-							modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+					});
+				}
+	
+				if (nextBtn) {
+					nextBtn.addEventListener('click', function () {
+						if (currentStep < steps.length - 1) {
+							currentStep += 1;
+							syncUI();
+						}
+					});
+				}
+	
+				stepperItems.forEach((item) => {
+					item.addEventListener('click', function () {
+						const target = parseInt(item.dataset.step, 10);
+						console.log('Clic sur stepper item, étape:', target);
+						if (!Number.isNaN(target)) {
+							currentStep = target;
+							syncUI();
 						}
 					});
 				});
-			}
-		});
-
-		// Rendu Markdown pour les notes musiciens (vue)
-		document.addEventListener('DOMContentLoaded', function() {
-			const previewContainer = document.getElementById('markdownPreviewView');
-			if (!previewContainer) return;
-
-			const sourceEl = previewContainer.querySelector('.markdown-source');
-			if (!sourceEl) return;
-
-			const sourceText = sourceEl.textContent;
-			
-			// Simple parseur Markdown (même logique que dans edit)
-			function parseMarkdown(text) {
-				if (!text || !text.trim()) {
-					return '<p class="text-muted fst-italic">Aucune note n\'a été ajoutée.</p>';
+	
+				console.log('Appel initial de syncUI');
+				syncUI();
+	
+				// Intercepter le clic sur les boutons "Modifier" pour ajouter l'étape actuelle
+				const editButtons = document.querySelectorAll('.js-edit-wedding-btn');
+				console.log('=== RECHERCHE BOUTONS MODIFIER ===');
+				console.log('Boutons Modifier trouvés:', editButtons.length);
+				console.log('currentStep actuel:', currentStep);
+				
+				if (editButtons.length > 0) {
+					console.log('Installation des listeners sur', editButtons.length, 'bouton(s) Modifier');
+					editButtons.forEach((editButton, index) => {
+						console.log('Bouton', index + 1, '- Href actuel:', editButton.href);
+						editButton.addEventListener('click', function(e) {
+							e.preventDefault();
+							e.stopPropagation();
+							const baseUrl = '{{ path('app_wedding_edit', {'id': wedding.id}) }}';
+							const finalUrl = baseUrl + '?step=' + currentStep;
+							console.log('!!! CLIC DETECTE sur bouton', index + 1, '!!! Redirection vers:', finalUrl, 'currentStep=', currentStep);
+							window.location.href = finalUrl;
+							return false;
+						}, true);
+					});
+				} else {
+					console.error('ERREUR: Aucun bouton Modifier trouvé !');
 				}
-
-				let html = text
-					// Échapper les caractères HTML dangereux
-					.replace(/&/g, '&amp;')
-					.replace(/</g, '&lt;')
-					.replace(/>/g, '&gt;')
-					// Blocs de code (avant autres transformations)
-					.replace(/```([\s\S]*?)```/g, '<pre class="markdown-code-block"><code>$1</code></pre>')
-					.replace(/`([^`]+)`/g, '<code class="markdown-inline-code">$1</code>')
-					// Titres
-					.replace(/^### (.+)$/gm, '<h5 class="markdown-h3">$1</h5>')
-					.replace(/^## (.+)$/gm, '<h4 class="markdown-h2">$1</h4>')
-					.replace(/^# (.+)$/gm, '<h3 class="markdown-h1">$1</h3>')
-					// Gras et italique
-					.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-					.replace(/\*([^*]+)\*/g, '<em>$1</em>')
-					.replace(/~~([^~]+)~~/g, '<del>$1</del>')
-					// Citations
-					.replace(/^&gt; (.+)$/gm, '<blockquote class="markdown-quote">$1</blockquote>')
-					// Checkboxes
-					.replace(/^- \[x\] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" checked disabled> <span>$1</span></div>')
-					.replace(/^- \[ \] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" disabled> <span>$1</span></div>')
-					// Listes à puces
-					.replace(/^- (.+)$/gm, '<li class="markdown-li">$1</li>')
-					.replace(/^(\d+)\. (.+)$/gm, '<li class="markdown-li-num" value="$1">$2</li>')
-					// Liens
-					.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-					// Lignes horizontales
-					.replace(/^---$/gm, '<hr class="markdown-hr">')
-					// Paragraphes (lignes vides)
-					.replace(/\n\n/g, '</p><p class="markdown-p">')
-					// Sauts de ligne simples
-					.replace(/\n/g, '<br>');
-
-				// Envelopper les listes
-				html = html.replace(/(<li class="markdown-li">.*?<\/li>(\s*<br>)?)+/g, function(match) {
-					return '<ul class="markdown-ul">' + match.replace(/<br>/g, '') + '</ul>';
+	
+				// Gestion du bouton d'impression
+				const printBtn = document.getElementById('printDerouleBtn');
+				if (printBtn) {
+					printBtn.addEventListener('click', function() {
+						// S'assurer d'être sur l'étape du répertoire avant d'imprimer
+						if (currentStep !== 3) {
+							currentStep = 3;
+							syncUI();
+						}
+						
+						// Attendre un court instant pour que l'affichage se mette à jour
+						setTimeout(() => {
+							window.print();
+						}, 100);
+					});
+				}
+	
+				const modalEl = document.getElementById('commentsModal');
+				if (modalEl && typeof bootstrap !== 'undefined') {
+					const bsModal = new bootstrap.Modal(modalEl);
+					const bindCommentForm = (formEl, url) => {
+						if (!formEl) {
+							return;
+						}
+	
+						formEl.addEventListener('submit', async function (evt) {
+							evt.preventDefault();
+							const fd = new FormData(formEl);
+							const action = formEl.getAttribute('action') || url;
+							const method = (formEl.getAttribute('method') || 'POST').toUpperCase();
+	
+							try {
+								const response = await fetch(action, {
+									method: method,
+									body: fd,
+									headers: { 'X-Requested-With': 'XMLHttpRequest' },
+								});
+								if (!response.ok) {
+									throw new Error('Requête invalide');
+								}
+	
+								const refreshed = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+								const refreshedText = await refreshed.text();
+								const refreshedDoc = new DOMParser().parseFromString(refreshedText, 'text/html');
+								const newComments = refreshedDoc.querySelector('#comments-box');
+								const newForm = refreshedDoc.querySelector('.card-footer form') || refreshedDoc.querySelector('form');
+	
+								modalEl.querySelector('.modal-body').querySelector('h2')?.remove();
+								if (newComments) {
+									const body = modalEl.querySelector('.modal-body');
+									const old = body.querySelector('#comments-box');
+									if (old) {
+										old.replaceWith(newComments.cloneNode(true));
+									} else {
+										body.appendChild(newComments.cloneNode(true));
+									}
+								}
+	
+								const footer = modalEl.querySelector('.modal-footer');
+								if (newForm) {
+									footer.innerHTML = '';
+									const clonedForm = newForm.cloneNode(true);
+									footer.appendChild(clonedForm);
+									bindCommentForm(clonedForm, url);
+								}
+							} catch (err) {
+								console.error(err);
+								alert('Erreur lors de l\'envoi du commentaire.');
+							}
+						}, { once: true });
+					};
+					document.querySelectorAll('.open-comments').forEach((btn) => {
+						btn.addEventListener('click', async function () {
+							const weddingId = this.dataset.wedding;
+							const songTypeId = this.dataset.songtype;
+							const url = `/comments/${weddingId}/${songTypeId}`;
+	
+							const body = modalEl.querySelector('.modal-body');
+							const footer = modalEl.querySelector('.modal-footer');
+							body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+							footer.innerHTML = '';
+							bsModal.show();
+	
+							try {
+								const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+								const text = await res.text();
+								const parser = new DOMParser();
+								const doc = parser.parseFromString(text, 'text/html');
+	
+								const header = doc.querySelector('h2');
+								const commentsBox = doc.querySelector('#comments-box');
+								const form = doc.querySelector('.card-footer form') || doc.querySelector('form');
+	
+								body.innerHTML = '';
+								if (header) {
+									body.appendChild(header.cloneNode(true));
+								}
+								if (commentsBox) {
+									body.appendChild(commentsBox.cloneNode(true));
+								} else {
+									body.innerHTML += '<p class="text-muted">Aucun commentaire.</p>';
+								}
+	
+								footer.innerHTML = '';
+								if (form) {
+									const injectedForm = form.cloneNode(true);
+									footer.appendChild(injectedForm);
+									bindCommentForm(injectedForm, url);
+								} else {
+									footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+								}
+							} catch (err) {
+								console.error(err);
+								modalEl.querySelector('.modal-body').innerHTML = '<p class="text-danger">Impossible de charger les commentaires.</p>';
+								modalEl.querySelector('.modal-footer').innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>';
+							}
+						});
+					});
+				}
+			});
+	
+			// Rendu Markdown pour les notes musiciens (vue)
+			document.addEventListener('DOMContentLoaded', function() {
+				const previewContainer = document.getElementById('markdownPreviewView');
+				if (!previewContainer) return;
+	
+				const sourceEl = previewContainer.querySelector('.markdown-source');
+				if (!sourceEl) return;
+	
+				const sourceText = sourceEl.textContent;
+				
+				// Simple parseur Markdown (même logique que dans edit)
+				function parseMarkdown(text) {
+					if (!text || !text.trim()) {
+						return '<p class="text-muted fst-italic">Aucune note n\'a été ajoutée.</p>';
+					}
+	
+					let html = text
+						// Échapper les caractères HTML dangereux
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						// Blocs de code (avant autres transformations)
+						.replace(/```([\s\S]*?)```/g, '<pre class="markdown-code-block"><code>$1</code></pre>')
+						.replace(/`([^`]+)`/g, '<code class="markdown-inline-code">$1</code>')
+						// Titres
+						.replace(/^### (.+)$/gm, '<h5 class="markdown-h3">$1</h5>')
+						.replace(/^## (.+)$/gm, '<h4 class="markdown-h2">$1</h4>')
+						.replace(/^# (.+)$/gm, '<h3 class="markdown-h1">$1</h3>')
+						// Gras et italique
+						.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+						.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+						.replace(/~~([^~]+)~~/g, '<del>$1</del>')
+						// Citations
+						.replace(/^&gt; (.+)$/gm, '<blockquote class="markdown-quote">$1</blockquote>')
+						// Checkboxes
+						.replace(/^- \[x\] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" checked disabled> <span>$1</span></div>')
+						.replace(/^- \[ \] (.+)$/gm, '<div class="markdown-checkbox"><input type="checkbox" disabled> <span>$1</span></div>')
+						// Listes à puces
+						.replace(/^- (.+)$/gm, '<li class="markdown-li">$1</li>')
+						.replace(/^(\d+)\. (.+)$/gm, '<li class="markdown-li-num" value="$1">$2</li>')
+						// Liens
+						.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+						// Lignes horizontales
+						.replace(/^---$/gm, '<hr class="markdown-hr">')
+						// Paragraphes (lignes vides)
+						.replace(/\n\n/g, '</p><p class="markdown-p">')
+						// Sauts de ligne simples
+						.replace(/\n/g, '<br>');
+	
+					// Envelopper les listes
+					html = html.replace(/(<li class="markdown-li">.*?<\/li>(\s*<br>)?)+/g, function(match) {
+						return '<ul class="markdown-ul">' + match.replace(/<br>/g, '') + '</ul>';
+					});
+					html = html.replace(/(<li class="markdown-li-num".*?<\/li>(\s*<br>)?)+/g, function(match) {
+						return '<ol class="markdown-ol">' + match.replace(/<br>/g, '') + '</ol>';
+					});
+	
+					return '<div class="markdown-body"><p class="markdown-p">' + html + '</p></div>';
+				}
+	
+				// Remplacer le contenu par le rendu Markdown
+				previewContainer.innerHTML = parseMarkdown(sourceText);
+			});
+	
+			// Prévisualisation des chants
+			(function() {
+				const songPreviewModalEl = document.getElementById('songPreviewModal');
+				const songPreviewModalBody = document.getElementById('songPreviewModalBody');
+				
+				if (!songPreviewModalEl || typeof bootstrap === 'undefined') return;
+				
+				const songPreviewModal = new bootstrap.Modal(songPreviewModalEl);
+				
+				// Gestion des clics sur les boutons de prévisualisation
+				document.querySelectorAll('.js-preview-song').forEach(btn => {
+					btn.addEventListener('click', function() {
+						const songId = this.dataset.songId;
+						if (!songId) return;
+						
+						// Afficher la modal avec le spinner
+						songPreviewModalBody.innerHTML = `
+							<div class="text-center py-4">
+								<div class="spinner-border text-secondary" role="status">
+									<span class="visually-hidden">Chargement...</span>
+								</div>
+							</div>
+						`;
+						songPreviewModal.show();
+						
+						// Charger le contenu via AJAX
+						fetch(`/songs/preview/${songId}`)
+							.then(response => {
+								if (!response.ok) throw new Error('Chant introuvable');
+								return response.text();
+							})
+							.then(html => {
+								songPreviewModalBody.innerHTML = html;
+							})
+							.catch(error => {
+								songPreviewModalBody.innerHTML = `
+									<div class="alert alert-danger mb-0">
+										<i class="bi bi-exclamation-triangle me-2"></i>
+										Impossible de charger la prévisualisation du chant.
+									</div>
+								`;
+							});
+					});
 				});
-				html = html.replace(/(<li class="markdown-li-num".*?<\/li>(\s*<br>)?)+/g, function(match) {
-					return '<ol class="markdown-ol">' + match.replace(/<br>/g, '') + '</ol>';
+				
+				// Mettre à jour le bouton de prévisualisation quand le select change
+				document.querySelectorAll('.js-deroule-select').forEach(select => {
+					select.addEventListener('change', function() {
+						const previewBtn = this.closest('.deroule-row')?.querySelector('.js-preview-song');
+						if (previewBtn) {
+							const selectedSongId = this.value;
+							previewBtn.dataset.songId = selectedSongId;
+							previewBtn.disabled = !selectedSongId;
+						}
+					});
 				});
-
-				return '<div class="markdown-body"><p class="markdown-p">' + html + '</p></div>';
-			}
-
-			// Remplacer le contenu par le rendu Markdown
-			previewContainer.innerHTML = parseMarkdown(sourceText);
-		});
-	</script>
+			})();
+		</script>
 {% endblock %}
+

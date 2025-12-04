@@ -983,6 +983,79 @@
     border-bottom: none;
 }
 
+/* Légende des icônes du déroulé */
+.deroule-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    overflow: hidden;
+}
+
+.deroule-legend__intro {
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.deroule-legend__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.deroule-legend__list li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.deroule-legend__list li span {
+    word-break: break-word;
+}
+
+.deroule-legend__list li strong {
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+/* Conteneur alert - éviter le débordement */
+.alert.deroule-legend {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Sur mobile : affichage en liste verticale */
+@media (max-width: 767.98px) {
+    .deroule-legend {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .deroule-legend__intro {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .deroule-legend__list {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .deroule-legend__list li {
+        padding-left: 0.5rem;
+        border-left: 2px solid rgba(101, 45, 144, 0.3);
+    }
+}
+
 .deroule-col {
     display: flex;
     flex-direction: column;
@@ -1024,6 +1097,7 @@
 .deroule-type-badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: .35rem;
     border-radius: 999px;
     padding: .45rem .9rem;
@@ -1031,8 +1105,12 @@
     background: rgba(101, 45, 144, 0.08);
     color: var(--color-secondary);
     font-weight: 600;
-    min-width: 140px;
-    justify-content: center;
+    width: 160px;
+    max-width: 160px;
+    text-align: center;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+
 }
 
 .deroule-row > div:not(:first-child) {
@@ -1708,6 +1786,55 @@
  }
 
 /* ============================================
+   SONG PREVIEW MODAL
+   ============================================ */
+
+.song-preview-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.song-preview-modal__header h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+}
+
+.song-preview-modal__body {
+    font-size: 0.95rem;
+}
+
+.song-preview-modal__lyrics {
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-family: inherit;
+    background: rgba(101, 45, 144, 0.04);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(101, 45, 144, 0.1);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.song-preview-modal__footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+#songPreviewModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* ============================================
    PRINT STYLES - Format A4
    ============================================ */
 
@@ -1865,13 +1992,17 @@
 	}
 
 	.deroule-type-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		background: #f0e6f6 !important;
 		color: #652d90 !important;
 		padding: 0.15cm 0.3cm;
 		border-radius: 0.2cm;
 		font-size: 9pt;
 		font-weight: 600;
-		min-width: auto;
+		width: 3.5cm;
+		text-align: center;
 		-webkit-print-color-adjust: exact;
 		print-color-adjust: exact;
 	}

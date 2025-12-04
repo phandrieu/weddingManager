@@ -1,0 +1,136 @@
+{# Contenu de la modal de prévisualisation d'un chant #}
+{% set isSong = song.song %}
+{% set previewValue = song.previewUrl ?: '' %}
+{% set previewVideoId = '' %}
+{% if previewValue %}
+    {% if 'v=' in previewValue %}
+        {% set previewVideoId = previewValue|split('v=')|last|split('&')|first %}
+    {% elseif previewValue matches '~youtu\\.be/(.+)$~' %}
+        {% set previewVideoId = previewValue|replace({'https://youtu.be/':'','http://youtu.be/':''}) %}
+    {% endif %}
+{% endif %}
+{% set previewInitialSrc = previewVideoId ? 'https://www.youtube.com/embed/' ~ previewVideoId : (previewValue ?: 'about:blank') %}
+
+<div class="song-preview-modal">
+    <div class="song-preview-modal__header">
+        <span class="badge {{ isSong ? 'text-bg-primary' : 'text-bg-info' }} me-2">
+            {{ isSong ? 'Chant' : 'Lecture / Prière' }}
+        </span>
+        <h4 class="mb-0">{{ song.name }}</h4>
+    </div>
+
+    <div class="song-preview-modal__body">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                {# Catégories #}
+                {% if song.types is not empty %}
+                    <div class="mb-3">
+                        <label class="form-label-sm text-muted d-block mb-1">Catégorie(s)</label>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for type in song.types %}
+                                <span class="badge text-bg-secondary">{{ type.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Paroles / Texte #}
+                <div class="mb-3">
+                    <label class="form-label-sm text-muted d-block mb-1">Paroles / Texte</label>
+                    {% if song.lyrics %}
+                        <div class="song-preview-modal__lyrics">{{ song.lyrics }}</div>
+                    {% else %}
+                        <p class="text-muted mb-0 fst-italic">Aucun texte fourni pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                {# Prévisualisation vidéo (pour les chants) #}
+                {% if isSong and (previewVideoId or previewValue) %}
+                    <div class="mb-3">
+                        <label class="form-label-sm text-muted d-block mb-1">Prévisualisation</label>
+                        {% if previewVideoId %}
+                            <div class="ratio ratio-16x9">
+                                <iframe src="{{ previewInitialSrc }}" title="Prévisualisation vidéo" allowfullscreen></iframe>
+                            </div>
+                        {% elseif previewValue %}
+                            <a href="{{ previewValue }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-play-circle me-1"></i>
+                                Écouter
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {# Partition PDF #}
+                {% if isSong and song.partitionPDFName %}
+                    <div class="mb-3">
+                        <label class="form-label-sm text-muted d-block mb-1">Partition</label>
+                        <a href="{{ asset('uploads/song_pdf/' ~ song.partitionPDFName) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                            Télécharger
+                        </a>
+                    </div>
+                {% endif %}
+
+                {# Crédits (pour les chants) #}
+                {% if isSong %}
+                    <div class="mb-3">
+                        <label class="form-label-sm text-muted d-block mb-2">Crédits</label>
+                        <dl class="row mb-0 small">
+                            {% if song.musicAuthorName %}
+                                <dt class="col-5 text-muted">Compositeur(s)</dt>
+                                <dd class="col-7">{{ song.musicAuthorName }}</dd>
+                            {% endif %}
+                            {% if song.lyricsAuthorName %}
+                                <dt class="col-5 text-muted">Paroles</dt>
+                                <dd class="col-7">{{ song.lyricsAuthorName }}</dd>
+                            {% endif %}
+                            {% if song.interpretName %}
+                                <dt class="col-5 text-muted">Interprète(s)</dt>
+                                <dd class="col-7">{{ song.interpretName }}</dd>
+                            {% endif %}
+                            {% if song.editorName %}
+                                <dt class="col-5 text-muted">Éditeur(s)</dt>
+                                <dd class="col-7">{{ song.editorName }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                {% else %}
+                    {# Infos texte (pour les lectures/prières) #}
+                    {% if song.textRef or song.textTranslationName %}
+                        <div class="mb-3">
+                            <label class="form-label-sm text-muted d-block mb-2">Informations</label>
+                            <dl class="row mb-0 small">
+                                {% if song.textRef %}
+                                    <dt class="col-5 text-muted">Référence</dt>
+                                    <dd class="col-7">{{ song.textRef }}</dd>
+                                {% endif %}
+                                {% if song.textTranslationName %}
+                                    <dt class="col-5 text-muted">Traduction</dt>
+                                    <dd class="col-7">{{ song.textTranslationName }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {# Statut #}
+                <div class="mb-3">
+                    <label class="form-label-sm text-muted d-block mb-1">Statut</label>
+                    <span class="badge {{ song.suggestion ? 'text-bg-warning' : 'text-bg-success' }}">
+                        {{ song.suggestion ? 'Suggestion en attente' : 'Disponible' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="song-preview-modal__footer">
+        <a href="{{ path('app_song_view', {'id': song.id}) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-box-arrow-up-right me-1"></i>
+            Voir la fiche complète
+        </a>
+    </div>
+</div>

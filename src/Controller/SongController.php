@@ -119,6 +119,15 @@ class SongController extends AbstractController
             'song' => $song,
         ]);
     }
+
+    #[Route('/preview/{id}', name: 'app_song_preview', methods: ['GET'])]
+    public function preview(Song $song): Response
+    {
+        return $this->render('song/_preview_modal_content.html.twig', [
+            'song' => $song,
+        ]);
+    }
+
     #[Route('/approve/{id}', name: 'app_song_approve_suggestion', methods: ['POST'])]
     public function approveSong(Song $song, Request $request, EntityManagerInterface $em): Response
     {
