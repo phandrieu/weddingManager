@@ -12,7 +12,7 @@
         "doctrine/doctrine-fixtures-bundle": "*",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.5",
-        "knplabs/knp-snappy-bundle": "^1.10",
+        "dompdf/dompdf": "^3.1",
         "league/commonmark": "^2.8",
         "liip/imagine-bundle": "^2.15",
         "phpdocumentor/reflection-docblock": "^5.6",

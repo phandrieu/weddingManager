@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    dompdf_font_dir: '%kernel.project_dir%/var/dompdf/fonts'
+    dompdf_temp_dir: '%kernel.project_dir%/var/dompdf/temp'
 
 services:
     # default configuration for services in *this* file
@@ -49,3 +51,9 @@ services:
     App\Repository\WebAuthnUserRepository:
         arguments:
             $userRepository: '@App\Repository\UserRepository'
+
+    App\Service\PdfRenderer:
+        arguments:
+            $defaultFont: '%env(default::string::DOMPDF_DEFAULT_FONT)%'
+            $fontDirectory: '%dompdf_font_dir%'
+            $tempDirectory: '%dompdf_temp_dir%'

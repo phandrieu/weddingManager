@@ -29,7 +29,7 @@
         }
 
         body {
-            font-family: 'Avenir LT Pro', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: var(--ink);
             font-size: 12px;
             line-height: 1.45;
@@ -39,7 +39,7 @@
         }
 
         h1, h2, h3, h4 {
-            font-family: 'Alfarn', 'Georgia', serif;
+            font-family: 'Georgia', 'Times New Roman', serif;
             margin: 0 0 6px;
             letter-spacing: .04em;
         }
@@ -72,31 +72,45 @@
         }
 
         .pdf-hero {
-            background: linear-gradient(120deg, var(--secondary) 0%, var(--secondary-dark) 45%, var(--primary) 100%);
-            color: #fff;
+            background: var(--card);
+            color: var(--ink);
             border-radius: 16px;
-            padding: 20px 22px;
+            padding: 18px 20px;
             margin-bottom: 18px;
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
             position: relative;
-            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .pdf-hero::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.18), transparent 45%);
+            background: radial-gradient(circle at 20% 20%, rgba(255, 129, 0, 0.1), transparent 45%);
+            opacity: .35;
         }
 
         .pdf-hero__heading {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
             position: relative;
             z-index: 1;
+        }
+
+        .hero-logo-wrapper {
+            width: 90px;
+            height: 90px;
+            border-radius: 16px;
+            background: var(--ghost);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
         }
 
         .pdf-logo {
@@ -105,23 +119,30 @@
             object-fit: contain;
         }
 
+        .hero-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .hero-eyebrow {
             text-transform: uppercase;
             letter-spacing: .2em;
             font-size: 10px;
             margin: 0 0 4px;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--muted);
         }
 
         .hero-title {
             font-size: 22px;
             margin-bottom: 4px;
+            color: var(--secondary);
         }
 
         .hero-names {
             font-size: 14px;
             letter-spacing: .08em;
             margin-bottom: 6px;
+            color: var(--ink);
         }
 
         .hero-badges {
@@ -143,28 +164,28 @@
         }
 
         .badge--ghost {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
+            background: rgba(101, 45, 144, 0.12);
+            color: var(--secondary);
         }
 
         .badge--outline {
-            border: 1px solid rgba(255, 255, 255, 0.65);
-            color: #fff;
+            border: 1px solid rgba(101, 45, 144, 0.4);
+            color: var(--secondary);
         }
 
         .hero-meta {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 10px;
             position: relative;
             z-index: 1;
         }
 
         .hero-meta__item {
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
-            padding: 10px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: var(--ghost);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
         }
 
         .hero-meta__item span {
@@ -173,17 +194,124 @@
             letter-spacing: .18em;
             text-transform: uppercase;
             margin-bottom: 4px;
-            color: rgba(255, 255, 255, 0.75);
+            color: var(--muted);
         }
 
         .hero-meta__item strong {
             font-size: 13px;
             font-weight: 600;
-            color: #fff;
+            color: var(--ink);
+        }
+
+        .summary-panel {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .summary-table th {
+            width: 20%;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            font-size: 9px;
+            color: var(--muted);
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-table td {
+            width: 30%;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-table td div {
+            margin-bottom: 3px;
+        }
+
+        .summary-table tr:last-child th,
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .summary-note {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            padding: 10px 14px 12px;
+        }
+
+        .first-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .pdf-body {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            page-break-before: always;
+        }
+
+        .contacts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .contacts-table th,
+        .contacts-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contacts-table th {
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        .contacts-table td strong {
+            color: var(--secondary);
+        }
+
+        .quick-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .contacts-panel {
+            margin-bottom: 18px;
         }
 
         .pdf-section {
-            margin-bottom: 18px;
+            margin: 0;
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            background: var(--card);
+        }
+
+        .panel--soft {
+            background: var(--ghost);
+        }
+
+        .panel--shadow {
+            box-shadow: 0 8px 24px rgba(47, 31, 58, 0.08);
         }
 
         .section-title {
@@ -204,32 +332,36 @@
             background: linear-gradient(90deg, var(--secondary), var(--primary));
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             gap: 12px;
         }
 
-        .info-card {
-            background: var(--ghost);
+        .qr-panel {
+            padding-bottom: 10px;
+        }
+
+        .qr-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .qr-card img {
+            width: 120px;
+            height: 120px;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 12px;
-            min-height: 70px;
+            padding: 6px;
+            background: var(--ghost);
         }
 
-        .info-card span {
-            display: block;
-            font-size: 9px;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-
-        .info-card strong {
-            font-size: 13px;
-            color: var(--ink);
+        .qr-link {
+            font-size: 11px;
+            color: var(--secondary);
+            word-break: break-all;
         }
 
         .participants-columns {
@@ -264,20 +396,79 @@
             margin-bottom: 4px;
         }
 
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-card span {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+        }
+
+        .stat-card strong {
+            font-size: 18px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: var(--secondary);
+        }
+
+        .stat-card small {
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .legend {
+            display: flex;
+            gap: 10px;
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .legend-dot--ok {
+            background: var(--success);
+        }
+
+        .legend-dot--pending {
+            background: var(--warning);
+        }
+
         .deroule-group {
             border: 1px solid var(--border);
             border-radius: 14px;
             margin-bottom: 14px;
             overflow: hidden;
+            background: var(--card);
         }
 
         .deroule-group__title {
             font-size: 12px;
             font-weight: 600;
-            padding: 8px 14px;
+            padding: 10px 14px;
             text-transform: uppercase;
             letter-spacing: .08em;
             border-bottom: 1px solid var(--border);
+            color: var(--secondary);
+            background: var(--ghost);
         }
 
         table.deroule-table {
@@ -293,20 +484,17 @@
         }
 
         table.deroule-table th {
-            background: linear-gradient(120deg, var(--secondary), var(--primary));
-            color: #fff;
+            background: var(--card);
+            color: var(--secondary);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: .06em;
             font-size: 10px;
+            border-bottom: 1px solid var(--border);
         }
 
         table.deroule-table td {
             border-top: 1px solid var(--border);
-        }
-
-        table.deroule-table tbody tr:nth-child(even) td {
-            background: var(--ghost);
         }
 
         .status-chip {
@@ -331,11 +519,10 @@
         }
 
         .notes {
-            border-radius: 14px;
+            border-radius: 12px;
             background: var(--card);
             border: 1px solid var(--border);
-            padding: 14px;
-            box-shadow: 0 10px 24px rgba(101, 45, 144, 0.08);
+            padding: 12px;
         }
 
         .notes :where(h1, h2, h3, h4, h5, h6) {
@@ -346,6 +533,36 @@
 
         .notes ul {
             margin: 0 0 8px 18px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .contact-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: var(--card);
+        }
+
+        .contact-card span {
+            display: block;
+            font-size: 9px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .contact-card strong {
+            font-size: 13px;
+            color: var(--ink);
+        }
+
+        .contact-card p {
+            margin: 2px 0;
         }
 
         .text-muted {
@@ -366,8 +583,10 @@
 <div class="pdf-canvas">
 <header class="pdf-hero">
     <div class="pdf-hero__heading">
-        <img src="{{ absolute_url(asset('logos/logo_white_nobg_noborder.png')) }}" alt="Logo" class="pdf-logo">
-        <div>
+        <div class="hero-logo-wrapper">
+            <img src="{{ logoSource }}" alt="Logo" class="pdf-logo">
+        </div>
+        <div class="hero-info">
             <p class="hero-eyebrow">Notre Messe de Mariage</p>
             <h1 class="hero-title">Déroulé de la célébration</h1>
             <p class="hero-names">
@@ -379,7 +598,6 @@
             </p>
             <div class="hero-badges">
                 <span class="badge badge--ghost">{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</span>
-                <span class="badge badge--outline">Ref #{{ wedding.id }}</span>
             </div>
         </div>
     </div>
@@ -414,142 +632,264 @@
         </div>
     </div>
 </header>
+{% set totalTypes = songTypes|length %}
+{% set selectionCount = 0 %}
+{% set musicianValidated = 0 %}
+{% set parishValidated = 0 %}
+{% for type in songTypes %}
+    {% set selection = songSelectionsByType[type.id]|default(null) %}
+    {% if selection %}
+        {% set selectionCount = selectionCount + 1 %}
+        {% if selection.validatedByMusician %}{% set musicianValidated = musicianValidated + 1 %}{% endif %}
+        {% if selection.validatedByParish %}{% set parishValidated = parishValidated + 1 %}{% endif %}
+    {% endif %}
+{% endfor %}
+{% set pendingTypes = totalTypes - selectionCount %}
+{% if pendingTypes < 0 %}{% set pendingTypes = 0 %}{% endif %}
+{% set musicianPending = selectionCount - musicianValidated %}
+{% if musicianPending < 0 %}{% set musicianPending = 0 %}{% endif %}
+{% set parishPending = selectionCount - parishValidated %}
+{% if parishPending < 0 %}{% set parishPending = 0 %}{% endif %}
+{% set firstParishContact = wedding.parishUsers|length > 0 ? wedding.parishUsers|first : null %}
+{% set celebrantName = (wedding.priestFirstName ~ ' ' ~ wedding.priestLastName)|trim %}
+{% set logoSource = logoDataUri ?? absolute_url(asset('logos/logo_app.png')) %}
+{% set weddingUrl = absolute_url(path('app_wedding_view', { id: wedding.id })) %}
+{% set qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' ~ (weddingUrl|url_encode) %}
 
-<section class="pdf-section">
-    <h2 class="section-title">Informations principales</h2>
-    <div class="info-grid">
-        <div class="info-card">
-            <span>Type</span>
-            <strong>{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</strong>
-        </div>
-        <div class="info-card">
-            <span>Adresse</span>
-            <strong>
-                {% if wedding.addressLine1 %}{{ wedding.addressLine1 }}{% endif %}
-                {% if wedding.addressLine2 %}<br>{{ wedding.addressLine2 }}{% endif %}
-                {% if wedding.addressPostalCodeAndCity %}<br>{{ wedding.addressPostalCodeAndCity }}{% endif %}
-            </strong>
-        </div>
-        <div class="info-card">
-            <span>Créé par</span>
-            <strong>{{ wedding.createdBy ? wedding.createdBy.fullName : '—' }}</strong>
-        </div>
-        <div class="info-card">
-            <span>Référence</span>
-            <strong>#{{ wedding.id }}</strong>
-        </div>
-    </div>
-</section>
-
-<section class="pdf-section" style="page-break-inside: avoid;">
-    <h2 class="section-title">Intervenants</h2>
-    <div class="participants-columns">
-        <div class="participant-card">
-            <h3>Musiciens</h3>
-            <ul>
+<section class="pdf-section panel summary-panel">
+    <table class="summary-table">
+        <tbody>
+        <tr>
+            <th>Type</th>
+            <td>{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</td>
+            <th>Date &amp; heure</th>
+            <td>
+                {% if wedding.date %}
+                    {{ wedding.date|date('d/m/Y') }}{% if wedding.time %} à {{ wedding.time|date('H\\hi') }}{% endif %}
+                {% else %}
+                    Date à confirmer
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Lieu</th>
+            <td>
+                {% if wedding.church %}
+                    {{ wedding.church }}{% if wedding.parish %}<br>{{ wedding.parish }}{% endif %}
+                {% elseif wedding.parish %}
+                    {{ wedding.parish }}
+                {% else %}
+                    Lieu à confirmer
+                {% endif %}
+            </td>
+            <th>Adresse</th>
+            <td>
+                {% if wedding.addressLine1 %}<div>{{ wedding.addressLine1 }}</div>{% endif %}
+                {% if wedding.addressLine2 %}<div>{{ wedding.addressLine2 }}</div>{% endif %}
+                {% if wedding.addressPostalCodeAndCity %}<div>{{ wedding.addressPostalCodeAndCity }}</div>{% endif %}
+                {% if not wedding.addressLine1 and not wedding.addressPostalCodeAndCity %}
+                    <span class="text-muted">Adresse à compléter</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Contact paroisse</th>
+            <td>
+                {% if firstParishContact %}
+                    <div><strong>{{ firstParishContact.fullName }}</strong></div>
+                    {% if firstParishContact.telephone %}<div>{{ firstParishContact.telephone }}</div>{% endif %}
+                    {% if firstParishContact.email %}<div>{{ firstParishContact.email }}</div>{% endif %}
+                {% else %}
+                    <span class="text-muted">Aucun contact associé</span>
+                {% endif %}
+            </td>
+            <th>Célébrant</th>
+            <td>
+                <div><strong>{{ celebrantName ? celebrantName : 'À définir' }}</strong></div>
+                {% if wedding.priestPhoneNumber %}<div>{{ wedding.priestPhoneNumber }}</div>{% endif %}
+                {% if wedding.priestEMail %}<div>{{ wedding.priestEMail }}</div>{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Musiciens</th>
+            <td>
                 {% if wedding.musicians|length > 0 %}
                     {% for musician in wedding.musicians %}
-                        <li>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</li>
+                        <div>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</div>
                     {% endfor %}
                 {% else %}
-                    <li class="text-muted">Aucun musicien associé</li>
+                    <span class="text-muted">Aucun musicien associé</span>
                 {% endif %}
-            </ul>
-        </div>
-        <div class="participant-card">
-            <h3>Contacts paroissiaux</h3>
-            <ul>
-                {% if wedding.parishUsers|length > 0 %}
-                    {% for member in wedding.parishUsers %}
-                        <li>{{ member.fullName }}{% if member.telephone %} — {{ member.telephone }}{% endif %}</li>
-                    {% endfor %}
-                {% else %}
-                    <li class="text-muted">Aucun contact paroissial</li>
-                {% endif %}
-            </ul>
-        </div>
-        <div class="participant-card">
-            <h3>Célébrant</h3>
-            <p>{{ wedding.priestFirstName }} {{ wedding.priestLastName }}</p>
-            {% if wedding.priestPhoneNumber %}<p>{{ wedding.priestPhoneNumber }}</p>{% endif %}
-            {% if wedding.priestEMail %}<p>{{ wedding.priestEMail }}</p>{% endif %}
-        </div>
-    </div>
+            </td>
+            <th>Lien du mariage</th>
+            <td>
+                <div>{{ weddingUrl }}</div>
+                <span class="text-muted">Disponible via le QR code</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p class="summary-note">Document généré le {{ generatedAt|date('d/m/Y à H\\hi') }}</p>
 </section>
 
-<section class="pdf-section">
-    <h2 class="section-title">Déroulé & validations</h2>
-    {% set groups = {} %}
-    {% for t in songTypes %}
-        {% set period = t.celebrationPeriod %}
-        {% set label = period ? period.fullName : 'Autres séquences' %}
-        {% set color = period ? period.color : '#ecebfd' %}
-        {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
-        {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
-        {% set existing = groups[key]|default({ 'label': label, 'color': color, 'types': [] }) %}
-        {% set groups = groups|merge({
-            (key): existing|merge({ 'label': label, 'color': color, 'types': existing.types|merge([t]) })
-        }) %}
-    {% endfor %}
-
-    {% for groupKey in groups|keys|sort %}
-        {% set group = groups[groupKey] %}
-        <div class="deroule-group">
-            <div class="deroule-group__title" style="background: {{ group.color ?? '#ecebfd' }}10; border-color: {{ group.color ?? '#ecebfd' }};">
-                {{ group.label }}
+<div class="pdf-body">
+    <div class="column column--primary">
+        <section class="pdf-section panel panel--shadow">
+            <div class="section-header">
+                <h2 class="section-title">Déroulé & validations</h2>
+                <div class="legend">
+                    <span><span class="legend-dot legend-dot--ok"></span> Validé</span>
+                    <span><span class="legend-dot legend-dot--pending"></span> En attente</span>
+                </div>
             </div>
-            <table class="deroule-table">
-                <thead>
-                    <tr>
-                        <th style="width: 28%">Type</th>
-                        <th style="width: 42%">Choix retenu</th>
-                        <th style="width: 15%">Validation musicien</th>
-                        <th style="width: 15%">Validation paroisse</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for type in group.types %}
-                        {% set selection = songSelectionsByType[type.id]|default(null) %}
-                        {% set song = (selection and selection.songId) ? songsById[selection.songId]|default(null) : null %}
-                        <tr>
-                            <td><strong>{{ type.name }}</strong></td>
-                            <td>
-                                {% if song %}
-                                    {{ song.name ?? song.title ?? 'Titre inconnu' }}
-                                {% else %}
-                                    <span style="color: var(--muted);">Pas de sélection</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% set musicianValidated = selection ? selection.validatedByMusician : false %}
-                                <span class="status-chip {{ musicianValidated ? 'status-ok' : 'status-pending' }}">
-                                    {{ musicianValidated ? 'Validé' : 'En attente' }}
-                                </span>
-                            </td>
-                            <td>
-                                {% set parishValidated = selection ? selection.validatedByParish : false %}
-                                <span class="status-chip {{ parishValidated ? 'status-ok' : 'status-pending' }}">
-                                    {{ parishValidated ? 'Validé' : 'En attente' }}
-                                </span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="text-muted">Aucun type de chant n'a encore été configuré pour cette célébration.</p>
-    {% endfor %}
-</section>
+            {% set groups = {} %}
+            {% for t in songTypes %}
+                {% set period = t.celebrationPeriod %}
+                {% set label = period ? period.fullName : 'Autres séquences' %}
+                {% set color = period ? period.color : '#ecebfd' %}
+                {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
+                {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
+                {% set existing = groups[key]|default({ 'label': label, 'color': color, 'types': [] }) %}
+                {% set groups = groups|merge({
+                    (key): existing|merge({ 'label': label, 'color': color, 'types': existing.types|merge([t]) })
+                }) %}
+            {% endfor %}
 
-{% if notesHtml %}
-<section class="pdf-section">
-    <h2 class="section-title">Notes & consignes</h2>
-    <div class="notes">
-        {{ notesHtml|raw }}
+            {% for groupKey in groups|keys|sort %}
+                {% set group = groups[groupKey] %}
+                <div class="deroule-group">
+                    <div class="deroule-group__title" style="background: {{ group.color ?? '#ecebfd' }}10; border-color: {{ group.color ?? '#ecebfd' }};">
+                        {{ group.label }}
+                    </div>
+                    <table class="deroule-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 28%">Type</th>
+                                <th style="width: 42%">Choix retenu</th>
+                                <th style="width: 15%">Validation musicien</th>
+                                <th style="width: 15%">Validation paroisse</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for type in group.types %}
+                                {% set selection = songSelectionsByType[type.id]|default(null) %}
+                                {% set song = (selection and selection.songId) ? songsById[selection.songId]|default(null) : null %}
+                                <tr>
+                                    <td><strong>{{ type.name }}</strong></td>
+                                    <td>
+                                        {% if song %}
+                                            {{ song.name ?? song.title ?? 'Titre inconnu' }}
+                                        {% else %}
+                                            <span style="color: var(--muted);">Pas de sélection</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set musicianOK = selection ? selection.validatedByMusician : false %}
+                                        <span class="status-chip {{ musicianOK ? 'status-ok' : 'status-pending' }}">
+                                            {{ musicianOK ? 'Validé' : 'En attente' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% set parishOK = selection ? selection.validatedByParish : false %}
+                                        <span class="status-chip {{ parishOK ? 'status-ok' : 'status-pending' }}">
+                                            {{ parishOK ? 'Validé' : 'En attente' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">Aucun type de chant n'a encore été configuré pour cette célébration.</p>
+            {% endfor %}
+        </section>
+
+        {% if notesHtml %}
+            <section class="pdf-section panel panel--soft">
+                <h2 class="section-title">Notes & consignes</h2>
+                <div class="notes">
+                    {{ notesHtml|raw }}
+                </div>
+            </section>
+        {% endif %}
     </div>
-</section>
-{% endif %}
+
+    <div class="column column--secondary">
+        <section class="pdf-section panel qr-panel">
+            <h2 class="section-title">Accès rapide</h2>
+            <div class="qr-card">
+                <img src="{{ qrCodeUrl }}" alt="QR code du mariage">
+                <div>
+                    <p>Scannez pour ouvrir le déroulé en ligne.</p>
+                    <p class="qr-link">{{ weddingUrl }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="pdf-section panel panel--shadow">
+            <h2 class="section-title">Suivi des validations</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <span>Types configurés</span>
+                    <strong>{{ totalTypes }}</strong>
+                    <small>{{ pendingTypes }} restant{% if pendingTypes > 1 %}s{% endif %}</small>
+                </div>
+                <div class="stat-card">
+                    <span>Choix renseignés</span>
+                    <strong>{{ selectionCount }}</strong>
+                    <small>{{ totalTypes > 0 ? (selectionCount * 100 / totalTypes)|round(0, 'floor') : 0 }}% du déroulé</small>
+                </div>
+                <div class="stat-card">
+                    <span>Validations musiciens</span>
+                    <strong>{{ musicianValidated }}</strong>
+                    <small>{{ musicianPending }} en attente</small>
+                </div>
+                <div class="stat-card">
+                    <span>Validations paroisse</span>
+                    <strong>{{ parishValidated }}</strong>
+                    <small>{{ parishPending }} en attente</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="pdf-section panel panel--soft" style="page-break-inside: avoid;">
+            <h2 class="section-title">Intervenants</h2>
+            <div class="participants-columns">
+                <div class="participant-card">
+                    <h3>Musiciens</h3>
+                    <ul>
+                        {% if wedding.musicians|length > 0 %}
+                            {% for musician in wedding.musicians %}
+                                <li>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="text-muted">Aucun musicien associé</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="participant-card">
+                    <h3>Contacts paroissiaux</h3>
+                    <ul>
+                        {% if wedding.parishUsers|length > 0 %}
+                            {% for member in wedding.parishUsers %}
+                                <li>{{ member.fullName }}{% if member.telephone %} — {{ member.telephone }}{% endif %}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="text-muted">Aucun contact paroissial</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="participant-card">
+                    <h3>Célébrant</h3>
+                    <p>{{ celebrantName ? celebrantName : 'À définir' }}</p>
+                    {% if wedding.priestPhoneNumber %}<p>{{ wedding.priestPhoneNumber }}</p>{% endif %}
+                    {% if wedding.priestEMail %}<p>{{ wedding.priestEMail }}</p>{% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 
 <footer>
     Notre Messe de Mariage — Export PDF destiné aux intervenants

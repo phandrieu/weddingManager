@@ -18,10 +18,10 @@ use App\Repository\CommentRepository;
 use App\Service\InvitationWorkflow;
 use App\Service\MarkdownRenderer;
 use App\Service\NotificationService;
+use App\Service\PdfRenderer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use DateTimeImmutable;
-use Knp\Snappy\Pdf;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -402,7 +402,7 @@ class WeddingController extends AbstractController
         Wedding $wedding,
         SongTypeRepository $songTypeRepo,
         SongRepository $songRepo,
-        Pdf $pdf,
+        PdfRenderer $pdfRenderer,
         MarkdownRenderer $markdownRenderer
     ): Response {
         $this->checkWeddingAccess($wedding);
@@ -430,6 +430,12 @@ class WeddingController extends AbstractController
         $notesHtml = $markdownRenderer->render($wedding->getNotesMusiciens());
         $generatedAt = new DateTimeImmutable();
 
+        $logoPath = $this->getParameter('kernel.project_dir').'/public/logos/logo_app.png';
+        $logoDataUri = null;
+        if (is_file($logoPath)) {
+            $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));
+        }
+
         $html = $this->renderView('wedding/pdf_export.html.twig', [
             'wedding' => $wedding,
             'songTypes' => $songTypes,
@@ -437,18 +443,19 @@ class WeddingController extends AbstractController
             'songsById' => $songsById,
             'notesHtml' => $notesHtml,
             'generatedAt' => $generatedAt,
+            'logoDataUri' => $logoDataUri,
         ]);
 
         $fileName = sprintf('deroule-mariage-%d.pdf', $wedding->getId() ?? 0);
 
-        $pdfContent = $pdf->getOutputFromHtml($html, [
-            'encoding' => 'UTF-8',
-            'enable-local-file-access' => true,
-            'margin-top' => '12mm',
-            'margin-bottom' => '12mm',
-            'margin-left' => '10mm',
-            'margin-right' => '10mm',
-            'print-media-type' => true,
+        $pdfContent = $pdfRenderer->render($html, [
+            'format' => 'A4',
+            'margins' => [
+                'top' => '12mm',
+                'bottom' => '12mm',
+                'left' => '10mm',
+                'right' => '10mm',
+            ],
         ]);
 
         return new Response($pdfContent, Response::HTTP_OK, [
