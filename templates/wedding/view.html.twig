@@ -179,12 +179,14 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Futur marié</h3>
-											<span class="badge rounded-pill bg-success text-white">
-												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
-											</span>
-											{% if wedding.marie.email %}
-												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
-											{% endif %}
+											<div class="d-flex flex-column flex-md-row gap-1 gap-md-2 align-items-end align-items-md-center">
+												<span class="badge rounded-pill bg-success text-white">
+													<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+												</span>
+												{% if wedding.marie.email %}
+													<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marie.email }}</span>
+												{% endif %}
+											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
 											<div>
@@ -215,12 +217,14 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Futur marié</h3>
-											<span class="badge rounded-pill bg-warning text-dark">
-												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
-											</span>
-											{% if wedding.marieEmail %}
-												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieEmail }}</span>
-											{% endif %}
+											<div class="d-flex flex-column flex-md-row gap-1 gap-md-2 align-items-end align-items-md-center">
+												<span class="badge rounded-pill bg-warning text-dark">
+													<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+												</span>
+												{% if wedding.marieEmail %}
+													<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieEmail }}</span>
+												{% endif %}
+											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
 											{% if wedding.marieFirstName or wedding.marieName %}
@@ -262,12 +266,14 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Future mariée</h3>
-											<span class="badge rounded-pill bg-success text-white">
-												<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
-											</span>
-											{% if wedding.mariee.email %}
-												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
-											{% endif %}
+											<div class="d-flex flex-column flex-md-row gap-1 gap-md-2 align-items-end align-items-md-center">
+												<span class="badge rounded-pill bg-success text-white">
+													<i class="bi bi-check-circle me-1"></i>Utilisateur rattaché
+												</span>
+												{% if wedding.mariee.email %}
+													<span class="badge rounded-pill bg-light text-secondary">{{ wedding.mariee.email }}</span>
+												{% endif %}
+											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
 											<div>
@@ -298,12 +304,14 @@
 									<div class="participant-card">
 										<div class="participant-card__header">
 											<h3 class="mb-0">Future mariée</h3>
-											<span class="badge rounded-pill bg-warning text-dark">
-												<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
-											</span>
-											{% if wedding.marieeEmail %}
-												<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieeEmail }}</span>
-											{% endif %}
+											<div class="d-flex flex-column flex-md-row gap-1 gap-md-2 align-items-end align-items-md-center">
+												<span class="badge rounded-pill bg-warning text-dark">
+													<i class="bi bi-exclamation-triangle me-1"></i>Aucun utilisateur rattaché
+												</span>
+												{% if wedding.marieeEmail %}
+													<span class="badge rounded-pill bg-light text-secondary">{{ wedding.marieeEmail }}</span>
+												{% endif %}
+											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
 											{% if wedding.marieeFirstName or wedding.marieeName %}
