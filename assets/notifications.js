@@ -158,8 +158,8 @@ class NotificationManager {
         if (notifications.length === 0) {
             list.innerHTML = `
                 <div class="notification-empty">
-                    <i class="bi bi-bell"></i>
-                    <p>Aucune notification</p>
+                    <i class="bi bi-bell-slash"></i>
+                    <p>Aucune notification pour le moment</p>
                 </div>
             `;
             return;
@@ -203,22 +203,27 @@ class NotificationManager {
     
     renderNotification(notif) {
         const unreadClass = notif.isRead ? '' : 'unread';
-        const typeIcon = notif.type === 'invitation' ? 'envelope-fill' : 'chat-dots-fill';
+        const typeIcon = notif.type === 'invitation' ? 'envelope-heart-fill' : 'chat-square-text-fill';
         const typeLabel = notif.type === 'invitation' ? 'Invitation' : 'Commentaire';
+        const typeClass = notif.type === 'invitation' ? 'invitation' : '';
         
         let actions = '';
         if (notif.type === 'invitation') {
             actions = `
                 <div class="notification-actions">
-                    <button class="btn btn-sm btn-success accept-invitation">Accepter</button>
-                    <button class="btn btn-sm btn-secondary reject-invitation">Refuser</button>
+                    <button class="btn btn-sm btn-success accept-invitation">
+                        <i class="bi bi-check2"></i> Accepter
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary reject-invitation">
+                        <i class="bi bi-x"></i> Refuser
+                    </button>
                 </div>
             `;
         } else {
             actions = `
                 <div class="notification-actions">
-                    <button class="btn btn-sm btn-outline-danger delete-notification">
-                        <i class="bi bi-trash"></i>
+                    <button class="btn btn-sm btn-outline-danger delete-notification" title="Supprimer">
+                        <i class="bi bi-trash3"></i>
                     </button>
                 </div>
             `;
@@ -227,7 +232,7 @@ class NotificationManager {
         return `
             <div class="notification-item ${unreadClass}" data-notification-id="${notif.id}" data-link="${notif.link}">
                 <div class="notification-header">
-                    <div class="notification-type">
+                    <div class="notification-type ${typeClass}">
                         <i class="bi bi-${typeIcon}"></i>
                         <span>${typeLabel}</span>
                     </div>
