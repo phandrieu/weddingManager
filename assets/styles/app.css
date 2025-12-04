@@ -2482,3 +2482,24 @@
 .wedding-avatar + .wedding-avatar {
     margin-left: -15px;
 }
+
+/* Participant Avatar (larger version for participant cards) */
+.participant-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    flex-shrink: 0;
+}
+
+.participant-avatar--placeholder {
+    background: var(--color-tertiary);
+    color: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}

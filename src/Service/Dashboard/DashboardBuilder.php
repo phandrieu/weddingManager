@@ -84,6 +84,7 @@ final class DashboardBuilder
                 'viewUrl' => $this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]),
                 'editUrl' => $this->urlGenerator->generate('app_wedding_edit', ['id' => $wedding->getId()]),
                 'isArchived' => (bool) $wedding->isArchive(),
+                'entity' => $wedding,
             ];
         }
 
@@ -142,6 +143,7 @@ final class DashboardBuilder
                 'pendingValidations' => max($totalSelections - $validatedByMusician, 0),
                 'totalSelections' => $totalSelections,
                 'viewUrl' => $this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]),
+                'entity' => $wedding,
             ];
         }, array_slice($upcoming, 0, 3));
 
@@ -205,6 +207,7 @@ final class DashboardBuilder
                 'pendingValidations' => max($totalSelections - $validatedByParish, 0),
                 'totalSelections' => $totalSelections,
                 'viewUrl' => $this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]),
+                'entity' => $wedding,
             ];
         }, array_slice($upcoming, 0, 3));
 
@@ -241,6 +244,7 @@ final class DashboardBuilder
                     'title' => $this->formatWeddingTitle($wedding),
                     'date' => $wedding->getDate()?->format('d/m/Y'),
                     'viewUrl' => $this->urlGenerator->generate('app_wedding_view', ['id' => $wedding->getId()]),
+                    'entity' => $wedding,
                 ];
             }, $upcomingGlobal),
         ];

@@ -176,9 +176,18 @@
 									</div>
 
 									{% if wedding.marie %}
-										<div class="alert alert-info mb-3">
-											<i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de
-											<strong>{{ wedding.marie.fullName }}</strong>.
+										<div class="d-flex align-items-center gap-3 mb-3">
+											{% if wedding.marie.profilePictureName %}
+												<img src="{{ vich_uploader_asset(wedding.marie, 'profilePictureFile') }}" class="participant-avatar" alt="{{ wedding.marie.firstName|default('Marié') }}">
+											{% else %}
+												<div class="participant-avatar participant-avatar--placeholder">
+													{{ wedding.marie.firstName|default('')|slice(0,1)|upper ~ wedding.marie.name|default('')|slice(0,1)|upper ?: '-' }}
+												</div>
+											{% endif %}
+											<div class="alert alert-info mb-0 flex-grow-1">
+												<i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de
+												<strong>{{ wedding.marie.fullName }}</strong>.
+											</div>
 										</div>
 										<div class="row g-3">
 											<div class="col-sm-6">
@@ -257,9 +266,18 @@
 									</div>
 
 									{% if wedding.mariee %}
-										<div class="alert alert-info mb-3">
-											<i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de
-											<strong>{{ wedding.mariee.fullName }}</strong>.
+										<div class="d-flex align-items-center gap-3 mb-3">
+											{% if wedding.mariee.profilePictureName %}
+												<img src="{{ vich_uploader_asset(wedding.mariee, 'profilePictureFile') }}" class="participant-avatar" alt="{{ wedding.mariee.firstName|default('Mariée') }}">
+											{% else %}
+												<div class="participant-avatar participant-avatar--placeholder">
+													{{ wedding.mariee.firstName|default('')|slice(0,1)|upper ~ wedding.mariee.name|default('')|slice(0,1)|upper ?: '-' }}
+												</div>
+											{% endif %}
+											<div class="alert alert-info mb-0 flex-grow-1">
+												<i class="bi bi-info-circle me-2"></i>Les informations affichées proviennent du profil utilisateur de
+												<strong>{{ wedding.mariee.fullName }}</strong>.
+											</div>
 										</div>
 										<div class="row g-3">
 											<div class="col-sm-6">

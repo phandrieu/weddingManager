@@ -189,9 +189,18 @@
 											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
-											<div>
-												<span class="form-label-sm">Nom complet</span>
-												<div class="fw-semibold">{{ wedding.marie.fullName ?? '-' }}</div>
+											<div class="d-flex align-items-center gap-3 mb-2">
+												{% if wedding.marie.profilePictureName %}
+													<img src="{{ vich_uploader_asset(wedding.marie, 'profilePictureFile') }}" class="participant-avatar" alt="{{ wedding.marie.firstName|default('Marié') }}">
+												{% else %}
+													<div class="participant-avatar participant-avatar--placeholder">
+														{{ wedding.marie.firstName|default('')|slice(0,1)|upper ~ wedding.marie.name|default('')|slice(0,1)|upper ?: '-' }}
+													</div>
+												{% endif %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.marie.fullName ?? '-' }}</div>
+												</div>
 											</div>
 											{% if wedding.marie.telephone %}
 												<div class="text-muted small">
@@ -276,9 +285,18 @@
 											</div>
 										</div>
 										<div class="participant-card__body d-flex flex-column gap-2">
-											<div>
-												<span class="form-label-sm">Nom complet</span>
-												<div class="fw-semibold">{{ wedding.mariee.fullName ?? '-' }}</div>
+											<div class="d-flex align-items-center gap-3 mb-2">
+												{% if wedding.mariee.profilePictureName %}
+													<img src="{{ vich_uploader_asset(wedding.mariee, 'profilePictureFile') }}" class="participant-avatar" alt="{{ wedding.mariee.firstName|default('Mariée') }}">
+												{% else %}
+													<div class="participant-avatar participant-avatar--placeholder">
+														{{ wedding.mariee.firstName|default('')|slice(0,1)|upper ~ wedding.mariee.name|default('')|slice(0,1)|upper ?: '-' }}
+													</div>
+												{% endif %}
+												<div>
+													<span class="form-label-sm">Nom complet</span>
+													<div class="fw-semibold">{{ wedding.mariee.fullName ?? '-' }}</div>
+												</div>
 											</div>
 											{% if wedding.mariee.telephone %}
 												<div class="text-muted small">
