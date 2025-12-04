@@ -1206,9 +1206,27 @@
 @media (max-width: 991.98px) {
     /* Déroulé passe en mode vertical sur tablette/mobile */
     .deroule-row {
-        grid-template-columns: 1fr;
-        align-items: stretch;
-        gap: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+    }
+
+    /* Type badge - pleine largeur */
+    .deroule-row > div:first-child {
+        flex: 0 0 100%;
+    }
+
+    /* Choix du chant - pleine largeur */
+    .deroule-row > div:nth-child(2) {
+        flex: 0 0 100%;
+    }
+
+    /* Boutons MUS, PAR et Commentaires - sur la même ligne */
+    .deroule-row > div:nth-child(3),
+    .deroule-row > div:nth-child(4),
+    .deroule-row > div:nth-child(5) {
+        flex: 0 0 auto;
     }
 
     .deroule-col {
@@ -1237,32 +1255,6 @@
     padding: 1.5rem 0;
     margin-top: 2rem;
     border-top: 2px solid var(--color-tertiary);
-}
-
-@media (max-width: 991.98px) {
-    /* Déroulé passe en mode vertical sur tablette/mobile */
-    .deroule-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-    }
-
-    .deroule-col {
-        width: 100%;
-    }
-
-    .deroule-col-type,
-    .deroule-col-choice,
-    .deroule-col-check,
-    .deroule-col-comments {
-        width: 100%;
-        min-width: auto;
-        text-align: left;
-    }
-
-    .deroule-label {
-        display: block;
-    }
 }
 
 @media (max-width: 575.98px) {
