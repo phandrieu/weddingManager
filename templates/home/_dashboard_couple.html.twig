@@ -39,12 +39,7 @@
                         <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ wedding.entity.church|default('Non défini') }} {% if wedding.entity.addressPostalCodeAndCity is not null%} — {{ wedding.entity.addressPostalCodeAndCity }}{% endif %}</div>
                     </div>
 
-                    {# Progress Rings #}
-                    <div class="mb-3">
-                        {% include 'components/_progress_rings.html.twig' with { wedding: wedding.entity } %}
-                    </div>
-
-                    <ul class="list-unstyled dashboard-missing mb-4">
+                    <ul class="list-unstyled dashboard-missing mb-3">
                         {% if wedding.missing is not empty %}
                             {% for item in wedding.missing %}
                                 <li><i class="bi bi-exclamation-circle text-warning me-2"></i>{{ item }}</li>
@@ -54,7 +49,7 @@
                         {% endif %}
                     </ul>
 
-                    <div class="d-flex flex-wrap gap-2 mt-auto">
+                    <div class="d-flex flex-wrap gap-2">
                         <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm">Consulter</a>
                         <a href="{{ wedding.editUrl }}" class="btn btn-cta btn-sm">Compléter</a>
                         {% if wedding.isArchived %}
@@ -63,6 +58,11 @@
                         {% if wedding.messe is not null %}
                             <span class="badge text-bg-light text-secondary">{{ wedding.messe ? 'Messe' : 'Célébration' }}</span>
                         {% endif %}
+                    </div>
+
+                    {# Progress Rings - en bas sur mobile #}
+                    <div class="progress-rings-mobile-bottom">
+                        {% include 'components/_progress_rings.html.twig' with { wedding: wedding.entity } %}
                     </div>
                 </article>
             {% endfor %}

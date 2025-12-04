@@ -2690,19 +2690,61 @@
 
 /* Progress rings mobile positioning */
 .progress-rings-mobile-bottom {
-    order: 999;
     width: 100%;
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #e9ecef;
 }
 
+.progress-rings-mobile-bottom .progress-rings {
+    justify-content: center;
+}
+
 @media (min-width: 576px) {
     .progress-rings-mobile-bottom {
-        order: initial;
-        width: auto;
         margin-top: 0;
         padding-top: 0;
         border-top: none;
     }
+}
+
+/* Dashboard list items with rings */
+.dashboard-list__item--with-rings {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.dashboard-list__main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.dashboard-list__rings {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 576px) {
+    .dashboard-list__item--with-rings {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .dashboard-list__rings {
+        display: none;
+    }
+}
+
+/* Form card flex layout for progress rings */
+.form-card {
+    display: flex;
+    flex-direction: column;
 }
