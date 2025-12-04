@@ -42,10 +42,10 @@
                                     <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ wedding.entity.church|default('Non défini') }} {% if wedding.entity.addressPostalCodeAndCity is not null%} — {{ wedding.entity.addressPostalCodeAndCity }}{% endif %}</div>
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <span class="badge text-bg-light text-secondary">{{ wedding.pendingValidations }} / {{ wedding.totalSelections }} validé{{ wedding.totalSelections > 1 ? 's' : '' }}</span>
-                                <div>
-                                    <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm mt-2">Consulter</a>
+                            <div class="d-flex align-items-center gap-3">
+                                {% include 'components/_progress_rings.html.twig' with { wedding: wedding.entity } %}
+                                <div class="text-end">
+                                    <a href="{{ wedding.viewUrl }}" class="btn btn-outline-secondary btn-sm">Consulter</a>
                                 </div>
                             </div>
                         </li>

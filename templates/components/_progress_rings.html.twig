@@ -1,0 +1,130 @@
+{# 
+   Progress Rings Component for Wedding Dashboard
+   
+   Usage:
+   {% include 'components/_progress_rings.html.twig' with { wedding: weddingEntity } %}
+#}
+
+{% set songStats = wedding_song_stats(wedding) %}
+{% set fieldStats = wedding_field_stats(wedding) %}
+
+{# Calculate percentages for song stats #}
+{% set songTotal = songStats.total %}
+{% set validatedPct = songTotal > 0 ? (songStats.validated / songTotal * 100) : 0 %}
+{% set withSongPct = songTotal > 0 ? (songStats.withSong / songTotal * 100) : 0 %}
+{% set emptyPct = songTotal > 0 ? (songStats.empty / songTotal * 100) : 0 %}
+
+{# Calculate percentages for field stats #}
+{% set fieldTotal = fieldStats.total %}
+{% set filledPct = fieldTotal > 0 ? (fieldStats.filled / fieldTotal * 100) : 0 %}
+{% set fieldEmptyPct = fieldTotal > 0 ? (fieldStats.empty / fieldTotal * 100) : 0 %}
+
+{# SVG circle calculations (circumference = 2 * PI * radius) #}
+{% set radius = 34 %}
+{% set circumference = 213.6 %} {# 2 * 3.14159 * 34 #}
+
+<div class="progress-rings">
+    {# Song validation ring #}
+    <div class="progress-ring-container">
+        <div class="progress-ring-wrapper">
+            <div class="progress-ring">
+                <svg class="progress-ring__svg" viewBox="0 0 80 80">
+                    <circle class="progress-ring__bg" cx="40" cy="40" r="{{ radius }}"/>
+                    
+                    {# Empty segment (red) - drawn first as background #}
+                    {% if emptyPct > 0 %}
+                    <circle 
+                        class="progress-ring__segment progress-ring__segment--empty"
+                        cx="40" cy="40" r="{{ radius }}"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ circumference - (circumference * (validatedPct + withSongPct + emptyPct) / 100) }}"
+                    />
+                    {% endif %}
+                    
+                    {# With song segment (blue) #}
+                    {% if withSongPct > 0 %}
+                    <circle 
+                        class="progress-ring__segment progress-ring__segment--with-song"
+                        cx="40" cy="40" r="{{ radius }}"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ circumference - (circumference * (validatedPct + withSongPct) / 100) }}"
+                    />
+                    {% endif %}
+                    
+                    {# Validated segment (green) - drawn last to be on top #}
+                    {% if validatedPct > 0 %}
+                    <circle 
+                        class="progress-ring__segment progress-ring__segment--validated"
+                        cx="40" cy="40" r="{{ radius }}"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ circumference - (circumference * validatedPct / 100) }}"
+                    />
+                    {% endif %}
+                </svg>
+                <div class="progress-ring__center">
+                    {{ songStats.validated }}/{{ songStats.total }}
+                </div>
+            </div>
+            <div class="progress-ring-tooltip">
+                <div class="progress-ring-tooltip__item">
+                    <span class="progress-ring-tooltip__dot progress-ring-tooltip__dot--validated"></span>
+                    <span>Validés : {{ songStats.validated }}</span>
+                </div>
+                <div class="progress-ring-tooltip__item">
+                    <span class="progress-ring-tooltip__dot progress-ring-tooltip__dot--with-song"></span>
+                    <span>En attente : {{ songStats.withSong }}</span>
+                </div>
+                <div class="progress-ring-tooltip__item">
+                    <span class="progress-ring-tooltip__dot progress-ring-tooltip__dot--empty"></span>
+                    <span>Non définis : {{ songStats.empty }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-ring__label">Chants</div>
+    </div>
+    
+    {# Field completion ring #}
+    <div class="progress-ring-container">
+        <div class="progress-ring-wrapper">
+            <div class="progress-ring">
+                <svg class="progress-ring__svg" viewBox="0 0 80 80">
+                    <circle class="progress-ring__bg" cx="40" cy="40" r="{{ radius }}"/>
+                    
+                    {# Empty fields segment (red) - drawn first #}
+                    {% if fieldEmptyPct > 0 %}
+                    <circle 
+                        class="progress-ring__segment progress-ring__segment--empty"
+                        cx="40" cy="40" r="{{ radius }}"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ circumference - (circumference * 100 / 100) }}"
+                    />
+                    {% endif %}
+                    
+                    {# Filled fields segment (green) - drawn last #}
+                    {% if filledPct > 0 %}
+                    <circle 
+                        class="progress-ring__segment progress-ring__segment--filled"
+                        cx="40" cy="40" r="{{ radius }}"
+                        stroke-dasharray="{{ circumference }}"
+                        stroke-dashoffset="{{ circumference - (circumference * filledPct / 100) }}"
+                    />
+                    {% endif %}
+                </svg>
+                <div class="progress-ring__center">
+                    {{ fieldStats.filled }}/{{ fieldStats.total }}
+                </div>
+            </div>
+            <div class="progress-ring-tooltip">
+                <div class="progress-ring-tooltip__item">
+                    <span class="progress-ring-tooltip__dot progress-ring-tooltip__dot--filled"></span>
+                    <span>Remplis : {{ fieldStats.filled }}</span>
+                </div>
+                <div class="progress-ring-tooltip__item">
+                    <span class="progress-ring-tooltip__dot progress-ring-tooltip__dot--empty"></span>
+                    <span>À compléter : {{ fieldStats.empty }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-ring__label">Infos</div>
+    </div>
+</div>

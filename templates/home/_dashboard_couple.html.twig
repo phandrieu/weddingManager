@@ -39,14 +39,9 @@
                         <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ wedding.entity.church|default('Non défini') }} {% if wedding.entity.addressPostalCodeAndCity is not null%} — {{ wedding.entity.addressPostalCodeAndCity }}{% endif %}</div>
                     </div>
 
+                    {# Progress Rings #}
                     <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="form-label-sm">Complétion</span>
-                            <span class="fw-semibold text-primary">{{ wedding.progress }}%</span>
-                        </div>
-                        <div class="progress" role="progressbar" aria-valuenow="{{ wedding.progress }}" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar bg-primary" style="width: {{ wedding.progress }}%"></div>
-                        </div>
+                        {% include 'components/_progress_rings.html.twig' with { wedding: wedding.entity } %}
                     </div>
 
                     <ul class="list-unstyled dashboard-missing mb-4">
