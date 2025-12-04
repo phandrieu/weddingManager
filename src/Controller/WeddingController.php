@@ -16,9 +16,12 @@ use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
 use App\Repository\CommentRepository;
 use App\Service\InvitationWorkflow;
+use App\Service\MarkdownRenderer;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use DateTimeImmutable;
+use Knp\Snappy\Pdf;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -341,8 +344,8 @@ class WeddingController extends AbstractController
         // Vérifier l'accès au mariage
         $this->checkWeddingAccess($wedding);
 
-        $includeMesseTypes = true === $wedding->isMesse();
-        $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
+        $derouleDatasets = $this->buildWeddingDerouleDatasets($wedding, $songTypeRepo, $songRepo);
+        $songTypes = $derouleDatasets['songTypes'];
 
         $songs = [];
         foreach ($wedding->getMusicians() as $musician) {
@@ -375,12 +378,10 @@ class WeddingController extends AbstractController
         $maxStepIndex = $isMusician ? 5 : ($isCouple ? 3 : 4);
         $initialStep = max(0, min($maxStepIndex, $request->query->getInt('step', 0)));
 
-        $commentCountsByType = $this->countCommentsByType($wedding);
-        $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
-
-        $availabilityData = $this->buildAvailableSongsDatasets($wedding, $songTypes, $songRepo, $currentUser instanceof User ? $currentUser : null);
-        $availableSongsByType = $availabilityData['byType'];
-        $availableSongsByTypeInMusiciansRepo = $availabilityData['musicianRepo'];
+        $songSelectionsByType = $derouleDatasets['songSelectionsByType'];
+        $commentCountsByType = $derouleDatasets['commentCountsByType'];
+        $availableSongsByType = $derouleDatasets['availableSongsByType'];
+        $availableSongsByTypeInMusiciansRepo = $derouleDatasets['availableSongsByTypeInMusiciansRepo'];
 
         return $this->render('wedding/view.html.twig', [
             'wedding' => $wedding,
@@ -393,6 +394,66 @@ class WeddingController extends AbstractController
             'initialStep' => $initialStep,
             'songSelectionsByType' => $songSelectionsByType,
             'commentCountsByType' => $commentCountsByType,
+        ]);
+    }
+
+    #[Route('/{id}/deroule/pdf', name: 'app_wedding_export_pdf', methods: ['GET'])]
+    public function exportPdf(
+        Wedding $wedding,
+        SongTypeRepository $songTypeRepo,
+        SongRepository $songRepo,
+        Pdf $pdf,
+        MarkdownRenderer $markdownRenderer
+    ): Response {
+        $this->checkWeddingAccess($wedding);
+
+        $derouleDatasets = $this->buildWeddingDerouleDatasets($wedding, $songTypeRepo, $songRepo);
+        $songTypes = $derouleDatasets['songTypes'];
+        $songSelectionsByType = $derouleDatasets['songSelectionsByType'];
+
+        $songsById = [];
+        foreach ($derouleDatasets['availableSongsByType'] as $typeSongs) {
+            foreach ($typeSongs as $song) {
+                if ($song instanceof Song && $song->getId() !== null) {
+                    $songsById[$song->getId()] = $song;
+                }
+            }
+        }
+
+        foreach ($wedding->getSongSelections() as $selection) {
+            $song = $selection->getSong();
+            if ($song instanceof Song && $song->getId() !== null) {
+                $songsById[$song->getId()] = $song;
+            }
+        }
+
+        $notesHtml = $markdownRenderer->render($wedding->getNotesMusiciens());
+        $generatedAt = new DateTimeImmutable();
+
+        $html = $this->renderView('wedding/pdf_export.html.twig', [
+            'wedding' => $wedding,
+            'songTypes' => $songTypes,
+            'songSelectionsByType' => $songSelectionsByType,
+            'songsById' => $songsById,
+            'notesHtml' => $notesHtml,
+            'generatedAt' => $generatedAt,
+        ]);
+
+        $fileName = sprintf('deroule-mariage-%d.pdf', $wedding->getId() ?? 0);
+
+        $pdfContent = $pdf->getOutputFromHtml($html, [
+            'encoding' => 'UTF-8',
+            'enable-local-file-access' => true,
+            'margin-top' => '12mm',
+            'margin-bottom' => '12mm',
+            'margin-left' => '10mm',
+            'margin-right' => '10mm',
+            'print-media-type' => true,
+        ]);
+
+        return new Response($pdfContent, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
         ]);
     }
 
@@ -1367,6 +1428,40 @@ class WeddingController extends AbstractController
 
         $this->addFlash('success', 'Mariage désarchivé.');
         return $this->redirectToRoute('app_wedding_index');
+    }
+
+    /**
+     * @return array{
+     *     songTypes: array<int, SongType>,
+     *     availableSongsByType: array<int, array<int, Song>>,
+     *     availableSongsByTypeInMusiciansRepo: array<int, array<int, Song>>,
+     *     songSelectionsByType: array<int, array{songId: ?int, validatedByMusician: bool, validatedByParish: bool, commentsCount: int}>,
+     *     commentCountsByType: array<int, int>
+     * }
+     */
+    private function buildWeddingDerouleDatasets(Wedding $wedding, SongTypeRepository $songTypeRepo, SongRepository $songRepo): array
+    {
+        $includeMesseTypes = true === $wedding->isMesse();
+        $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);
+
+        $commentCountsByType = $this->countCommentsByType($wedding);
+        $songSelectionsByType = $this->buildSongSelectionsState($wedding, $commentCountsByType);
+
+        $currentUser = $this->getUser();
+        $availabilityData = $this->buildAvailableSongsDatasets(
+            $wedding,
+            $songTypes,
+            $songRepo,
+            $currentUser instanceof User ? $currentUser : null
+        );
+
+        return [
+            'songTypes' => $songTypes,
+            'availableSongsByType' => $availabilityData['byType'],
+            'availableSongsByTypeInMusiciansRepo' => $availabilityData['musicianRepo'],
+            'songSelectionsByType' => $songSelectionsByType,
+            'commentCountsByType' => $commentCountsByType,
+        ];
     }
 
     /**

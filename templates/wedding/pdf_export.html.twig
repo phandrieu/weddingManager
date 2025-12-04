@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Déroulé de la célébration</title>
+    <style>
+        @page {
+            margin: 12mm 10mm;
+            size: A4;
+        }
+
+        :root {
+            --primary: #2b3079;
+            --secondary: #f9f7ff;
+            --text: #202020;
+            --muted: #6c757d;
+            --border: #e2e6f0;
+            --success: #2f9e44;
+            --warning: #c08a00;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            margin: 0 0 8px;
+            font-weight: 600;
+        }
+
+        h2 {
+            font-size: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin: 0 0 6px;
+        }
+
+        .pdf-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .pdf-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .pdf-meta {
+            flex: 1;
+        }
+
+        .pdf-meta h1 {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .pdf-meta p {
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 10px;
+            letter-spacing: .08em;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .participants-columns {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .participant-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--secondary);
+            min-height: 100px;
+        }
+
+        .participant-card h3 {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .participant-card ul {
+            padding-left: 16px;
+            margin: 0;
+        }
+
+        .participant-card li {
+            margin-bottom: 4px;
+        }
+
+        .deroule-group {
+            margin-bottom: 18px;
+        }
+
+        .deroule-group__title {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            margin-bottom: 6px;
+        }
+
+        table.deroule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        table.deroule-table th,
+        table.deroule-table td {
+            border: 1px solid var(--border);
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        table.deroule-table th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-size: 10px;
+        }
+
+        .status-chip {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: rgba(47, 158, 68, .15);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(192, 138, 0, .15);
+            color: var(--warning);
+        }
+
+        .notes {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .notes :where(h1, h2, h3, h4, h5, h6) {
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        .notes ul {
+            margin: 0 0 8px 18px;
+        }
+
+        .text-muted {
+            color: var(--muted);
+        }
+
+        footer {
+            margin-top: 24px;
+            text-align: right;
+            font-size: 10px;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+<header class="pdf-header">
+    <img src="{{ absolute_url(asset('logos/logo_white_nobg_noborder.png')) }}" alt="Logo" class="pdf-logo">
+    <div class="pdf-meta">
+        <h1>Déroulé de la célébration</h1>
+        <p>
+            {% if wedding.marie or wedding.mariee %}
+                {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+            {% else %}
+                Mariage
+            {% endif %}
+        </p>
+        <p>
+            {% if wedding.date %}
+                {{ wedding.date|date('d/m/Y') }}
+                {% if wedding.time %}
+                    à {{ wedding.time|date('H\\hi') }}
+                {% endif %}
+            {% else %}
+                Date à confirmer
+            {% endif %}
+        </p>
+        <p>
+            {% if wedding.church %}
+                {{ wedding.church }}{% if wedding.parish %} — {{ wedding.parish }}{% endif %}
+            {% elseif wedding.parish %}
+                {{ wedding.parish }}
+            {% else %}
+                Lieu à confirmer
+            {% endif %}
+        </p>
+        <p>Document généré le {{ generatedAt|date('d/m/Y à H\\hi') }}</p>
+    </div>
+</header>
+
+<section class="pdf-section">
+    <h2>Informations principales</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span>Type</span>
+            <strong>{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Adresse</span>
+            <strong>
+                {% if wedding.addressLine1 %}{{ wedding.addressLine1 }}{% endif %}
+                {% if wedding.addressLine2 %}<br>{{ wedding.addressLine2 }}{% endif %}
+                {% if wedding.addressPostalCodeAndCity %}<br>{{ wedding.addressPostalCodeAndCity }}{% endif %}
+            </strong>
+        </div>
+        <div class="info-item">
+            <span>Créé par</span>
+            <strong>{{ wedding.createdBy ? wedding.createdBy.fullName : '—' }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Référence</span>
+            <strong>#{{ wedding.id }}</strong>
+        </div>
+    </div>
+</section>
+
+<section class="pdf-section" style="page-break-inside: avoid;">
+    <h2>Intervenants</h2>
+    <div class="participants-columns">
+        <div class="participant-card">
+            <h3>Musiciens</h3>
+            <ul>
+                {% if wedding.musicians|length > 0 %}
+                    {% for musician in wedding.musicians %}
+                        <li>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</li>
+                    {% endfor %}
+                {% else %}
+                    <li class="text-muted">Aucun musicien associé</li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="participant-card">
+            <h3>Contacts paroissiaux</h3>
+            <ul>
+                {% if wedding.parishUsers|length > 0 %}
+                    {% for member in wedding.parishUsers %}
+                        <li>{{ member.fullName }}{% if member.telephone %} — {{ member.telephone }}{% endif %}</li>
+                    {% endfor %}
+                {% else %}
+                    <li class="text-muted">Aucun contact paroissial</li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="participant-card">
+            <h3>Célébrant</h3>
+            <p>{{ wedding.priestFirstName }} {{ wedding.priestLastName }}</p>
+            {% if wedding.priestPhoneNumber %}<p>{{ wedding.priestPhoneNumber }}</p>{% endif %}
+            {% if wedding.priestEMail %}<p>{{ wedding.priestEMail }}</p>{% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="pdf-section">
+    <h2>Déroulé & validations</h2>
+    {% set groups = {} %}
+    {% for t in songTypes %}
+        {% set period = t.celebrationPeriod %}
+        {% set label = period ? period.fullName : 'Autres séquences' %}
+        {% set color = period ? period.color : '#ecebfd' %}
+        {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
+        {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
+        {% set existing = groups[key]|default({ 'label': label, 'color': color, 'types': [] }) %}
+        {% set groups = groups|merge({
+            (key): existing|merge({ 'label': label, 'color': color, 'types': existing.types|merge([t]) })
+        }) %}
+    {% endfor %}
+
+    {% for groupKey in groups|keys|sort %}
+        {% set group = groups[groupKey] %}
+        <div class="deroule-group">
+            <div class="deroule-group__title" style="background: {{ group.color ?? '#ecebfd' }}10; border-color: {{ group.color ?? '#ecebfd' }};">
+                {{ group.label }}
+            </div>
+            <table class="deroule-table">
+                <thead>
+                    <tr>
+                        <th style="width: 28%">Type</th>
+                        <th style="width: 42%">Choix retenu</th>
+                        <th style="width: 15%">Validation musicien</th>
+                        <th style="width: 15%">Validation paroisse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type in group.types %}
+                        {% set selection = songSelectionsByType[type.id]|default(null) %}
+                        {% set song = (selection and selection.songId) ? songsById[selection.songId]|default(null) : null %}
+                        <tr>
+                            <td><strong>{{ type.name }}</strong></td>
+                            <td>
+                                {% if song %}
+                                    {{ song.name ?? song.title ?? 'Titre inconnu' }}
+                                {% else %}
+                                    <span style="color: var(--muted);">Pas de sélection</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set musicianValidated = selection ? selection.validatedByMusician : false %}
+                                <span class="status-chip {{ musicianValidated ? 'status-ok' : 'status-pending' }}">
+                                    {{ musicianValidated ? 'Validé' : 'En attente' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set parishValidated = selection ? selection.validatedByParish : false %}
+                                <span class="status-chip {{ parishValidated ? 'status-ok' : 'status-pending' }}">
+                                    {{ parishValidated ? 'Validé' : 'En attente' }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Aucun type de chant n'a encore été configuré pour cette célébration.</p>
+    {% endfor %}
+</section>
+
+{% if notesHtml %}
+<section class="pdf-section">
+    <h2>Notes & consignes</h2>
+    <div class="notes">
+        {{ notesHtml|raw }}
+    </div>
+</section>
+{% endif %}
+
+<footer>
+    Notre Messe de Mariage — Export PDF destiné aux intervenants
+</footer>
+</body>
+</html>

@@ -493,10 +493,10 @@
 								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
 							{% else %}
 								<div class="deroule-print-action d-print-none mb-3">
-									<button type="button" id="printDerouleBtn" class="btn btn-outline-primary btn-rounded">
-										<i class="bi bi-printer me-2"></i>
-										Imprimer le déroulé
-									</button>
+									<a href="{{ path('app_wedding_export_pdf', { id: wedding.id }) }}" class="btn btn-outline-primary btn-rounded" target="_blank" rel="noopener">
+										<i class="bi bi-filetype-pdf me-2"></i>
+										Exporter le déroulé en PDF
+									</a>
 								</div>
 
 								<div class="deroule-print-header d-none d-print-block">
@@ -959,23 +959,6 @@
 					});
 				} else {
 					console.error('ERREUR: Aucun bouton Modifier trouvé !');
-				}
-	
-				// Gestion du bouton d'impression
-				const printBtn = document.getElementById('printDerouleBtn');
-				if (printBtn) {
-					printBtn.addEventListener('click', function() {
-						// S'assurer d'être sur l'étape du répertoire avant d'imprimer
-						if (currentStep !== 3) {
-							currentStep = 3;
-							syncUI();
-						}
-						
-						// Attendre un court instant pour que l'affichage se mette à jour
-						setTimeout(() => {
-							window.print();
-						}, 100);
-					});
 				}
 	
 				const modalEl = document.getElementById('commentsModal');
