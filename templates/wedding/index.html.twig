@@ -46,13 +46,25 @@
     <div class="app-card-light mb-3 wedding-card">
             <div class="wedding-grid">
                 <div class="wedding-grid__main">
-                    <div class="app-avatar">
+                    <div class="wedding-avatars">
+                        {# Mariée #}
                         {% set marieeInitial = wedding.mariee ? (wedding.mariee.firstName|default('')|slice(0,1)|upper) : (wedding.marieeFirstName ? (wedding.marieeFirstName|slice(0,1)|upper) : '') %}
-                        {% set marieInitial = wedding.marie ? (wedding.marie.firstName|default('')|slice(0,1)|upper) : (wedding.marieFirstName ? (wedding.marieFirstName|slice(0,1)|upper) : '') %}
-                        {% if marieeInitial or marieInitial %}
-                            {{ marieeInitial }}&{{ marieInitial }}
+                        {% if wedding.mariee and wedding.mariee.profilePictureName %}
+                            <img src="{{ vich_uploader_asset(wedding.mariee, 'profilePictureFile') }}" class="wedding-avatar" alt="Mariée" title="{{ wedding.mariee.firstName|default('Mariée') }}">
                         {% else %}
-                            -
+                            <div class="wedding-avatar wedding-avatar--placeholder" title="{{ wedding.marieeFirstName|default('Mariée') }}">
+                                {{ marieeInitial|default('-') }}
+                            </div>
+                        {% endif %}
+
+                        {# Marié #}
+                        {% set marieInitial = wedding.marie ? (wedding.marie.firstName|default('')|slice(0,1)|upper) : (wedding.marieFirstName ? (wedding.marieFirstName|slice(0,1)|upper) : '') %}
+                        {% if wedding.marie and wedding.marie.profilePictureName %}
+                            <img src="{{ vich_uploader_asset(wedding.marie, 'profilePictureFile') }}" class="wedding-avatar" alt="Marié" title="{{ wedding.marie.firstName|default('Marié') }}">
+                        {% else %}
+                            <div class="wedding-avatar wedding-avatar--placeholder" title="{{ wedding.marieFirstName|default('Marié') }}">
+                                {{ marieInitial|default('-') }}
+                            </div>
                         {% endif %}
                     </div>
                     <div>
