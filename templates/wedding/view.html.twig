@@ -464,6 +464,7 @@
 									<li><strong>🎹</strong> <span>Dans le répertoire d'au moins un musicien</span></li>
 									<li><strong>⚠️</strong> <span>Non présent dans le répertoire d'au moins un musicien</span></li>
 									<li><strong>✨</strong> <span>Suggestion</span></li>
+									<li><strong>📖</strong> <span>Texte uniquement</span></li>
 							</ul>
 						</div>
 					</div>
@@ -565,7 +566,8 @@
 																<span class="text-muted">(Pas de sélection)</span>
 															{% else %}
 																{# Display song name with suggestion indicator #}
-																{% if song.suggestion %}✨
+																{% if not song.song %}📖
+																	{% elseif song.suggestion %}✨
 																	{% elseif song in availableSongsByTypeInMusiciansRepo[type.id]|default([]) %}🎹
 																	{% else %}⚠️
 																{% endif %}
