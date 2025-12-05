@@ -514,7 +514,7 @@
 															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
 																<option value="" {% if selectedSongId is null %} selected {% endif %}>Aucune sélection</option>
 																{% if songsForType|length > 0 %}
-																	{% for song in songsForType|filter(s => s.privateToWedding == wedding.id or s.privateToWedding is null) %}
+																	{% for song in songsForType|filter(s => s.privateToWedding is null or (s.privateToWedding.id ?? null) == wedding.id) %}
 																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %} selected {% endif %}>
 																			{% if not song.song %}📖
 																				{% elseif song.suggestion %}✨
