@@ -142,6 +142,45 @@
             margin-bottom: 24px;
         }
 
+        .legend-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--accent);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .legend-card__title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .legend-card__list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 18px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font-size: 11px;
+        }
+
+        .legend-card__item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-icon {
+            font-size: 14px;
+        }
+
         .sequence-card {
             border: 1px solid var(--border);
             border-radius: 18px;
@@ -180,6 +219,7 @@
             padding: 10px 14px;
             border-bottom: 1px solid var(--border);
             vertical-align: top;
+            word-break: break-word;
         }
 
         .sequence-card__table th {
@@ -209,6 +249,29 @@
         .status-label--pending {
             background: rgba(187, 117, 0, 0.12);
             color: var(--warning);
+        }
+
+        .choice-line {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .person-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #f1f3ff;
+            border: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .comment-count {
+            display: flex;
+            flex-direction: column;
+            font-size: 11px;
+            line-height: 1.2;
         }
 
         .notes-block,
@@ -392,10 +455,11 @@
                     <table class="sequence-card__table">
                         <thead style="color: {{ groupColor }};">
                             <tr>
-                                <th style="width: 30%;">Type</th>
-                                <th style="width: 34%;">Choix retenu</th>
-                                <th style="width: 18%;">Validation musicien</th>
-                                <th style="width: 18%;">Validation paroisse</th>
+                                <th style="width: 20%;" style="text-align: center;">Type</th>
+                                <th style="width: 35%;">Choix retenu</th>
+                                <th style="width: 13%;">Musicien</th>
+                                <th style="width: 13%;">Paroisse</th>
+                                <th style="width: 19%;">En charge</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -404,6 +468,10 @@
                                 {% set song = selection and selection.songId ? songsById[selection.songId]|default(null) : null %}
                                 {% set musicianOK = selection ? selection.validatedByMusician : false %}
                                 {% set parishOK = selection ? selection.validatedByParish : false %}
+                                {% set personInCharge = selection ? selection.personneEnCharge : null %}
+                                {% set commentsCount = selection ? selection.commentsCount|default(0) : 0 %}
+                                {% set icon = null %}
+                                
                                 <tr>
                                     <td><strong>{{ type.name }}</strong></td>
                                     <td>
@@ -413,15 +481,22 @@
                                             <span class="muted">Pas de sélection</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td style="text-align: center;">
                                         <span class="status-label {{ musicianOK ? 'status-label--ok' : 'status-label--pending' }}">
-                                            {{ musicianOK ? 'Validé' : 'À valider' }}
+                                            {{ musicianOK ? 'Validé' : 'Attente' }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td style="text-align: center;">
                                         <span class="status-label {{ parishOK ? 'status-label--ok' : 'status-label--pending' }}">
-                                            {{ parishOK ? 'Validé' : 'À valider' }}
+                                            {{ parishOK ? 'Validé' : 'Attente' }}
                                         </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        {% if personInCharge %}
+                                            <b>{{ personInCharge }}</b>
+                                        {% else %}
+                                            <span class="muted">Non renseigné</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}

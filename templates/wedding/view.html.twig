@@ -80,6 +80,12 @@
 							<i class="bi bi-envelope-plus"></i>
 							Inviter
 						</button>
+														
+						<a href="{{ path('app_wedding_export_pdf', { id: wedding.id }) }}" class="btn btn-outline-primary btn-rounded" target="_blank" rel="noopener">
+							<i class="bi bi-filetype-pdf me-2"></i>
+							Exporter le déroulé en PDF
+						</a>
+
 						<a href="{{ path('app_wedding_edit', {'id': wedding.id}) }}" id="editWeddingBtn" class="btn btn-cta btn-rounded btn-icon js-edit-wedding-btn">
 							<i class="bi bi-pencil-square"></i>
 							Modifier
@@ -492,12 +498,7 @@
 							{% if groups is empty %}
 								<div class="alert alert-light mb-0">Aucun type de chant défini. Ajoute des types dans l'administration.</div>
 							{% else %}
-								<div class="deroule-print-action d-print-none mb-3">
-									<a href="{{ path('app_wedding_export_pdf', { id: wedding.id }) }}" class="btn btn-outline-primary btn-rounded" target="_blank" rel="noopener">
-										<i class="bi bi-filetype-pdf me-2"></i>
-										Exporter le déroulé en PDF
-									</a>
-								</div>
+
 
 								<div class="deroule-print-header d-none d-print-block">
 									<h1 class="deroule-print-title">Déroulé de la célébration</h1>

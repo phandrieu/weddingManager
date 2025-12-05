@@ -441,12 +441,15 @@ class WeddingController extends AbstractController
             'songTypes' => $songTypes,
             'songSelectionsByType' => $songSelectionsByType,
             'songsById' => $songsById,
+            'availableSongsByTypeInMusiciansRepo' => $derouleDatasets['availableSongsByTypeInMusiciansRepo'],
             'notesHtml' => $notesHtml,
             'generatedAt' => $generatedAt,
             'logoDataUri' => $logoDataUri,
         ]);
 
-        $fileName = sprintf('deroule-mariage-%d.pdf', $wedding->getId() ?? 0);
+        $groomFirstName = $wedding->getMarie()?->getFirstName() ?? 'Inconnu';
+        $brideFirstName = $wedding->getMariee()?->getFirstName() ?? 'Inconnue';
+        $fileName = sprintf('DerouleMariage-%s-%s.pdf', ucfirst(strtolower($groomFirstName)), ucfirst(strtolower($brideFirstName)));
 
         $pdfContent = $pdfRenderer->render($html, [
             'format' => 'A4',
