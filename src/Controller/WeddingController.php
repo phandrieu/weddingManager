@@ -1554,11 +1554,11 @@ class WeddingController extends AbstractController
 
             if ($wedding->getId() !== null) {
                 $suggestionQb
-                    ->andWhere('s.private = false OR :currentWedding MEMBER OF s.weddings')
+                    ->andWhere('(s.privateToWedding IS NULL) OR (s.privateToWedding = :currentWedding)')
                     ->setParameter('currentWedding', $wedding);
             } else {
                 $suggestionQb
-                    ->andWhere('s.private = false');
+                    ->andWhere('s.privateToWedding IS NULL');
             }
 
             $suggestions = $suggestionQb
@@ -1618,10 +1618,6 @@ class WeddingController extends AbstractController
 
         foreach ($wedding->getParishUsers() as $parishUser) {
             $addUser($parishUser);
-        }
-
-        if ($currentUser instanceof User) {
-            $addUser($currentUser);
         }
 
         return array_keys($ids);

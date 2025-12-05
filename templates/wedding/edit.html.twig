@@ -514,7 +514,7 @@
 															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
 																<option value="" {% if selectedSongId is null %} selected {% endif %}>Aucune sélection</option>
 																{% if songsForType|length > 0 %}
-																	{% for song in songsForType|filter(a => not a.private) %}
+																	{% for song in songsForType|filter(s => s.privateToWedding == wedding.id or s.privateToWedding is null) %}
 																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %} selected {% endif %}>
 																			{% if not song.song %}📖
 																				{% elseif song.suggestion %}✨
@@ -1148,8 +1148,9 @@ Bloc de code ou partition
 		</div>
 		<div class="modal-body">
 			{% include 'song/_suggestion_content.html.twig' with {
-                    songTypes: songTypes|default([])
-                } %}
+					songTypes: songTypes|default([]),
+					allowPrivateSuggestions: wedding.id is not null
+				} %}
 		</div>
 		<div class="modal-footer">
 			<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -1979,7 +1980,7 @@ Bloc de code ou partition
 	                    selectedTypes = Array.from(state.typesSelectElement.selectedOptions).map((opt) => opt.value);
 	                }
 					const privateToggle = document.getElementById('suggestion-private');
-					const isPrivateSuggestion = privateToggle ? privateToggle.checked : false;
+	                const isPrivateSuggestion = privateToggle ? privateToggle.checked : false;
 	
 	                confirmBtn.disabled = true;
 	                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
@@ -1996,11 +1997,18 @@ Bloc de code ou partition
 	                    formData.append('editorName', document.getElementById('suggestion-editor')?.value || '');
 	                    formData.append('textRef', document.getElementById('suggestion-text-ref')?.value || '');
 	                    formData.append('textTranslationName', document.getElementById('suggestion-text-translation')?.value || '');
-						formData.append('isPrivate', isPrivateSuggestion ? '1' : '0');
 	                    selectedTypes.forEach((typeId) => formData.append('typeIds[]', typeId));
-						if (weddingContextId) {
-							formData.append('weddingId', weddingContextId);
+					if (weddingContextId) {
+						formData.append('weddingId', weddingContextId);
+						if (isPrivateSuggestion) {
+							formData.append('privateWeddingId', weddingContextId);
 						}
+					} else if (isPrivateSuggestion) {
+						alert('Impossible de créer une suggestion privée sans mariage enregistré. Enregistrez d\'abord le mariage.');
+						confirmBtn.disabled = false;
+						confirmBtn.innerHTML = 'Enregistrer';
+						return;
+					}
 	
 	                    const response = await fetch('{{ path('song_suggestion_create') }}', {
 	                        method: 'POST',

@@ -13,7 +13,7 @@
         {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'suggestion-form'}}) }}
 
         <div class="modal-body">
-            {% include 'song/_suggestion_content.html.twig' with { form: form } %}
+            {% include 'song/_suggestion_content.html.twig' with { form: form, allowPrivateSuggestions: false } %}
             {{ form_rest(form) }}
         </div>
         

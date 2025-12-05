@@ -78,6 +78,12 @@ class Wedding
     #[ORM\ManyToMany(targetEntity: Song::class, inversedBy: 'weddings')]
     private Collection $songs;
 
+    /**
+     * @var Collection<int, Song>
+     */
+    #[ORM\OneToMany(mappedBy: 'privateToWedding', targetEntity: Song::class)]
+    private Collection $privateSuggestions;
+
     #[ORM\OneToMany(mappedBy: 'wedding', targetEntity: WeddingSongSelection::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $songSelections;
 
@@ -176,6 +182,7 @@ class Wedding
         $this->parishUsers = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->songSelections = new ArrayCollection();
+        $this->privateSuggestions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -241,6 +248,35 @@ class Wedding
     {
         if ($this->songs->removeElement($song)) {
             $song->removeWedding($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Song>
+     */
+    public function getPrivateSuggestions(): Collection
+    {
+        return $this->privateSuggestions;
+    }
+
+    public function addPrivateSuggestion(Song $song): static
+    {
+        if (!$this->privateSuggestions->contains($song)) {
+            $this->privateSuggestions->add($song);
+            $song->setPrivateToWedding($this);
+        }
+
+        return $this;
+    }
+
+    public function removePrivateSuggestion(Song $song): static
+    {
+        if ($this->privateSuggestions->removeElement($song)) {
+            if ($song->getPrivateToWedding() === $this) {
+                $song->setPrivateToWedding(null);
+            }
         }
 
         return $this;

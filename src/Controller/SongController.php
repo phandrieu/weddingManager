@@ -81,7 +81,7 @@ class SongController extends AbstractController
             ->leftJoin('s.weddings', 'w')->addSelect('w')
             ->leftJoin('s.addedBy', 'creator')->addSelect('creator')
             ->where('s.suggestion = true')
-            ->andWhere('s.private = false')
+            ->andWhere('s.privateToWedding IS NULL')
             ->orderBy('s.name', 'ASC');
 
         $suggestions = $suggestionsQb->getQuery()->getResult();
@@ -223,13 +223,25 @@ class SongController extends AbstractController
         }
 
         $isSong = $request->request->get('isSong', '1') === '1';
-        $isPrivateSuggestion = $request->request->get('isPrivate', '0') === '1';
+        $weddingId = (int) $request->request->get('weddingId', 0);
+        $privateWeddingId = (int) $request->request->get('privateWeddingId', 0);
+        $legacyPrivateFlag = $request->request->get('isPrivate', '0') === '1';
+
+        if ($legacyPrivateFlag && $privateWeddingId <= 0 && $weddingId <= 0) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Une suggestion privée doit être rattachée à un mariage.',
+            ], 400);
+        }
+
+        if ($privateWeddingId <= 0 && $legacyPrivateFlag && $weddingId > 0) {
+            $privateWeddingId = $weddingId;
+        }
 
         $song = new Song();
         $song->setName($name);
         $song->setSuggestion(true);
         $song->setSong($isSong); // Chant (true) ou Lecture/Prière (false)
-        $song->setPrivate($isPrivateSuggestion);
         $song->setAddedBy($user);
         $song->setAddedAt(new \DateTime());
         $song->setLastEditBy($user);
@@ -272,11 +284,35 @@ class SongController extends AbstractController
             }
         }
 
-        $weddingId = (int) $request->request->get('weddingId', 0);
+        $attachedWedding = null;
         if ($weddingId > 0) {
-            $wedding = $em->getRepository(Wedding::class)->find($weddingId);
-            if ($wedding instanceof Wedding && $this->userHasAccessToWedding($user, $wedding)) {
-                $song->addWedding($wedding);
+            $candidateWedding = $em->getRepository(Wedding::class)->find($weddingId);
+            if ($candidateWedding instanceof Wedding && $this->userHasAccessToWedding($user, $candidateWedding)) {
+                $song->addWedding($candidateWedding);
+                $attachedWedding = $candidateWedding;
+            }
+        }
+
+        if ($privateWeddingId > 0) {
+            $privateWedding = $em->getRepository(Wedding::class)->find($privateWeddingId);
+            if (!$privateWedding instanceof Wedding) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Mariage introuvable pour restreindre la suggestion.',
+                ], 404);
+            }
+
+            if (!$this->userHasAccessToWedding($user, $privateWedding)) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas restreindre cette suggestion à ce mariage.',
+                ], 403);
+            }
+
+            $song->setPrivateToWedding($privateWedding);
+
+            if (!$attachedWedding instanceof Wedding || $attachedWedding->getId() !== $privateWedding->getId()) {
+                $song->addWedding($privateWedding);
             }
         }
 
@@ -331,7 +367,8 @@ class SongController extends AbstractController
             return true;
         }
 
-        if (!$song->isPrivate()) {
+        $privateWedding = $song->getPrivateToWedding();
+        if (!$privateWedding instanceof Wedding) {
             return true;
         }
 
@@ -352,13 +389,9 @@ class SongController extends AbstractController
             return false;
         }
 
-        foreach ($song->getWeddings() as $wedding) {
-            if ($wedding instanceof Wedding) {
-                $weddingId = $wedding->getId();
-                if ($weddingId !== null && in_array($weddingId, $userWeddingIds, true)) {
-                    return true;
-                }
-            }
+        $privateWeddingId = $privateWedding->getId();
+        if ($privateWeddingId !== null && in_array($privateWeddingId, $userWeddingIds, true)) {
+            return true;
         }
 
         $creatorWeddingIds = $this->collectWeddingIdsForUser($song->getAddedBy());

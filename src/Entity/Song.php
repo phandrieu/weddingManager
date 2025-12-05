@@ -82,8 +82,9 @@ class Song
     #[ORM\Column(nullable: true)]
     private ?\DateTime $lastEditAt = null;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $private = false;
+    #[ORM\ManyToOne(targetEntity: Wedding::class, inversedBy: 'privateSuggestions')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Wedding $privateToWedding = null;
 
     public function __construct()
     {
@@ -361,15 +362,20 @@ public function removeType(SongType $type): self
         return $this;
     }
 
-    public function isPrivate(): bool
+    public function getPrivateToWedding(): ?Wedding
     {
-        return (bool) $this->private;
+        return $this->privateToWedding;
     }
 
-    public function setPrivate(bool $private): static
+    public function setPrivateToWedding(?Wedding $wedding): static
     {
-        $this->private = $private;
+        $this->privateToWedding = $wedding;
 
         return $this;
+    }
+
+    public function isPrivate(): bool
+    {
+        return $this->privateToWedding instanceof Wedding;
     }
 }

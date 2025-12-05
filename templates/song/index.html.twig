@@ -231,7 +231,7 @@
                                         <tr id="suggestionRow{{ song.id }}">
                                             <td class="fw-bold">
                                                 {{ song.name }}
-                                                {% if song.private %}
+                                                {% if song.privateToWedding %}
                                                     <span class="badge text-bg-dark ms-2">Privé</span>
                                                 {% endif %}
                                             </td>
@@ -283,7 +283,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                {% include 'song/_suggestion_content.html.twig' with { songTypes: songTypes|default([]) } %}
+                {% include 'song/_suggestion_content.html.twig' with {
+                    songTypes: songTypes|default([]),
+                    allowPrivateSuggestions: false
+                } %}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -396,9 +399,6 @@
                 } else if (state.typesSelectElement) {
                     selectedTypes = Array.from(state.typesSelectElement.selectedOptions).map((opt) => opt.value);
                 }
-                const privateToggle = document.getElementById('suggestion-private');
-                const isPrivateSuggestion = privateToggle ? privateToggle.checked : false;
-
                 const originalLabel = confirmBtn.innerHTML;
                 confirmBtn.disabled = true;
                 confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
@@ -416,7 +416,6 @@
                     formData.append('editorName', toValue('suggestion-editor'));
                     formData.append('textRef', toValue('suggestion-text-ref'));
                     formData.append('textTranslationName', toValue('suggestion-text-translation'));
-                    formData.append('isPrivate', isPrivateSuggestion ? '1' : '0');
                     selectedTypes.forEach((typeId) => formData.append('typeIds[]', typeId));
 
                     const response = await fetch('{{ path("song_suggestion_create") }}', {

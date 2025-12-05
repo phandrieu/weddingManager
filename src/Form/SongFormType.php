@@ -50,14 +50,6 @@ class SongFormType extends AbstractType
                 'label' => 'Texte',
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'rows' => 5]
-            ])
-            ->add('private', CheckboxType::class, [
-                'label' => 'Suggestion privée',
-                'required' => false,
-                'attr' => ['class' => 'form-check-input', 'id' => 'suggestion-private'],
-                'label_attr' => ['class' => 'form-check-label', 'for' => 'suggestion-private'],
-                'help' => 'Visible uniquement par les participants du mariage concerné et leurs intervenants.',
-                'help_attr' => ['class' => 'form-text'],
             ]);
 
         // fonction utilitaire pour les champs Chant
