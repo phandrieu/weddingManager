@@ -1072,10 +1072,15 @@
 
 .deroule-row {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: minmax(120px, 180px) minmax(280px, 1fr) repeat(2, minmax(100px, 130px)) minmax(140px, 200px);
+    gap: 0.65rem;
+    grid-template-columns:
+        minmax(110px, 170px)
+        minmax(240px, 1fr)
+        repeat(2, minmax(75px, 75px))
+        minmax(150px, 190px)
+        minmax(20px, 50px);
     align-items: center;
-    padding: 0.75rem;
+    padding: 0.65rem 0.75rem;
     background: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
@@ -1182,17 +1187,35 @@
 }
 
 .deroule-col-check {
-    width: 130px;
+    width: 200px;
     text-align: center;
     align-items: center;
     justify-content: center;
 }
 
 .deroule-col-comments {
-    width: 180px;
+    width: 50px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
+}
+
+.deroule-person-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deroule-person-input {
+    max-width: 170px;
+    width: 100%;
+}
+
+.deroule-person-field .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
 }
 
 .deroule-type-badge {
@@ -1215,7 +1238,7 @@
 }
 
 .deroule-row > div:not(:first-child) {
-    margin-left: .5rem;
+    margin-left: 0;
 }
 
 .deroule-select {
@@ -1328,7 +1351,8 @@
     /* Boutons MUS, PAR et Commentaires - sur la même ligne */
     .deroule-row > div:nth-child(3),
     .deroule-row > div:nth-child(4),
-    .deroule-row > div:nth-child(5) {
+    .deroule-row > div:nth-child(5),
+    .deroule-row > div:nth-child(6) {
         flex: 0 0 auto;
     }
 
@@ -2056,9 +2080,9 @@
 	}
 
 	/* Lignes du déroulé */
-	.deroule-row {
-		display: grid !important;
-		grid-template-columns: 3cm 6cm 2cm 2cm 1cm;
+    .deroule-row {
+        display: grid !important;
+        grid-template-columns: 3cm 5.5cm 2cm 2cm 3cm 1.2cm;
 		gap: 0.2cm;
 		align-items: center;
 		padding: 0.25cm 0.3cm;
@@ -2134,12 +2158,12 @@
 	}
 
 	/* Colonne commentaires - masquer les boutons d'action */
-	.deroule-row > div:nth-child(5) .btn {
+    .deroule-row > div:nth-child(6) .btn {
 		display: none !important;
 	}
 
 	/* Ajouter un indicateur visuel si des commentaires existent */
-	.deroule-row > div:nth-child(5)::after {
+    .deroule-row > div:nth-child(6)::after {
 		content: "💬";
 		font-size: 10pt;
 		display: inline-block;

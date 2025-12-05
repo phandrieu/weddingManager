@@ -35,6 +35,9 @@ class WeddingSongSelection
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $validatedByParish = false;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $personneEnCharge = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -96,6 +99,18 @@ class WeddingSongSelection
     public function setValidatedByParish(bool $validated): self
     {
         $this->validatedByParish = $validated;
+
+        return $this;
+    }
+
+    public function getPersonneEnCharge(): ?string
+    {
+        return $this->personneEnCharge;
+    }
+
+    public function setPersonneEnCharge(?string $personneEnCharge): static
+    {
+        $this->personneEnCharge = $personneEnCharge;
 
         return $this;
     }

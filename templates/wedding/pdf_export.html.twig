@@ -5,23 +5,18 @@
     <title>Déroulé de la célébration</title>
     <style>
         @page {
-            margin: 12mm 10mm;
+            margin: 14mm 14mm;
             size: A4;
         }
 
         :root {
-            --primary: #ff8100;
-            --primary-dark: #cc6500;
-            --secondary: #652d90;
-            --secondary-dark: #431664;
-            --accent: #ede3ff;
-            --ink: #2f1f3a;
-            --muted: #7c708d;
-            --border: #e3d6f2;
-            --ghost: #f9f6ff;
-            --card: #ffffff;
-            --success: #20a07a;
-            --warning: #d19a00;
+            --ink: #1e1f29;
+            --muted: #6b7280;
+            --border: #d9dce3;
+            --accent: #eff3ff;
+            --accent-strong: #d4e0ff;
+            --success: #1c8c63;
+            --warning: #bb7500;
         }
 
         * {
@@ -29,609 +24,246 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: var(--ink);
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 12px;
-            line-height: 1.45;
+            color: var(--ink);
             margin: 0;
-            padding: 0;
-            background: var(--ghost);
+            background: #ffffff;
         }
 
-        h1, h2, h3, h4 {
-            font-family: 'Georgia', 'Times New Roman', serif;
-            margin: 0 0 6px;
-            letter-spacing: .04em;
+        h1, h2, h3 {
+            margin: 0;
+            font-weight: 600;
         }
 
         p {
-            margin: 0 0 6px;
+            margin: 0;
         }
 
-        .pdf-canvas {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px 22px 18px;
-            position: relative;
-            overflow: hidden;
+        .document {
+            width: 100%;
         }
 
-        .pdf-canvas::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 10% 10%, rgba(255, 129, 0, 0.12), transparent 45%),
-                        radial-gradient(circle at 90% 0%, rgba(101, 45, 144, 0.15), transparent 55%);
-            pointer-events: none;
-        }
-
-        .pdf-canvas > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .pdf-hero {
-            background: var(--card);
-            color: var(--ink);
-            border-radius: 16px;
-            padding: 18px 20px;
-            margin-bottom: 18px;
+        .document-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 18px;
-            position: relative;
-            border: 1px solid var(--border);
+            align-items: flex-start;
+            gap: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 18px;
         }
 
-        .pdf-hero::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 20% 20%, rgba(255, 129, 0, 0.1), transparent 45%);
-            opacity: .35;
-        }
-
-        .pdf-hero__heading {
+        .header-identity {
             display: flex;
-            align-items: center;
             gap: 16px;
-            position: relative;
-            z-index: 1;
         }
 
-        .hero-logo-wrapper {
-            width: 90px;
-            height: 90px;
-            border-radius: 16px;
-            background: var(--ghost);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-        }
-
-        .pdf-logo {
+        .header-identity img {
             width: 70px;
             height: 70px;
             object-fit: contain;
         }
 
-        .hero-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hero-eyebrow {
+        .eyebrow {
             text-transform: uppercase;
-            letter-spacing: .2em;
-            font-size: 10px;
-            margin: 0 0 4px;
+            letter-spacing: 0.12em;
+            font-size: 11px;
             color: var(--muted);
         }
 
-        .hero-title {
-            font-size: 22px;
-            margin-bottom: 4px;
-            color: var(--secondary);
-        }
-
-        .hero-names {
+        .couple-name {
+            margin-top: 6px;
             font-size: 14px;
-            letter-spacing: .08em;
-            margin-bottom: 6px;
-            color: var(--ink);
         }
 
-        .hero-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border-radius: 999px;
-            padding: 3px 12px;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            font-weight: 600;
-        }
-
-        .badge--ghost {
-            background: rgba(101, 45, 144, 0.12);
-            color: var(--secondary);
-        }
-
-        .badge--outline {
-            border: 1px solid rgba(101, 45, 144, 0.4);
-            color: var(--secondary);
-        }
-
-        .hero-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-meta__item {
-            background: var(--ghost);
-            border-radius: 10px;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-        }
-
-        .hero-meta__item span {
-            display: block;
-            font-size: 9px;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            margin-bottom: 4px;
+        .header-meta {
+            text-align: right;
+            font-size: 11px;
             color: var(--muted);
         }
 
-        .hero-meta__item strong {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--ink);
+        .info-section {
+            margin-bottom: 20px;
         }
 
-        .summary-panel {
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .summary-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 11px;
         }
 
-        .summary-table th {
-            width: 20%;
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            font-size: 9px;
-            color: var(--muted);
-            text-align: left;
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .summary-table td {
-            width: 30%;
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .summary-table td div {
-            margin-bottom: 3px;
-        }
-
-        .summary-table tr:last-child th,
-        .summary-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .summary-note {
-            font-size: 10px;
-            color: var(--muted);
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: 10px 14px 12px;
-        }
-
-        .first-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-
-        .pdf-body {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            page-break-before: always;
-        }
-
-        .contacts-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
-
-        .contacts-table th,
-        .contacts-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .contacts-table th {
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            font-size: 9px;
-            color: var(--muted);
-        }
-
-        .contacts-table td strong {
-            color: var(--secondary);
-        }
-
-        .quick-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .contacts-panel {
-            margin-bottom: 18px;
-        }
-
-        .pdf-section {
-            margin: 0;
-        }
-
-        .panel {
+        .info-table th,
+        .info-table td {
+            padding: 8px 10px;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 16px 18px;
-            background: var(--card);
-        }
-
-        .panel--soft {
-            background: var(--ghost);
-        }
-
-        .panel--shadow {
-            box-shadow: 0 8px 24px rgba(47, 31, 58, 0.08);
-        }
-
-        .section-title {
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: var(--secondary);
-            margin-bottom: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title::before {
-            content: '';
-            width: 28px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--secondary), var(--primary));
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .qr-panel {
-            padding-bottom: 10px;
-        }
-
-        .qr-card {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .qr-card img {
-            width: 120px;
-            height: 120px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 6px;
-            background: var(--ghost);
-        }
-
-        .qr-link {
-            font-size: 11px;
-            color: var(--secondary);
-            word-break: break-all;
-        }
-
-        .participants-columns {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .participant-card {
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 12px;
-            background: var(--card);
-            box-shadow: 0 8px 18px rgba(101, 45, 144, 0.08);
-            min-height: 110px;
-        }
-
-        .participant-card h3 {
-            font-size: 13px;
-            color: var(--secondary);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-        }
-
-        .participant-card ul {
-            padding-left: 16px;
-            margin: 0;
-        }
-
-        .participant-card li {
-            margin-bottom: 4px;
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
-
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stat-card span {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--muted);
-        }
-
-        .stat-card strong {
-            font-size: 18px;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            color: var(--secondary);
-        }
-
-        .stat-card small {
-            font-size: 10px;
-            color: var(--muted);
-        }
-
-        .legend {
-            display: flex;
-            gap: 10px;
-            font-size: 10px;
-            color: var(--muted);
-        }
-
-        .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .legend-dot--ok {
-            background: var(--success);
-        }
-
-        .legend-dot--pending {
-            background: var(--warning);
-        }
-
-        .deroule-group {
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 14px;
-            overflow: hidden;
-            background: var(--card);
-        }
-
-        .deroule-group__title {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 10px 14px;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            border-bottom: 1px solid var(--border);
-            color: var(--secondary);
-            background: var(--ghost);
-        }
-
-        table.deroule-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
-
-        table.deroule-table th,
-        table.deroule-table td {
-            padding: 7px 8px;
             vertical-align: top;
         }
 
-        table.deroule-table th {
-            background: var(--card);
-            color: var(--secondary);
-            font-weight: 600;
+        .info-table th {
+            width: 20%;
             text-transform: uppercase;
-            letter-spacing: .06em;
+            letter-spacing: 0.08em;
             font-size: 10px;
+            color: var(--muted);
+            background: var(--accent);
+        }
+
+        .metrics {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .metric-card {
+            flex: 1 1 120px;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            border-radius: 6px;
+            background: #fafbff;
+        }
+
+        .metric-card span {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+        }
+
+        .metric-card strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 4px;
+        }
+
+        .deroule-section {
+            margin-bottom: 24px;
+        }
+
+        .sequence-card {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+
+        .sequence-card__header {
+            padding: 16px 20px 12px;
+            background: #f9f7ff;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 11px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .sequence-card__header::after {
+            content: '';
+            display: block;
+            width: 70px;
+            height: 3px;
+            border-radius: 999px;
+            margin-top: 10px;
+            background: currentColor;
+        }
+
+        .sequence-card__table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .sequence-card__table th,
+        .sequence-card__table td {
+            padding: 10px 14px;
             border-bottom: 1px solid var(--border);
+            vertical-align: top;
         }
 
-        table.deroule-table td {
-            border-top: 1px solid var(--border);
+        .sequence-card__table th {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 10px;
+            background: #ffffff;
         }
 
-        .status-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 10px;
+        .sequence-card__table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-label {
+            display: inline-block;
+            padding: 2px 8px;
             border-radius: 999px;
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: .04em;
         }
 
-        .status-ok {
-            background: rgba(32, 160, 122, .18);
+        .status-label--ok {
+            background: rgba(28, 140, 99, 0.12);
             color: var(--success);
         }
 
-        .status-pending {
-            background: rgba(209, 154, 0, .18);
+        .status-label--pending {
+            background: rgba(187, 117, 0, 0.12);
             color: var(--warning);
         }
 
-        .notes {
-            border-radius: 12px;
-            background: var(--card);
+        .notes-block,
+        .contacts-block {
             border: 1px solid var(--border);
             padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 18px;
         }
 
-        .notes :where(h1, h2, h3, h4, h5, h6) {
-            font-size: 14px;
-            margin-top: 12px;
-            color: var(--secondary);
+        .contacts-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
 
-        .notes ul {
-            margin: 0 0 8px 18px;
+        .contacts-list li {
+            margin-bottom: 6px;
         }
 
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
+        .muted {
+            color: var(--muted);
         }
 
-        .contact-card {
+        .qr-inline {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .qr-inline img {
+            width: 80px;
+            height: 80px;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-            background: var(--card);
-        }
-
-        .contact-card span {
-            display: block;
-            font-size: 9px;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .contact-card strong {
-            font-size: 13px;
-            color: var(--ink);
-        }
-
-        .contact-card p {
-            margin: 2px 0;
-        }
-
-        .text-muted {
-            color: var(--muted);
+            padding: 4px;
         }
 
         footer {
-            margin-top: 10px;
-            text-align: right;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
             font-size: 10px;
             color: var(--muted);
-            border-top: 1px solid var(--border);
-            padding-top: 6px;
+            text-align: right;
         }
     </style>
 </head>
 <body>
-<div class="pdf-canvas">
-<header class="pdf-hero">
-    <div class="pdf-hero__heading">
-        <div class="hero-logo-wrapper">
-            <img src="{{ logoSource }}" alt="Logo" class="pdf-logo">
-        </div>
-        <div class="hero-info">
-            <p class="hero-eyebrow">Notre Messe de Mariage</p>
-            <h1 class="hero-title">Déroulé de la célébration</h1>
-            <p class="hero-names">
-                {% if wedding.marie or wedding.mariee %}
-                    {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
-                {% else %}
-                    Mariage
-                {% endif %}
-            </p>
-            <div class="hero-badges">
-                <span class="badge badge--ghost">{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</span>
-            </div>
-        </div>
-    </div>
-    <div class="hero-meta">
-        <div class="hero-meta__item">
-            <span>Date &amp; heure</span>
-            <strong>
-                {% if wedding.date %}
-                    {{ wedding.date|date('d/m/Y') }}{% if wedding.time %} à {{ wedding.time|date('H\\hi') }}{% endif %}
-                {% else %}
-                    Date à confirmer
-                {% endif %}
-            </strong>
-        </div>
-        <div class="hero-meta__item">
-            <span>Lieu</span>
-            <strong>
-                {% if wedding.church %}
-                    {{ wedding.church }}{% if wedding.parish %} — {{ wedding.parish }}{% endif %}
-                {% elseif wedding.parish %}
-                    {{ wedding.parish }}
-                {% elseif wedding.addressLine1 %}
-                    {{ wedding.addressLine1 }}
-                {% else %}
-                    Lieu à confirmer
-                {% endif %}
-            </strong>
-        </div>
-        <div class="hero-meta__item">
-            <span>Document généré</span>
-            <strong>{{ generatedAt|date('d/m/Y à H\\hi') }}</strong>
-        </div>
-    </div>
-</header>
+{% set logoSource = logoDataUri ?? absolute_url(asset('logos/logo_app.png')) %}
+{% set weddingUrl = absolute_url(path('app_wedding_view', { id: wedding.id })) %}
+{% set qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' ~ (weddingUrl|url_encode) %}
+{% set firstParishContact = wedding.parishUsers|length > 0 ? wedding.parishUsers|first : null %}
+{% set celebrantName = (wedding.priestFirstName ~ ' ' ~ wedding.priestLastName)|trim %}
+{% set commentCountsByType = commentCountsByType|default({}) %}
+{% set songsById = songsById|default({}) %}
 {% set totalTypes = songTypes|length %}
 {% set selectionCount = 0 %}
 {% set musicianValidated = 0 %}
@@ -650,149 +282,145 @@
 {% if musicianPending < 0 %}{% set musicianPending = 0 %}{% endif %}
 {% set parishPending = selectionCount - parishValidated %}
 {% if parishPending < 0 %}{% set parishPending = 0 %}{% endif %}
-{% set firstParishContact = wedding.parishUsers|length > 0 ? wedding.parishUsers|first : null %}
-{% set celebrantName = (wedding.priestFirstName ~ ' ' ~ wedding.priestLastName)|trim %}
-{% set logoSource = logoDataUri ?? absolute_url(asset('logos/logo_app.png')) %}
-{% set weddingUrl = absolute_url(path('app_wedding_view', { id: wedding.id })) %}
-{% set qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' ~ (weddingUrl|url_encode) %}
 
-<section class="pdf-section panel summary-panel">
-    <table class="summary-table">
-        <tbody>
-        <tr>
-            <th>Type</th>
-            <td>{{ wedding.messe ? 'Messe de mariage' : 'Célébration' }}</td>
-            <th>Date &amp; heure</th>
-            <td>
-                {% if wedding.date %}
-                    {{ wedding.date|date('d/m/Y') }}{% if wedding.time %} à {{ wedding.time|date('H\\hi') }}{% endif %}
-                {% else %}
-                    Date à confirmer
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th>Lieu</th>
-            <td>
-                {% if wedding.church %}
-                    {{ wedding.church }}{% if wedding.parish %}<br>{{ wedding.parish }}{% endif %}
-                {% elseif wedding.parish %}
-                    {{ wedding.parish }}
-                {% else %}
-                    Lieu à confirmer
-                {% endif %}
-            </td>
-            <th>Adresse</th>
-            <td>
-                {% if wedding.addressLine1 %}<div>{{ wedding.addressLine1 }}</div>{% endif %}
-                {% if wedding.addressLine2 %}<div>{{ wedding.addressLine2 }}</div>{% endif %}
-                {% if wedding.addressPostalCodeAndCity %}<div>{{ wedding.addressPostalCodeAndCity }}</div>{% endif %}
-                {% if not wedding.addressLine1 and not wedding.addressPostalCodeAndCity %}
-                    <span class="text-muted">Adresse à compléter</span>
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th>Contact paroisse</th>
-            <td>
-                {% if firstParishContact %}
-                    <div><strong>{{ firstParishContact.fullName }}</strong></div>
-                    {% if firstParishContact.telephone %}<div>{{ firstParishContact.telephone }}</div>{% endif %}
-                    {% if firstParishContact.email %}<div>{{ firstParishContact.email }}</div>{% endif %}
-                {% else %}
-                    <span class="text-muted">Aucun contact associé</span>
-                {% endif %}
-            </td>
-            <th>Célébrant</th>
-            <td>
-                <div><strong>{{ celebrantName ? celebrantName : 'À définir' }}</strong></div>
-                {% if wedding.priestPhoneNumber %}<div>{{ wedding.priestPhoneNumber }}</div>{% endif %}
-                {% if wedding.priestEMail %}<div>{{ wedding.priestEMail }}</div>{% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th>Musiciens</th>
-            <td>
-                {% if wedding.musicians|length > 0 %}
-                    {% for musician in wedding.musicians %}
-                        <div>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</div>
-                    {% endfor %}
-                {% else %}
-                    <span class="text-muted">Aucun musicien associé</span>
-                {% endif %}
-            </td>
-            <th>Lien du mariage</th>
-            <td>
-                <div>{{ weddingUrl }}</div>
-                <span class="text-muted">Disponible via le QR code</span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <p class="summary-note">Document généré le {{ generatedAt|date('d/m/Y à H\\hi') }}</p>
-</section>
-
-<div class="pdf-body">
-    <div class="column column--primary">
-        <section class="pdf-section panel panel--shadow">
-            <div class="section-header">
-                <h2 class="section-title">Déroulé & validations</h2>
-                <div class="legend">
-                    <span><span class="legend-dot legend-dot--ok"></span> Validé</span>
-                    <span><span class="legend-dot legend-dot--pending"></span> En attente</span>
-                </div>
+<div class="document">
+    <header class="document-header">
+        <div class="header-identity">
+            <img src="{{ logoSource }}" alt="Logo">
+            <div>
+                <h1 style="color:">Déroulé de la {{ wedding.messe ? 'messe' : 'célébration' }} du mariage de {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} et de {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}</h1>
             </div>
-            {% set groups = {} %}
-            {% for t in songTypes %}
-                {% set period = t.celebrationPeriod %}
-                {% set label = period ? period.fullName : 'Autres séquences' %}
-                {% set color = period ? period.color : '#ecebfd' %}
-                {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
-                {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
-                {% set existing = groups[key]|default({ 'label': label, 'color': color, 'types': [] }) %}
-                {% set groups = groups|merge({
-                    (key): existing|merge({ 'label': label, 'color': color, 'types': existing.types|merge([t]) })
-                }) %}
-            {% endfor %}
+        </div>
 
+    </header>
+
+    <section class="info-section">
+        <table class="info-table">
+            <tbody>
+                <tr>
+                    <th>Date &amp; heure</th>
+                    <td>
+                        {% if wedding.date %}
+                            {{ wedding.date|date('d/m/Y') }}{% if wedding.time %} à {{ wedding.time|date('H\hi') }}{% endif %}
+                        {% else %}
+                            Date à confirmer
+                        {% endif %}
+                    </td>
+                    <th>Lieu</th>
+                    <td>
+                        {% if wedding.church %}
+                            {{ wedding.church }}{% if wedding.parish %} - {{ wedding.parish }}{% endif %}
+                        {% elseif wedding.parish %}
+                            {{ wedding.parish }}
+                        {% else %}
+                            Lieu à confirmer
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Adresse</th>
+                    <td>
+                        {% if wedding.addressLine1 %}<div>{{ wedding.addressLine1 }}</div>{% endif %}
+                        {% if wedding.addressLine2 %}<div>{{ wedding.addressLine2 }}</div>{% endif %}
+                        {% if wedding.addressPostalCodeAndCity %}<div>{{ wedding.addressPostalCodeAndCity }}</div>{% endif %}
+                        {% if not wedding.addressLine1 and not wedding.addressPostalCodeAndCity %}
+                            <span class="muted">Adresse à compléter</span>
+                        {% endif %}
+                    </td>
+                    <th>Contact paroisse</th>
+                    <td>
+                        {% if firstParishContact %}
+                            <div><strong>{{ firstParishContact.fullName }}</strong></div>
+                            {% if firstParishContact.telephone %}<div>{{ firstParishContact.telephone }}</div>{% endif %}
+                            {% if firstParishContact.email %}<div>{{ firstParishContact.email }}</div>{% endif %}
+                        {% else %}
+                            <span class="muted">Aucun contact associé</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Célébrant</th>
+                    <td>
+                        <div><strong>{{ celebrantName ?: 'À définir' }}</strong></div>
+                        {% if wedding.priestPhoneNumber %}<div>{{ wedding.priestPhoneNumber }}</div>{% endif %}
+                        {% if wedding.priestEMail %}<div>{{ wedding.priestEMail }}</div>{% endif %}
+                    </td>
+                    <th>Musiciens</th>
+                    <td>
+                        {% if wedding.musicians|length > 0 %}
+                            {% for musician in wedding.musicians %}
+                                <div>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</div>
+                            {% endfor %}
+                        {% else %}
+                            <span class="muted">Aucun musicien associé</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <section class="deroule-section">
+        <h2>Déroulé détaillé</h2>
+        <br>
+        {% set groups = {} %}
+        {% for t in songTypes %}
+            {% set period = t.celebrationPeriod %}
+            {% set label = period ? period.fullName : 'Autres' %}
+            {% set color = period and period.color ? period.color : '#4b5563' %}
+            {% set orderValue = period and period.periodOrder is not null ? period.periodOrder : 999 %}
+            {% set key = '%03d'|format(orderValue) ~ '-' ~ (period ? period.id : 'default') %}
+            {% set existing = groups[key]|default({ 'label': label, 'color': color, 'types': [] }) %}
+            {% set groups = groups|merge({ (key): existing|merge({
+                'label': label,
+                'color': existing.color ?? color,
+                'types': existing.types|merge([t])
+            }) }) %}
+        {% endfor %}
+
+        {% if groups is empty %}
+            <p>Aucun type de chant n'a encore été configuré.</p>
+        {% else %}
             {% for groupKey in groups|keys|sort %}
                 {% set group = groups[groupKey] %}
-                <div class="deroule-group">
-                    <div class="deroule-group__title" style="background: {{ group.color ?? '#ecebfd' }}10; border-color: {{ group.color ?? '#ecebfd' }};">
+                {% set groupColor = group.color ?? '#4b5563' %}
+                <div class="sequence-card" style="border-color: {{ groupColor }};">
+                    <div class="sequence-card__header" style="color: {{ groupColor }}; border-bottom-color: {{ groupColor }};">
                         {{ group.label }}
                     </div>
-                    <table class="deroule-table">
-                        <thead>
+                    <table class="sequence-card__table">
+                        <thead style="color: {{ groupColor }};">
                             <tr>
-                                <th style="width: 28%">Type</th>
-                                <th style="width: 42%">Choix retenu</th>
-                                <th style="width: 15%">Validation musicien</th>
-                                <th style="width: 15%">Validation paroisse</th>
+                                <th style="width: 30%;">Type</th>
+                                <th style="width: 34%;">Choix retenu</th>
+                                <th style="width: 18%;">Validation musicien</th>
+                                <th style="width: 18%;">Validation paroisse</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for type in group.types %}
                                 {% set selection = songSelectionsByType[type.id]|default(null) %}
-                                {% set song = (selection and selection.songId) ? songsById[selection.songId]|default(null) : null %}
+                                {% set song = selection and selection.songId ? songsById[selection.songId]|default(null) : null %}
+                                {% set musicianOK = selection ? selection.validatedByMusician : false %}
+                                {% set parishOK = selection ? selection.validatedByParish : false %}
                                 <tr>
                                     <td><strong>{{ type.name }}</strong></td>
                                     <td>
                                         {% if song %}
                                             {{ song.name ?? song.title ?? 'Titre inconnu' }}
                                         {% else %}
-                                            <span style="color: var(--muted);">Pas de sélection</span>
+                                            <span class="muted">Pas de sélection</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% set musicianOK = selection ? selection.validatedByMusician : false %}
-                                        <span class="status-chip {{ musicianOK ? 'status-ok' : 'status-pending' }}">
-                                            {{ musicianOK ? 'Validé' : 'En attente' }}
+                                        <span class="status-label {{ musicianOK ? 'status-label--ok' : 'status-label--pending' }}">
+                                            {{ musicianOK ? 'Validé' : 'À valider' }}
                                         </span>
                                     </td>
                                     <td>
-                                        {% set parishOK = selection ? selection.validatedByParish : false %}
-                                        <span class="status-chip {{ parishOK ? 'status-ok' : 'status-pending' }}">
-                                            {{ parishOK ? 'Validé' : 'En attente' }}
+                                        <span class="status-label {{ parishOK ? 'status-label--ok' : 'status-label--pending' }}">
+                                            {{ parishOK ? 'Validé' : 'À valider' }}
                                         </span>
                                     </td>
                                 </tr>
@@ -800,100 +428,38 @@
                         </tbody>
                     </table>
                 </div>
-            {% else %}
-                <p class="text-muted">Aucun type de chant n'a encore été configuré pour cette célébration.</p>
             {% endfor %}
-        </section>
-
-        {% if notesHtml %}
-            <section class="pdf-section panel panel--soft">
-                <h2 class="section-title">Notes & consignes</h2>
-                <div class="notes">
-                    {{ notesHtml|raw }}
-                </div>
-            </section>
         {% endif %}
-    </div>
+    </section>
 
-    <div class="column column--secondary">
-        <section class="pdf-section panel qr-panel">
-            <h2 class="section-title">Accès rapide</h2>
-            <div class="qr-card">
-                <img src="{{ qrCodeUrl }}" alt="QR code du mariage">
-                <div>
-                    <p>Scannez pour ouvrir le déroulé en ligne.</p>
-                    <p class="qr-link">{{ weddingUrl }}</p>
-                </div>
-            </div>
+    {% if notesHtml %}
+        <section class="notes-block">
+            <h2>Notes aux intervenants</h2>
+            {{ notesHtml|raw }}
         </section>
+    {% endif %}
 
-        <section class="pdf-section panel panel--shadow">
-            <h2 class="section-title">Suivi des validations</h2>
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <span>Types configurés</span>
-                    <strong>{{ totalTypes }}</strong>
-                    <small>{{ pendingTypes }} restant{% if pendingTypes > 1 %}s{% endif %}</small>
-                </div>
-                <div class="stat-card">
-                    <span>Choix renseignés</span>
-                    <strong>{{ selectionCount }}</strong>
-                    <small>{{ totalTypes > 0 ? (selectionCount * 100 / totalTypes)|round(0, 'floor') : 0 }}% du déroulé</small>
-                </div>
-                <div class="stat-card">
-                    <span>Validations musiciens</span>
-                    <strong>{{ musicianValidated }}</strong>
-                    <small>{{ musicianPending }} en attente</small>
-                </div>
-                <div class="stat-card">
-                    <span>Validations paroisse</span>
-                    <strong>{{ parishValidated }}</strong>
-                    <small>{{ parishPending }} en attente</small>
-                </div>
-            </div>
-        </section>
+    <section class="contacts-block">
+        <h2>Contacts utiles</h2>
+        <ul class="contacts-list">
+            <li><strong>Couple :</strong>
+                {% if wedding.marie or wedding.mariee %}
+                    {{ wedding.marie ? wedding.marie.fullName : 'Marié' }} &amp; {{ wedding.mariee ? wedding.mariee.fullName : 'Mariée' }}
+                {% else %}
+                    À compléter
+                {% endif %}
+            </li>
+            <li><strong>Lien :</strong> {{ weddingUrl }}</li>
+        </ul>
+        <div class="qr-inline">
+            <img src="{{ qrCodeUrl }}" alt="QR code du mariage">
+            <p class="muted">Scannez le QR code pour ouvrir le déroulé en ligne.</p>
+        </div>
+    </section>
 
-        <section class="pdf-section panel panel--soft" style="page-break-inside: avoid;">
-            <h2 class="section-title">Intervenants</h2>
-            <div class="participants-columns">
-                <div class="participant-card">
-                    <h3>Musiciens</h3>
-                    <ul>
-                        {% if wedding.musicians|length > 0 %}
-                            {% for musician in wedding.musicians %}
-                                <li>{{ musician.fullName }}{% if musician.telephone %} — {{ musician.telephone }}{% endif %}</li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="text-muted">Aucun musicien associé</li>
-                        {% endif %}
-                    </ul>
-                </div>
-                <div class="participant-card">
-                    <h3>Contacts paroissiaux</h3>
-                    <ul>
-                        {% if wedding.parishUsers|length > 0 %}
-                            {% for member in wedding.parishUsers %}
-                                <li>{{ member.fullName }}{% if member.telephone %} — {{ member.telephone }}{% endif %}</li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="text-muted">Aucun contact paroissial</li>
-                        {% endif %}
-                    </ul>
-                </div>
-                <div class="participant-card">
-                    <h3>Célébrant</h3>
-                    <p>{{ celebrantName ? celebrantName : 'À définir' }}</p>
-                    {% if wedding.priestPhoneNumber %}<p>{{ wedding.priestPhoneNumber }}</p>{% endif %}
-                    {% if wedding.priestEMail %}<p>{{ wedding.priestEMail }}</p>{% endif %}
-                </div>
-            </div>
-        </section>
-    </div>
-</div>
-
-<footer>
-    Notre Messe de Mariage — Export PDF destiné aux intervenants
-</footer>
+    <footer>
+        Notre Messe de Mariage © Nuptia Logos 2026 - Document généré le {{ generatedAt|date('d/m/Y à H\hi') }} - {{ weddingUrl }}
+    </footer>
 </div>
 </body>
 </html>

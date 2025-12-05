@@ -579,6 +579,7 @@ class WeddingController extends AbstractController
             $derouleRaw = $request->request->all('deroule');
             $musicianValidationRaw = $request->request->all('deroule_validation_musician');
             $parishValidationRaw = $request->request->all('deroule_validation_parish');
+            $personInChargeRaw = $request->request->all('deroule_personne');
 
             $selectedSongIdsByType = [];
             if (is_array($derouleRaw)) {
@@ -608,6 +609,14 @@ class WeddingController extends AbstractController
                 }
             }
 
+            $personInChargeByType = [];
+            if (is_array($personInChargeRaw)) {
+                foreach ($personInChargeRaw as $typeId => $value) {
+                    $trimmed = is_string($value) ? trim($value) : '';
+                    $personInChargeByType[(int) $typeId] = $trimmed !== '' ? $trimmed : null;
+                }
+            }
+
             $existingSelections = [];
             foreach ($wedding->getSongSelections() as $selection) {
                 $type = $selection->getSongType();
@@ -620,10 +629,11 @@ class WeddingController extends AbstractController
                 $selectedSongId = $selectedSongIdsByType[$typeId] ?? null;
                 $musicianApproved = $musicianValidationByType[$typeId] ?? false;
                 $parishApproved = $parishValidationByType[$typeId] ?? false;
+                $personInCharge = $personInChargeByType[$typeId] ?? null;
 
                 $selection = $existingSelections[$typeId] ?? null;
 
-                if ($selectedSongId === null && !$musicianApproved && !$parishApproved) {
+                if ($selectedSongId === null && !$musicianApproved && !$parishApproved && $personInCharge === null) {
                     if ($selection) {
                         $wedding->removeSongSelection($selection);
                     }
@@ -645,8 +655,14 @@ class WeddingController extends AbstractController
                 $selection->setSong($song);
                 $selection->setValidatedByMusician($musicianApproved);
                 $selection->setValidatedByParish($parishApproved);
+                $selection->setPersonneEnCharge($personInCharge);
 
-                if (!$selection->getSong() && !$selection->isValidatedByMusician() && !$selection->isValidatedByParish()) {
+                if (
+                    !$selection->getSong()
+                    && !$selection->isValidatedByMusician()
+                    && !$selection->isValidatedByParish()
+                    && !$selection->getPersonneEnCharge()
+                ) {
                     $wedding->removeSongSelection($selection);
                 }
             }
@@ -1442,7 +1458,7 @@ class WeddingController extends AbstractController
      *     songTypes: array<int, SongType>,
      *     availableSongsByType: array<int, array<int, Song>>,
      *     availableSongsByTypeInMusiciansRepo: array<int, array<int, Song>>,
-     *     songSelectionsByType: array<int, array{songId: ?int, validatedByMusician: bool, validatedByParish: bool, commentsCount: int}>,
+    *     songSelectionsByType: array<int, array{songId: ?int, validatedByMusician: bool, validatedByParish: bool, personneEnCharge: ?string, commentsCount: int}>,
      *     commentCountsByType: array<int, int>
      * }
      */
@@ -1645,6 +1661,7 @@ class WeddingController extends AbstractController
                 'songId' => $selection->getSong()?->getId(),
                 'validatedByMusician' => $selection->isValidatedByMusician(),
                 'validatedByParish' => $selection->isValidatedByParish(),
+                'personneEnCharge' => $selection->getPersonneEnCharge(),
                 'commentsCount' => $commentCountsByType[$typeId] ?? 0,
             ];
         }
@@ -1669,6 +1686,7 @@ class WeddingController extends AbstractController
                         'songId' => $song->getId(),
                         'validatedByMusician' => false,
                         'validatedByParish' => false,
+                        'personneEnCharge' => null,
                         'commentsCount' => $commentCountsByType[$typeId] ?? 0,
                     ];
                 }
@@ -1681,10 +1699,14 @@ class WeddingController extends AbstractController
                     'songId' => null,
                     'validatedByMusician' => false,
                     'validatedByParish' => false,
+                    'personneEnCharge' => null,
                     'commentsCount' => $count,
                 ];
             } else {
                 $songSelectionsByType[$typeId]['commentsCount'] = $count;
+                if (!array_key_exists('personneEnCharge', $songSelectionsByType[$typeId])) {
+                    $songSelectionsByType[$typeId]['personneEnCharge'] = null;
+                }
             }
         }
 

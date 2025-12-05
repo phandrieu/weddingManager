@@ -487,8 +487,9 @@
 								<div class="deroule-header d-none d-lg-flex">
 									<div class="deroule-col-type">TYPE</div>
 									<div class="deroule-col-choice">VOTRE CHOIX</div>
-									<div class="deroule-col-check">VALIDATION MUSICIEN</div>
-									<div class="deroule-col-check">VALIDATION PAROISSE</div>
+									<div class="deroule-col-check" style="width:30px;">ACTIONS</div>
+									<div class="deroule-col-check">VALIDATIONS</div>
+									<div class="deroule-col-check">EN CHARGE</div>
 									<div class="deroule-col-comments">COM.</div>
 								</div>
 
@@ -544,6 +545,9 @@
 														<div>
 															<input type="hidden" name="deroule_validation_parish[{{ type.id }}]" value="{{ validatedParish ? '1' : '0' }}" data-validation-input="parish-{{ type.id }}">
 															<button type="button" class="btn btn-validation js-validation-toggle {{ validatedParish ? 'is-active' : '' }}" data-role="parish" data-type="{{ type.id }}">PAR</button>
+														</div>
+														<div class="deroule-person-field">
+															<input type="text" class="form-control form-control-sm deroule-person-input" name="deroule_personne[{{ type.id }}]" value="{{ selectionState.personneEnCharge|default('') }}" placeholder="Personne en charge" maxlength="255">
 														</div>
 														<div>
 															{% if wedding.id %}
