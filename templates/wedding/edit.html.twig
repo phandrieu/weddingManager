@@ -514,7 +514,7 @@
 															<select name="deroule[{{ sanitizedLabel }}][{{ type.id|default(loop.index) }}]" class="form-select deroule-select deroule-select--large js-deroule-select" data-placeholder="Rechercher un chant" data-song-type="{{ type.id }}" data-song-type-id="{{ type.id }}" style="flex: 1;">
 																<option value="" {% if selectedSongId is null %} selected {% endif %}>Aucune sélection</option>
 																{% if songsForType|length > 0 %}
-																	{% for song in songsForType %}
+																	{% for song in songsForType|filter(a => not a.private) %}
 																		<option value="{{ song.id }}" {% if selectedSongId is not null and song.id == selectedSongId %} selected {% endif %}>
 																			{% if not song.song %}📖
 																				{% elseif song.suggestion %}✨
@@ -522,9 +522,6 @@
 																				{% else %}⚠️
 																			{% endif %}
 																			{{ song.name ?? (song.title ?? 'Titre inconnu') }}
-																			{% if song.suggestion %}
-																				(suggestion)
-																			{% endif %}
 																		</option>
 																	{% endfor %}
 																{% else %}
@@ -1896,6 +1893,7 @@ Bloc de code ou partition
 	
 	            const suggestModal = new bootstrap.Modal(suggestModalEl);
 	            let currentSongTypeId = null;
+				const weddingContextId = '{{ wedding.id ? wedding.id : '' }}';
 	
 	            const getState = () => window.suggestionForm || {};
 	
@@ -1925,6 +1923,11 @@ Bloc de code ou partition
 	                        input.value = '';
 	                    }
 	                });
+
+					const privateToggle = document.getElementById('suggestion-private');
+					if (privateToggle) {
+						privateToggle.checked = false;
+					}
 	
 	                const state = getState();
 	                if (state.resetPreview) {
@@ -1975,6 +1978,8 @@ Bloc de code ou partition
 	                } else if (state.typesSelectElement) {
 	                    selectedTypes = Array.from(state.typesSelectElement.selectedOptions).map((opt) => opt.value);
 	                }
+					const privateToggle = document.getElementById('suggestion-private');
+					const isPrivateSuggestion = privateToggle ? privateToggle.checked : false;
 	
 	                confirmBtn.disabled = true;
 	                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
@@ -1991,7 +1996,11 @@ Bloc de code ou partition
 	                    formData.append('editorName', document.getElementById('suggestion-editor')?.value || '');
 	                    formData.append('textRef', document.getElementById('suggestion-text-ref')?.value || '');
 	                    formData.append('textTranslationName', document.getElementById('suggestion-text-translation')?.value || '');
+						formData.append('isPrivate', isPrivateSuggestion ? '1' : '0');
 	                    selectedTypes.forEach((typeId) => formData.append('typeIds[]', typeId));
+						if (weddingContextId) {
+							formData.append('weddingId', weddingContextId);
+						}
 	
 	                    const response = await fetch('{{ path('song_suggestion_create') }}', {
 	                        method: 'POST',
@@ -2030,7 +2039,7 @@ Bloc de code ou partition
 	                        if (select) {
 	                            const option = document.createElement('option');
 	                            option.value = data.songId;
-	                            option.textContent = '✨ ' + songName + ' (suggestion)';
+	                            option.textContent = '✨ ' + songName ;
 	                            option.selected = true;
 	                            select.insertBefore(option, select.firstChild);
 	                        }

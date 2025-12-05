@@ -824,7 +824,7 @@ class WeddingController extends AbstractController
 
                         // Envoyer l'email d'invitation
                         $invitationLink = $this->generateUrl(
-                            'app_wedding_invitation',
+                            'app_invitation_accept',
                             ['token' => $invitation->getToken()],
                             UrlGeneratorInterface::ABSOLUTE_URL
                         );
@@ -835,7 +835,7 @@ class WeddingController extends AbstractController
                             ->from(new Address('no-reply@notremessedemariage.fr', 'Notre Messe de Mariage'))
                             ->to($marieEmail)
                             ->subject('Invitation à rejoindre votre mariage sur Notre Messe de Mariage')
-                            ->html($this->renderView('emails/wedding_invitation.html.twig', [
+                            ->html($this->renderView('emails/wedding/invitation.html.twig', [
                                 'wedding' => $wedding,
                                 'role' => 'marié',
                                 'invitationLink' => $invitationLink,
@@ -866,7 +866,7 @@ class WeddingController extends AbstractController
 
                         // Envoyer l'email d'invitation
                         $invitationLink = $this->generateUrl(
-                            'app_wedding_invitation',
+                            'app_invitation_accept',
                             ['token' => $invitation->getToken()],
                             UrlGeneratorInterface::ABSOLUTE_URL
                         );
@@ -877,7 +877,7 @@ class WeddingController extends AbstractController
                             ->from(new Address('no-reply@notremessedemariage.fr', 'Notre Messe de Mariage'))
                             ->to($marieeEmail)
                             ->subject('Invitation à rejoindre votre mariage sur Notre Messe de Mariage')
-                            ->html($this->renderView('emails/wedding_invitation.html.twig', [
+                            ->html($this->renderView('emails/wedding/invitation.html.twig', [
                                 'wedding' => $wedding,
                                 'role' => 'mariée',
                                 'invitationLink' => $invitationLink,
@@ -1544,13 +1544,24 @@ class WeddingController extends AbstractController
 
         $participantIds = $this->collectParticipantUserIds($wedding, $currentUser);
         if (!empty($participantIds)) {
-            $suggestions = $songRepo->createQueryBuilder('s')
+            $suggestionQb = $songRepo->createQueryBuilder('s')
                 ->leftJoin('s.types', 't')
                 ->addSelect('t')
                 ->where('s.suggestion = :suggestion')
                 ->andWhere('s.addedBy IN (:users)')
                 ->setParameter('suggestion', true)
-                ->setParameter('users', $participantIds)
+                ->setParameter('users', $participantIds);
+
+            if ($wedding->getId() !== null) {
+                $suggestionQb
+                    ->andWhere('s.private = false OR :currentWedding MEMBER OF s.weddings')
+                    ->setParameter('currentWedding', $wedding);
+            } else {
+                $suggestionQb
+                    ->andWhere('s.private = false');
+            }
+
+            $suggestions = $suggestionQb
                 ->getQuery()
                 ->getResult();
 

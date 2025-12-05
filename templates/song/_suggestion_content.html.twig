@@ -95,6 +95,33 @@
             </div>
 
             <div class="mb-3">
+                {% if useForm and form.private is defined %}
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.private, {
+                            attr: (form.private.vars.attr|default({}))|merge({
+                                class: (form.private.vars.attr.class|default('') ~ ' form-check-input')|trim,
+                                id: 'suggestion-private'
+                            })
+                        }) }}
+                        {{ form_label(form.private, 'Suggestion privée', {
+                            label_attr: (form.private.vars.label_attr|default({}))|merge({
+                                class: (form.private.vars.label_attr.class|default('') ~ ' form-check-label fw-semibold')|trim,
+                                for: 'suggestion-private'
+                            })
+                        }) }}
+                    </div>
+                    <div class="form-text text-muted small">Masque la suggestion pour les autres musiciens. Seuls les participants au mariage concerné (ou à l'un de vos mariages) la verront.</div>
+                    {{ form_errors(form.private) }}
+                {% else %}
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="suggestion-private">
+                        <label class="form-check-label fw-semibold" for="suggestion-private">Suggestion privée</label>
+                    </div>
+                    <div class="form-text text-muted small">Seuls les intervenants du mariage concerné (ou ceux qui partagent un mariage avec vous) verront cette proposition.</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
                 {% if useForm and form.lyrics is defined %}
                     {{ form_label(form.lyrics, 'Paroles', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                     {{ form_widget(form.lyrics, {

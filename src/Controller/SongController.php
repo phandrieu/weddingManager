@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Song;
+use App\Entity\User;
+use App\Entity\Wedding;
 use App\Form\SongFormType;
 use App\Repository\SongRepository;
 use App\Repository\SongTypeRepository;
@@ -75,11 +77,20 @@ class SongController extends AbstractController
         $songs = $qb->getQuery()->getResult();
 
         // Récupérer toutes les suggestions pour les admin/musiciens
-        $suggestions = $repo->createQueryBuilder('s')
+        $suggestionsQb = $repo->createQueryBuilder('s')
+            ->leftJoin('s.weddings', 'w')->addSelect('w')
+            ->leftJoin('s.addedBy', 'creator')->addSelect('creator')
             ->where('s.suggestion = true')
-            ->orderBy('s.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->andWhere('s.private = false')
+            ->orderBy('s.name', 'ASC');
+
+        $suggestions = $suggestionsQb->getQuery()->getResult();
+        $currentUser = $this->getUser();
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $suggestions = array_values(array_filter($suggestions, function (Song $suggestion) use ($currentUser) {
+                return $this->canSeeSuggestion($currentUser instanceof User ? $currentUser : null, $suggestion);
+            }));
+        }
 
         // Récupérer tous les types pour le filtre
         $allTypes = [];
@@ -169,7 +180,7 @@ class SongController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // récupérer l'utilisateur courant et mettre à jour les relations
             $user = $this->getUser();
-            if ($user instanceof \App\Entity\User) {
+            if ($user instanceof User) {
                 if ($isNew) {
                     // à la création : addedBy + lastEditBy
                     $song->setAddedBy($user);
@@ -202,7 +213,7 @@ class SongController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$user instanceof \App\Entity\User) {
+        if (!$user instanceof User) {
             return $this->json(['success' => false, 'message' => 'Non authentifié'], 401);
         }
 
@@ -212,11 +223,13 @@ class SongController extends AbstractController
         }
 
         $isSong = $request->request->get('isSong', '1') === '1';
+        $isPrivateSuggestion = $request->request->get('isPrivate', '0') === '1';
 
         $song = new Song();
         $song->setName($name);
         $song->setSuggestion(true);
         $song->setSong($isSong); // Chant (true) ou Lecture/Prière (false)
+        $song->setPrivate($isPrivateSuggestion);
         $song->setAddedBy($user);
         $song->setAddedAt(new \DateTime());
         $song->setLastEditBy($user);
@@ -259,6 +272,14 @@ class SongController extends AbstractController
             }
         }
 
+        $weddingId = (int) $request->request->get('weddingId', 0);
+        if ($weddingId > 0) {
+            $wedding = $em->getRepository(Wedding::class)->find($weddingId);
+            if ($wedding instanceof Wedding && $this->userHasAccessToWedding($user, $wedding)) {
+                $song->addWedding($wedding);
+            }
+        }
+
         try {
             $em->persist($song);
             $em->flush();
@@ -274,5 +295,96 @@ class SongController extends AbstractController
                 'message' => 'Erreur lors de la création : ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * @return int[]
+     */
+    private function collectWeddingIdsForUser(?User $user): array
+    {
+        if (!$user instanceof User) {
+            return [];
+        }
+
+        $ids = [];
+        $collections = [
+            $user->getWeddings(),
+            $user->getWeddingsAsMariee(),
+            $user->getWeddingsAsMusicians(),
+            $user->getWeddingsAsParish(),
+        ];
+
+        foreach ($collections as $collection) {
+            foreach ($collection as $wedding) {
+                if ($wedding instanceof Wedding && $wedding->getId() !== null) {
+                    $ids[] = $wedding->getId();
+                }
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function canSeeSuggestion(?User $user, Song $song): bool
+    {
+        if (!$song->isSuggestion()) {
+            return true;
+        }
+
+        if (!$song->isPrivate()) {
+            return true;
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        if ($song->getAddedBy() && $song->getAddedBy()->getId() === $user->getId()) {
+            return true;
+        }
+
+        $userWeddingIds = $this->collectWeddingIdsForUser($user);
+        if (empty($userWeddingIds)) {
+            return false;
+        }
+
+        foreach ($song->getWeddings() as $wedding) {
+            if ($wedding instanceof Wedding) {
+                $weddingId = $wedding->getId();
+                if ($weddingId !== null && in_array($weddingId, $userWeddingIds, true)) {
+                    return true;
+                }
+            }
+        }
+
+        $creatorWeddingIds = $this->collectWeddingIdsForUser($song->getAddedBy());
+
+        return !empty(array_intersect($userWeddingIds, $creatorWeddingIds));
+    }
+
+    private function userHasAccessToWedding(?User $user, ?Wedding $wedding): bool
+    {
+        if (!$wedding instanceof Wedding) {
+            return false;
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        $weddingId = $wedding->getId();
+        if ($weddingId === null) {
+            return false;
+        }
+
+        return in_array($weddingId, $this->collectWeddingIdsForUser($user), true);
     }
 }

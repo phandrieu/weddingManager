@@ -7,6 +7,7 @@ use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -24,12 +25,17 @@ class NotificationController extends AbstractController
      * Récupère toutes les notifications de l'utilisateur connecté
      */
     #[Route('/list', name: 'app_notification_list', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(Request $request): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
         $repo = $this->entityManager->getRepository(Notification::class);
         
+        $acceptsJson = str_contains($request->headers->get('Accept', ''), 'application/json');
+        if (!$request->isXmlHttpRequest() && !$acceptsJson) {
+            return $this->redirectToRoute('home');
+        }
+
         $notifications = $repo->findAllByUser($user);
         $unreadCount = $repo->countUnreadByUser($user);
 

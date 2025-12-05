@@ -82,6 +82,9 @@ class Song
     #[ORM\Column(nullable: true)]
     private ?\DateTime $lastEditAt = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $private = false;
+
     public function __construct()
     {
         $this->weddings = new ArrayCollection();
@@ -354,6 +357,18 @@ public function removeType(SongType $type): self
     public function setLastEditAt(?\DateTime $lastEditAt): static
     {
         $this->lastEditAt = $lastEditAt;
+
+        return $this;
+    }
+
+    public function isPrivate(): bool
+    {
+        return (bool) $this->private;
+    }
+
+    public function setPrivate(bool $private): static
+    {
+        $this->private = $private;
 
         return $this;
     }
