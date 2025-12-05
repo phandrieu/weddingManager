@@ -430,7 +430,7 @@ class WeddingController extends AbstractController
         $notesHtml = $markdownRenderer->render($wedding->getNotesMusiciens());
         $generatedAt = new DateTimeImmutable();
 
-        $logoPath = $this->getParameter('kernel.project_dir').'/public/logos/logo_app.png';
+        $logoPath = $this->getParameter('kernel.project_dir').'/public/logos/horizontal_with_bg.png';
         $logoDataUri = null;
         if (is_file($logoPath)) {
             $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath));

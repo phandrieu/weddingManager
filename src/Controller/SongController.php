@@ -102,7 +102,13 @@ class SongController extends AbstractController
                 }
             }
         }
-        sort($allTypes);
+        usort($allTypes, function($a, $b) use ($songTypeRepo) {
+            $typeA = $songTypeRepo->findOneBy(['name' => $a]);
+            $typeB = $songTypeRepo->findOneBy(['name' => $b]);
+            $orderA = $typeA ? $typeA->getOrdre() : PHP_INT_MAX;
+            $orderB = $typeB ? $typeB->getOrdre() : PHP_INT_MAX;
+            return $orderA <=> $orderB;
+        });
 
         $includeMesseTypes = true;
         $songTypes = $songTypeRepo->findOrderedByCelebrationPeriod($includeMesseTypes);

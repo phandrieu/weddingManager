@@ -45,7 +45,7 @@
         <div class="col-md-2">
             <select name="type" class="form-select">
                 <option value="">Tous les types</option>
-                {% for typeName in allTypes %}
+                {% for typeName in allTypes|sort((a, b) => a.ordre <=> b.ordre) %}
                     <option value="{{ typeName }}" {{ typeFilter == typeName ? 'selected' }}>{{ typeName }}</option>
                 {% endfor %}
             </select>
